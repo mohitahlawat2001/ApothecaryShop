@@ -1,35 +1,46 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import React, { useState } from 'react';
+import { BrowserRouter as Router, Route, Switch, Redirect } from 'react-router-dom';
+import Login from './pages/Login';
+import Register from './pages/Register';
+import Dashboard from './pages/Dashboard';
+import Inventory from './pages/Inventory';
+import Navbar from './components/Navbar';
+import { AuthContext } from './context/AuthContext';
+import PrivateRoute from './components/routing/PrivateRoute';
+import './App.css';
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [auth, setAuth] = useState({
+    token: localStorage.getItem('token'),
+    isAuthenticated: localStorage.getItem('token') ? true : false,
+    user: JSON.parse(localStorage.getItem('user'))
+  });
+
+  // Helper function to get formatted bearer token
+  const getBearerToken = () => {
+    const token = auth.token;
+    return token ? `Bearer ${token}` : null;
+  };
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    <AuthContext.Provider value={{ auth, setAuth, getBearerToken }}>
+      <Router>
+        <div className="app">
+          {auth.isAuthenticated && <Navbar />}
+          <div className="container">
+            <Switch>
+              <Route exact path="/" render={() => 
+                auth.isAuthenticated ? <Redirect to="/dashboard" /> : <Login />
+              } />
+              <Route exact path="/register" component={Register} />
+              <PrivateRoute exact path="/dashboard" component={Dashboard} />
+              <PrivateRoute exact path="/inventory" component={Inventory} />
+            </Switch>
+          </div>
+        </div>
+      </Router>
+    </AuthContext.Provider>
+  );
 }
 
-export default App
+export default App;
