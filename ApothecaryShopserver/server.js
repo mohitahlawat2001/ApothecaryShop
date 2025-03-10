@@ -35,6 +35,12 @@ UserSchema.pre('save', async function(next) {
 
 const User = mongoose.model('User', UserSchema);
 
+// Import routes
+const productsRouter = require('./routes/products');
+
+// Use routes
+app.use('/api/products', productsRouter);
+
 // Auth routes
 // POST http://localhost:5000/api/register
 // Body: { "name": "Test User", "email": "test@example.com", "password": "password123", "role": "staff" }
@@ -60,11 +66,20 @@ app.post('/api/login', async (req, res) => {
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) return res.status(400).json({ message: 'Invalid credentials' });
     
+    // Modified token payload to match what your auth middleware expects
     const token = jwt.sign(
-      { id: user._id, role: user.role },
+      { 
+        id: user._id,  // Keep id for backward compatibility
+        sub: user._id, // Add sub to match the token format you're receiving
+        role: user.role 
+      },
       process.env.JWT_SECRET,
       { expiresIn: '1d' }
     );
+    
+    // Log the token signature method (remove in production)
+    console.log('Token signed with JWT_SECRET first 4 chars:', 
+      process.env.JWT_SECRET?.substring(0, 4) || 'undefined');
     
     res.json({ token, user: { id: user._id, name: user.name, email: user.email, role: user.role } });
   } catch (error) {

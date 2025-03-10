@@ -9,7 +9,7 @@ const auth = require('../middleware/auth');
  * @access  Private
  * @returns {Array} - List of all products
  * @test    Postman: GET http://localhost:PORT/api/products
- *          Headers required: x-auth-token: YOUR_JWT_TOKEN
+ *          Headers required: Authorization: Bearer YOUR_JWT_TOKEN
  */
 router.get('/', auth, async (req, res) => {
   try {
@@ -27,7 +27,7 @@ router.get('/', auth, async (req, res) => {
  * @param   {string} id - Product ID
  * @returns {Object} - Product object if found
  * @test    Postman: GET http://localhost:PORT/api/products/:id
- *          Headers required: x-auth-token: YOUR_JWT_TOKEN
+ *          Headers required: Authorization: Bearer YOUR_JWT_TOKEN
  */
 router.get('/:id', auth, async (req, res) => {
   try {
@@ -56,7 +56,18 @@ router.get('/:id', auth, async (req, res) => {
  *          }
  * @returns {Object} - Created product
  * @test    Postman: POST http://localhost:PORT/api/products
- *          Headers required: x-auth-token: YOUR_JWT_TOKEN, Content-Type: application/json
+ *          Headers required: Authorization: Bearer YOUR_JWT_TOKEN, Content-Type: application/json
+ *          Body example: {
+ *            "name": "Paracetamol 500mg",
+ *            "genericName": "Paracetamol",
+ *            "category": "Pain Relief",
+ *            "manufacturer": "PharmaCorp Ltd",
+ *            "batchNumber": "PCM20230615",
+ *            "expiryDate": "2025-06-15",
+ *            "stockQuantity": 200,
+ *            "unitPrice": 5.99,
+ *            "reorderLevel": 50
+ *          }
  */
 router.post('/', auth, async (req, res) => {
   try {
@@ -73,11 +84,25 @@ router.post('/', auth, async (req, res) => {
  * @desc    Update a product
  * @access  Private
  * @param   {string} id - Product ID
- * @body    {Object} - Fields to update
+ * @body    {Object} - Fields to update, can include any of:
+ *            name: String,
+ *            genericName: String,
+ *            category: String,
+ *            manufacturer: String,
+ *            batchNumber: String,
+ *            expiryDate: Date,
+ *            stockQuantity: Number,
+ *            unitPrice: Number,
+ *            reorderLevel: Number
  * @returns {Object} - Updated product
  * @test    Postman: PUT http://localhost:PORT/api/products/:id
- *          Headers required: x-auth-token: YOUR_JWT_TOKEN, Content-Type: application/json
- *          Body: Any fields you want to update
+ *          Headers required: Authorization: Bearer YOUR_JWT_TOKEN, Content-Type: application/json
+ *          Body example: {
+ *            "name": "Updated Paracetamol 500mg",
+ *            "manufacturer": "PharmaCorp International",
+ *            "unitPrice": 6.99,
+ *            "reorderLevel": 75
+ *          }
  */
 router.put('/:id', auth, async (req, res) => {
   try {
@@ -100,7 +125,7 @@ router.put('/:id', auth, async (req, res) => {
  * @param   {string} id - Product ID
  * @returns {Object} - Success message
  * @test    Postman: DELETE http://localhost:PORT/api/products/:id
- *          Headers required: x-auth-token: YOUR_JWT_TOKEN
+ *          Headers required: Authorization: Bearer YOUR_JWT_TOKEN
  */
 router.delete('/:id', auth, async (req, res) => {
   try {
@@ -123,7 +148,7 @@ router.delete('/:id', auth, async (req, res) => {
  *          }
  * @returns {Object} - Updated product
  * @test    Postman: PATCH http://localhost:PORT/api/products/:id/stock
- *          Headers required: x-auth-token: YOUR_JWT_TOKEN, Content-Type: application/json
+ *          Headers required: Authorization: Bearer YOUR_JWT_TOKEN, Content-Type: application/json
  *          Body example: { "adjustment": 50, "reason": "New shipment" }
  */
 router.patch('/:id/stock', auth, async (req, res) => {
