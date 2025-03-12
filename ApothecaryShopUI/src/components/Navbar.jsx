@@ -29,29 +29,34 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="bg-green-800 text-white p-4">
+    <nav className="bg-gradient-to-r from-green-800 to-green-700 text-white p-4 shadow-lg">
       <div className="container mx-auto flex justify-between items-center">
-        <div className="text-xl font-bold">Apothecary Shop</div>
+        <div className="text-xl font-bold tracking-wide">
+          <Link to="/" className="flex items-center space-x-2">
+            <span className="text-green-200">🌿</span>
+            <span className="hover:text-green-200 transition-all duration-300">Apothecary Shop</span>
+          </Link>
+        </div>
         
-        <div className="flex space-x-4">
+        <div className="flex space-x-6">
           {auth?.isAuthenticated && (
             <>
-              <Link to="/dashboard" className="hover:text-green-200 transition-colors">
+              <Link to="/dashboard" className="px-3 py-1 hover:text-green-200 hover:underline transition-all duration-300">
                 Dashboard
               </Link>
-              <Link to="/inventory" className="hover:text-green-200 transition-colors">
+              <Link to="/inventory" className="px-3 py-1 hover:text-green-200 hover:underline transition-all duration-300">
                 Inventory
               </Link>
               <button 
                 onClick={handleLogout}
-                className="hover:text-green-200 transition-colors"
+                className="px-4 py-1 bg-green-700 hover:bg-green-600 rounded-md shadow-md hover:shadow-lg transition-all duration-300"
               >
                 Logout
               </button>
             </>
           )}
           {!auth?.isAuthenticated && (
-            <Link to="/" className="hover:text-green-200 transition-colors">
+            <Link to="/" className="px-4 py-1 bg-green-700 hover:bg-green-600 rounded-md shadow-md hover:shadow-lg transition-all duration-300">
               Login
             </Link>
           )}
