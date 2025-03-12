@@ -116,12 +116,12 @@ const Inventory = () => {
   };
   
   return (
-    <div className="inventory-container">
-      <h1>Inventory Management</h1>
-      {error && <div className="alert alert-danger">{error}</div>}
+    <div className="container mx-auto px-4 py-6">
+      <h1 className="text-3xl font-bold mb-6 text-gray-800">Inventory Management</h1>
+      {error && <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">{error}</div>}
       
       <button 
-        className="btn btn-primary mb-3" 
+        className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded mb-6 transition duration-200" 
         onClick={() => {
           setCurrentProduct(null);
           setShowForm(true);
@@ -140,7 +140,9 @@ const Inventory = () => {
           }} 
         />
       ) : loading ? (
-        <div>Loading...</div>
+        <div className="flex justify-center items-center py-8">
+          <div className="text-gray-600">Loading...</div>
+        </div>
       ) : (
         <ProductList 
           products={products} 
