@@ -4,6 +4,8 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import Inventory from './pages/Inventory';
+import StockMovements from './pages/StockMovements';
+import ProductDetailPage from './pages/ProductDetailPage';
 import Navbar from './components/Navbar';
 import { AuthContext } from './context/AuthContext';
 import PrivateRoute from './components/routing/PrivateRoute';
@@ -38,6 +40,8 @@ function App() {
               <Route path="/" element={<PrivateRoute />}>
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/inventory" element={<Inventory />} />
+                <Route path="/stock-movements" element={<StockMovements />} />
+                <Route path="/products/:id" element={<ProductDetailPage />} />
               </Route>
             </Routes>
           </div>
