@@ -121,14 +121,14 @@ const Inventory = () => {
                 
                 return (
                   <tr key={product._id} className="hover:bg-gray-50">
-                    <td className="px-3 py-4 text-sm font-medium text-gray-900 truncate">{product.sku}</td>
-                    <td className="px-3 py-4 text-sm text-gray-900 truncate">
+                    <td className="px-3 py-4 text-sm font-medium text-gray-900 truncate" title={product.sku}>{product.sku}</td>
+                    <td className="px-3 py-4 text-sm text-gray-900 truncate" title={product.name}>
                       <Link to={`/products/${product._id}`} className="text-blue-600 hover:text-blue-900">
                         {product.name}
                       </Link>
                     </td>
-                    <td className="px-3 py-4 text-sm text-gray-500 truncate">{product.category}</td>
-                    <td className="px-3 py-4 text-sm text-gray-500">
+                    <td className="px-3 py-4 text-sm text-gray-500 truncate" title={product.category}>{product.category}</td>
+                    <td className="px-3 py-4 text-sm text-gray-500" title={`Quantity: ${product.stockQuantity}`}>
                       <span className={product.stockQuantity <= product.reorderLevel ? 'text-red-600 font-bold' : ''}>
                         {product.stockQuantity}
                       </span>
@@ -138,8 +138,8 @@ const Inventory = () => {
                         </span>
                       }
                     </td>
-                    <td className="px-3 py-4 text-sm text-gray-500">${product.unitPrice?.toFixed(2) || '0.00'}</td>
-                    <td className="px-3 py-4">
+                    <td className="px-3 py-4 text-sm text-gray-500" title={`Price: $${product.unitPrice?.toFixed(2) || '0.00'}`}>${product.unitPrice?.toFixed(2) || '0.00'}</td>
+                    <td className="px-3 py-4" title={product.stockQuantity <= product.reorderLevel ? 'Low Stock' : 'In Stock'}>
                       <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
                         product.stockQuantity <= product.reorderLevel 
                           ? 'bg-red-100 text-red-800' 
@@ -148,7 +148,7 @@ const Inventory = () => {
                         {product.stockQuantity <= product.reorderLevel ? 'Low Stock' : 'In Stock'}
                       </span>
                     </td>
-                    <td className="px-3 py-4 text-sm text-gray-500">
+                    <td className="px-3 py-4 text-sm text-gray-500" title={`Expiry Date: ${expiryDate.toLocaleDateString()}`}>
                       <span className={`${
                         isExpired 
                           ? 'text-red-600' 
