@@ -37,9 +37,11 @@ const User = mongoose.model('User', UserSchema);
 
 // Import routes
 const productsRouter = require('./routes/products');
+const stockMovementRouter = require('./routes/stockMovement');
 
 // Use routes
 app.use('/api/products', productsRouter);
+app.use('/api/stockMovements', stockMovementRouter);
 
 // Auth routes
 // POST http://localhost:5000/api/register
