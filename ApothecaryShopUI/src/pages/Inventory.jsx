@@ -33,22 +33,23 @@ const Inventory = () => {
   
   // Filter products based on search term and status
   const filteredProducts = products.filter(product => {
-    const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                          product.sku.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch = 
+      (product.name?.toLowerCase() || '').includes(searchTerm.toLowerCase()) || 
+      (product.sku?.toLowerCase() || '').includes(searchTerm.toLowerCase());
     
     if (filterStatus === 'all') return matchesSearch;
     if (filterStatus === 'low-stock') return matchesSearch && product.stockQuantity <= product.reorderLevel;
     if (filterStatus === 'in-stock') return matchesSearch && product.stockQuantity > product.reorderLevel;
     
     const today = new Date();
-    const expiryDate = new Date(product.expiryDate);
+    const expiryDate = product.expiryDate ? new Date(product.expiryDate) : null;
     
     if (filterStatus === 'expiring-soon') {
       const ninetyDaysFromNow = new Date();
       ninetyDaysFromNow.setDate(ninetyDaysFromNow.getDate() + 90);
-      return matchesSearch && expiryDate <= ninetyDaysFromNow && expiryDate >= today;
+      return matchesSearch && expiryDate && expiryDate <= ninetyDaysFromNow && expiryDate >= today;
     }
-    if (filterStatus === 'expired') return matchesSearch && expiryDate < today;
+    if (filterStatus === 'expired') return matchesSearch && expiryDate && expiryDate < today;
     
     return matchesSearch;
   });
@@ -56,7 +57,7 @@ const Inventory = () => {
   if (loading) return <div className="flex justify-center items-center h-64">Loading...</div>;
   
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="w-full px-4 sm:px-6 lg:px-8 py-8">
       <h1 className="text-3xl font-bold text-gray-800 mb-6">Inventory Management</h1>
       
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
@@ -93,86 +94,84 @@ const Inventory = () => {
       </div>
       
       {filteredProducts.length === 0 ? (
-        <div className="bg-white rounded-lg shadow-md p-6 text-center">
+        <div className="bg-white rounded-lg shadow-md p-6 text-center w-full">
           <p className="text-gray-500">No products found</p>
         </div>
       ) : (
-        <div className="bg-white shadow-md rounded-lg overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">SKU</th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stock</th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Expiry</th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {filteredProducts.map(product => {
-                  const today = new Date();
-                  const expiryDate = new Date(product.expiryDate);
-                  const isExpired = expiryDate < today;
-                  const isExpiringSoon = !isExpired && expiryDate <= new Date(today.setDate(today.getDate() + 90));
-                  
-                  return (
-                    <tr key={product._id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{product.sku}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        <Link to={`/products/${product._id}`} className="text-blue-600 hover:text-blue-900">
-                          {product.name}
-                        </Link>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{product.category}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        <span className={product.stockQuantity <= product.reorderLevel ? 'text-red-600 font-bold' : ''}>
-                          {product.stockQuantity}
+        <div className="bg-white shadow-md rounded-lg w-full">
+          <table className="w-full table-fixed divide-y divide-gray-200">
+            <thead className="bg-gray-50">
+              <tr>
+                <th scope="col" className="w-[10%] px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">SKU</th>
+                <th scope="col" className="w-[20%] px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                <th scope="col" className="w-[15%] px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
+                <th scope="col" className="w-[10%] px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stock</th>
+                <th scope="col" className="w-[10%] px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
+                <th scope="col" className="w-[15%] px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                <th scope="col" className="w-[12%] px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Expiry</th>
+                <th scope="col" className="w-[8%] px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {filteredProducts.map(product => {
+                const today = new Date();
+                const expiryDate = product.expiryDate ? new Date(product.expiryDate) : new Date();
+                const isExpired = expiryDate < today;
+                const isExpiringSoon = !isExpired && expiryDate <= new Date(today.setDate(today.getDate() + 90));
+                
+                return (
+                  <tr key={product._id} className="hover:bg-gray-50">
+                    <td className="px-3 py-4 text-sm font-medium text-gray-900 truncate">{product.sku}</td>
+                    <td className="px-3 py-4 text-sm text-gray-900 truncate">
+                      <Link to={`/products/${product._id}`} className="text-blue-600 hover:text-blue-900">
+                        {product.name}
+                      </Link>
+                    </td>
+                    <td className="px-3 py-4 text-sm text-gray-500 truncate">{product.category}</td>
+                    <td className="px-3 py-4 text-sm text-gray-500">
+                      <span className={product.stockQuantity <= product.reorderLevel ? 'text-red-600 font-bold' : ''}>
+                        {product.stockQuantity}
+                      </span>
+                      {product.stockQuantity <= product.reorderLevel && 
+                        <span className="ml-1 px-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
+                          Low
                         </span>
-                        {product.stockQuantity <= product.reorderLevel && 
-                          <span className="ml-1 px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
-                            Low
-                          </span>
-                        }
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${product.unitPrice.toFixed(2)}</td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                          product.stockQuantity <= product.reorderLevel 
-                            ? 'bg-red-100 text-red-800' 
-                            : 'bg-green-100 text-green-800'
-                        }`}>
-                          {product.stockQuantity <= product.reorderLevel ? 'Low Stock' : 'In Stock'}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        <span className={`${
-                          isExpired 
-                            ? 'text-red-600' 
-                            : isExpiringSoon 
-                              ? 'text-yellow-600' 
-                              : 'text-gray-900'
-                        }`}>
-                          {new Date(product.expiryDate).toLocaleDateString()}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        <Link 
-                          to={`/products/${product._id}`}
-                          className="text-blue-600 hover:text-blue-900 mr-4"
-                        >
-                          View
-                        </Link>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
+                      }
+                    </td>
+                    <td className="px-3 py-4 text-sm text-gray-500">${product.unitPrice?.toFixed(2) || '0.00'}</td>
+                    <td className="px-3 py-4">
+                      <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                        product.stockQuantity <= product.reorderLevel 
+                          ? 'bg-red-100 text-red-800' 
+                          : 'bg-green-100 text-green-800'
+                      }`}>
+                        {product.stockQuantity <= product.reorderLevel ? 'Low Stock' : 'In Stock'}
+                      </span>
+                    </td>
+                    <td className="px-3 py-4 text-sm text-gray-500">
+                      <span className={`${
+                        isExpired 
+                          ? 'text-red-600' 
+                          : isExpiringSoon 
+                            ? 'text-yellow-600' 
+                            : 'text-gray-900'
+                      }`}>
+                        {expiryDate.toLocaleDateString()}
+                      </span>
+                    </td>
+                    <td className="px-3 py-4 text-sm font-medium">
+                      <Link 
+                        to={`/products/${product._id}`}
+                        className="text-blue-600 hover:text-blue-900"
+                      >
+                        View
+                      </Link>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
         </div>
       )}
     </div>
