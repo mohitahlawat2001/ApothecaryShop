@@ -2,36 +2,48 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import ProductDetail from '../components/ProductDetail';
+import StockMovementGraph from '../components/StockMovementGraph';
 
 const ProductDetailPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [product, setProduct] = useState(null);
+  const [stockMovements, setStockMovements] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    const fetchProduct = async () => {
+    const fetchData = async () => {
       try {
         const token = localStorage.getItem('token');
         const apiUrl = import.meta.env.VITE_API_URL;
         
-        const response = await axios.get(`${apiUrl}/products/${id}`, {
+        // Fetch product details
+        const productResponse = await axios.get(`${apiUrl}/products/${id}`, {
           headers: {
             'Authorization': `${token}`
           }
         });
         
-        setProduct(response.data);
+        setProduct(productResponse.data);
+        
+        // Also fetch stock movement history for this product
+        const movementsResponse = await axios.get(`${apiUrl}/stockMovements/product/${id}`, {
+          headers: {
+            'Authorization': `${token}`
+          }
+        });
+        
+        setStockMovements(movementsResponse.data);
         setLoading(false);
       } catch (err) {
-        console.error('Error fetching product:', err);
+        console.error('Error fetching data:', err);
         setError('Failed to load product details');
         setLoading(false);
       }
     };
     
-    fetchProduct();
+    fetchData();
   }, [id]);
 
   const handleBack = () => {
@@ -81,6 +93,55 @@ const ProductDetailPage = () => {
         </button>
       </div>
       <ProductDetail product={product} />
+      
+      {/* Stock Movement History Section */}
+      <div className="mt-8">
+        <h2 className="text-2xl font-bold text-gray-800 mb-4">Stock Movement History</h2>
+        <StockMovementGraph stockMovements={stockMovements} />
+        
+        {/* Stock Movement Table
+        {stockMovements.length > 0 ? (
+          <div className="bg-white rounded-lg shadow-md p-6 mt-6">
+            <h3 className="text-lg font-medium text-gray-900 mb-4">Stock Movement Records</h3>
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Quantity</th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">New Stock</th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Reason</th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {stockMovements.map(movement => (
+                    <tr key={movement._id} className={movement.type === 'in' ? 'bg-green-50' : 'bg-red-50'}>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {new Date(movement.createdAt).toLocaleString()}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                          movement.type === 'in' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                        }`}>
+                          {movement.type === 'in' ? 'Stock In' : 'Stock Out'}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{movement.quantity}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{movement.newStock}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{movement.reason}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        ) : (
+          <div className="bg-white rounded-lg shadow-md p-6 mt-6 text-center">
+            <p className="text-gray-500">No stock movement records found for this product.</p>
+          </div>
+        )} */}
+      </div>
     </div>
   );
 };
