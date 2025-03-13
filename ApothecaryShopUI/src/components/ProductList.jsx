@@ -12,6 +12,13 @@ const ProductList = ({ products, deleteProduct, editProduct, adjustStock }) => {
     return expiryDate <= ninetyDaysFromNow && expiryDate >= today;
   };
   
+  const isExpired = product => {
+    const expiryDate = new Date(product.expiryDate);
+    const today = new Date();
+    
+    return expiryDate < today;
+  };
+  
   return (
     <div className="overflow-x-auto bg-white shadow-md rounded">
       <table className="min-w-full table-auto">
@@ -22,25 +29,24 @@ const ProductList = ({ products, deleteProduct, editProduct, adjustStock }) => {
             <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stock</th>
             <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Unit Price</th>
             <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Expiry Date</th>
+            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
             <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
           </tr>
         </thead>
         <tbody className="bg-white divide-y divide-gray-200">
           {products.length === 0 ? (
             <tr>
-              <td colSpan="6" className="px-4 py-4 text-center text-sm text-gray-500">No products found</td>
+              <td colSpan="7" className="px-4 py-4 text-center text-sm text-gray-500">No products found</td>
             </tr>
           ) : (
             products.map(product => (
               <tr 
                 key={product._id} 
-                className={`
-                  ${isLowStock(product) ? 'bg-red-50' : ''} 
-                  ${isExpiringSoon(product) ? 'bg-yellow-50' : ''}
-                  hover:bg-gray-50 transition-colors duration-150
-                `}
+                className="hover:bg-gray-50 transition-colors duration-150"
               >
-                <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">{product.name}</td>
+                <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">
+                  {product.name}
+                </td>
                 <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">{product.genericName}</td>
                 <td className="px-4 py-3 whitespace-nowrap">
                   <span className={isLowStock(product) ? 'text-red-600 font-medium' : 'text-gray-900'}>
@@ -53,9 +59,39 @@ const ProductList = ({ products, deleteProduct, editProduct, adjustStock }) => {
                 </td>
                 <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">${product.unitPrice.toFixed(2)}</td>
                 <td className="px-4 py-3 whitespace-nowrap">
-                  <span className={isExpiringSoon(product) ? 'text-yellow-600 font-medium' : 'text-gray-900'}>
+                  <span className={
+                    isExpired(product) 
+                      ? 'text-gray-600 font-medium' 
+                      : isExpiringSoon(product) 
+                        ? 'text-yellow-600 font-medium' 
+                        : 'text-gray-900'
+                  }>
                     {new Date(product.expiryDate).toLocaleDateString()}
                   </span>
+                </td>
+                <td className="px-4 py-3 whitespace-nowrap">
+                  <div className="flex flex-col gap-1">
+                    {isLowStock(product) && (
+                      <span className="px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800 whitespace-nowrap">
+                        Low Stock
+                      </span>
+                    )}
+                    {isExpiringSoon(product) && !isExpired(product) && (
+                      <span className="px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800 whitespace-nowrap">
+                        Expiring Soon
+                      </span>
+                    )}
+                    {isExpired(product) && (
+                      <span className="px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800 whitespace-nowrap">
+                        Expired
+                      </span>
+                    )}
+                    {!isLowStock(product) && !isExpiringSoon(product) && !isExpired(product) && (
+                      <span className="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800 whitespace-nowrap">
+                        Good
+                      </span>
+                    )}
+                  </div>
                 </td>
                 <td className="px-4 py-3 whitespace-nowrap text-sm">
                   <div className="flex space-x-2">
