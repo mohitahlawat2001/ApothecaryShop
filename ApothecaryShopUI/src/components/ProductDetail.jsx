@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { Link } from 'react-router-dom';
 import AddStockMovementModal from './AddStockMovementModal';
 
 const ProductDetail = ({ product }) => {
@@ -68,12 +69,20 @@ const ProductDetail = ({ product }) => {
     <div className="bg-white rounded-lg shadow-md p-6">
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold text-gray-800">{product.name} Details</h2>
-        <button
-          onClick={() => setIsModalOpen(true)}
-          className="px-3 py-1 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700"
-        >
-          Update Stock
-        </button>
+        <div className="flex gap-2">
+          <Link
+            to={`/products/${product._id}/edit`}
+            className="px-3 py-1 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700"
+          >
+            Edit Product
+          </Link>
+          <button
+            onClick={() => setIsModalOpen(true)}
+            className="px-3 py-1 bg-green-600 text-white text-sm rounded-md hover:bg-green-700"
+          >
+            Update Stock
+          </button>
+        </div>
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">

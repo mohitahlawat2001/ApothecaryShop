@@ -7,6 +7,7 @@ import Inventory from './pages/Inventory';
 import StockMovements from './pages/StockMovements';
 import ProductDetailPage from './pages/ProductDetailPage';
 import ProductFormPage from './pages/ProductFormPage';
+import EditProduct from './pages/EditProduct';
 import Navbar from './components/Navbar';
 import { AuthContext } from './context/AuthContext';
 import PrivateRoute from './components/routing/PrivateRoute';
@@ -47,6 +48,7 @@ function App() {
                 <Route path="/products/new" element={<ProductFormPage />} />
                 <Route path="/products/edit/:id" element={<ProductFormPage />} />
                 <Route path="/products/:id" element={<ProductDetailPage />} />
+                <Route path="/products/:id/edit" element={<EditProduct />} />
               </Route>
             </Routes>
           </div>

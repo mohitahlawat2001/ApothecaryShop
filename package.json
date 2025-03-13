@@ -1,0 +1,12 @@
+{
+  "name": "apothecary-shop",
+  "version": "1.0.0",
+  "description": "Pharmaceutical Inventory System",
+  "main": "index.js",
+  "scripts": {
+    "server": "cd ApothecaryShopserver && npm run dev",
+    "client": "cd ApothecaryShopUI && npm run dev",
+    "dev": "concurrently \"npm run server\" \"npm run client\"",
+    "install-all": "npm install && cd ApothecaryShopserver && npm install && cd ../ApothecaryShopUI && npm install"
+  }
+}

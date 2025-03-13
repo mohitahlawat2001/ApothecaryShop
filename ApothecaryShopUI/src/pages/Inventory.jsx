@@ -161,10 +161,10 @@ const Inventory = () => {
                     </td>
                     <td className="px-3 py-4 text-sm font-medium">
                       <Link 
-                        to={`/products/${product._id}`}
+                        to={`/products/${product._id}/edit`}
                         className="text-blue-600 hover:text-blue-900"
                       >
-                        View
+                        Edit
                       </Link>
                     </td>
                   </tr>
