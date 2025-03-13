@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import AddStockMovementModal from '../components/AddStockMovementModal';
+import StockMovementGraph from '../components/StockMovementGraph';
 
 const StockMovements = () => {
   const [stockMovements, setStockMovements] = useState([]);
@@ -113,6 +114,10 @@ const StockMovements = () => {
             ))}
           </select>
         </div>
+        
+        {selectedProduct && (
+          <StockMovementGraph stockMovements={stockMovements} />
+        )}
         
         {selectedProduct ? (
           stockMovements.length > 0 ? (
