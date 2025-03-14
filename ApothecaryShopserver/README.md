@@ -14,14 +14,22 @@ A comprehensive backend application for managing an apothecary/pharmacy shop inv
   - Search and filter products by various attributes
   - Track stock levels with automatic alerts for reordering
   - Manage product expiration dates
+  - Automatically generate SKU codes for new products
 
 - **Inventory Management**
   - Update product stock quantities
   - Record reasons for stock adjustments
   - Monitor products below reorder levels
+  - Track stock movement history with detailed audit trail
+
+- **Stock Movement Management**
+  - Record all stock ins and outs with timestamps
+  - Document reasons for each inventory adjustment
+  - Track previous and new stock levels for each movement
+  - Associate movements with specific users for accountability
 
 - **Security**
-  - JWT-based authentication
+  - JWT-based authentication with Bearer token support
   - Role-based access control
   - Secure API endpoints
 
@@ -132,7 +140,8 @@ A comprehensive backend application for managing an apothecary/pharmacy shop inv
     "expiryDate": "2025-12-31",
     "stockQuantity": 100,
     "unitPrice": 9.99,
-    "reorderLevel": 20
+    "reorderLevel": 20,
+    "description": "Optional product description"
   }
   ```
 - **Response**: `201 Created` with created product
@@ -163,6 +172,37 @@ A comprehensive backend application for managing an apothecary/pharmacy shop inv
   ```
 - **Response**: `200 OK` with updated product
 
+### Stock Movement
+
+#### Get Stock Movements for a Product
+- **URL**: `/api/stockMovements/product/:productId`
+- **Method**: `GET`
+- **Authentication**: Required (Bearer Token)
+- **Response**: `200 OK` with array of stock movements for the specified product
+
+#### Add New Stock Movement
+- **URL**: `/api/stockMovements`
+- **Method**: `POST`
+- **Authentication**: Required (Bearer Token)
+- **Body**:
+  ```json
+  {
+    "productId": "60d21b4667d0d8992e610c85", // MongoDB ID of the product
+    "type": "in",  // "in" for stock addition, "out" for stock removal
+    "quantity": 50,  // Number of items to add/remove
+    "reason": "Initial inventory"  // Reason for the stock movement
+  }
+  ```
+- **Response**: `201 Created` with the created stock movement and updated product
+
+## Authentication Details
+
+All protected endpoints require a valid Bearer token in the Authorization header:
+
+```
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+```
+
 ## Testing
 
 Run the test suite with:
@@ -175,6 +215,7 @@ The tests cover:
 - Authentication endpoints
 - Product CRUD operations
 - Stock management functionality
+- Stock movement endpoints
 
 ## License
 
