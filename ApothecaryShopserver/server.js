@@ -4,6 +4,10 @@ const cors = require('cors');
 const dotenv = require('dotenv');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const supplierRoutes = require('./routes/suppliers');
+const purchaseOrderRoutes = require('./routes/purchaseOrders');
+const purchaseReceiptRoutes = require('./routes/purchaseReceipts');
+const externalProductRoutes = require('./routes/externalProducts');
 
 dotenv.config();
 const app = express();
@@ -38,6 +42,10 @@ const User = mongoose.model('User', UserSchema);
 // Import routes
 const productsRouter = require('./routes/products');
 const stockMovementRouter = require('./routes/stockMovement');
+app.use('/api/suppliers', supplierRoutes);
+app.use('/api/purchase-orders', purchaseOrderRoutes);
+app.use('/api/purchase-receipts', purchaseReceiptRoutes);
+app.use('/api/external-products', externalProductRoutes);
 
 // Use routes
 app.use('/api/products', productsRouter);
