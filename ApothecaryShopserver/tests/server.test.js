@@ -1,6 +1,26 @@
 const request = require('supertest');
 const mongoose = require('mongoose');
-const { app, server } = require('../server');
+
+// Import the app but prevent it from starting the server
+jest.mock('../server', () => {
+  const originalModule = jest.requireActual('../server');
+  const app = originalModule.app;
+  
+  // Don't actually start the server during tests
+  jest.spyOn(app, 'listen').mockImplementation(() => {
+    return {
+      address: () => ({ port: 5000 }),
+      close: jest.fn()
+    };
+  });
+  
+  return {
+    app,
+    closeServer: jest.fn()
+  };
+});
+
+const { app, closeServer } = require('../server');
 
 // Test user data
 const testUser = {
@@ -20,7 +40,9 @@ afterAll(async () => {
   const User = mongoose.model('User');
   await User.deleteMany({ email: testUser.email });
   await mongoose.connection.close();
-  server.close();
+  // Remove the server.close() call as we've mocked the server
+  // If needed, we can call the closeServer function
+  if (closeServer) closeServer();
 });
 
 describe('Auth Endpoints', () => {

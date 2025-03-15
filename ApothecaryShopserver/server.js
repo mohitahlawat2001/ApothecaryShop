@@ -98,10 +98,17 @@ app.post('/api/login', async (req, res) => {
 });
 
 const PORT = process.env.PORT || 5000;
-const server = app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+
+// Only start the server if this file is run directly (not required by tests)
+let server;
+if (process.env.NODE_ENV !== 'test') {
+  server = app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+}
 
 // Export for testing
 module.exports = {
   app,
-  server
+  closeServer: () => {
+    if (server) return server.close();
+  }
 };
