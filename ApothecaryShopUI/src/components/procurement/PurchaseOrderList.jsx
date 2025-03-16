@@ -1,17 +1,53 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { Link } from 'react-router-dom';
 import { format } from 'date-fns';
 import { getPurchaseOrders, updatePurchaseOrderStatus } from '../../services/purchaseOrderService';
+import { getCurrentUser } from '../../services/authService';
+import { AuthContext } from '../../context/AuthContext';
 
 function PurchaseOrderList() {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [filter, setFilter] = useState('all');
+  const [toast, setToast] = useState({ show: false, message: '', type: 'error' });
+  const [userRole, setUserRole] = useState('');
+  
+  const { auth } = useContext(AuthContext);
 
   useEffect(() => {
     fetchOrders();
+    fetchUserRole();
   }, []);
+
+  // Fetch user role from AuthContext or authService
+  const fetchUserRole = () => {
+    // First try to get from context
+    if (auth && auth.user && auth.user.role) {
+      setUserRole(auth.user.role);
+    } else {
+      // Fallback to authService if not available in context
+      const user = getCurrentUser();
+      if (user && user.role) {
+        setUserRole(user.role);
+      }
+    }
+  };
+
+  // Auto-hide toast after 5 seconds
+  useEffect(() => {
+    if (toast.show) {
+      const timer = setTimeout(() => {
+        setToast({ ...toast, show: false });
+      }, 5000);
+
+      return () => clearTimeout(timer);
+    }
+  }, [toast]);
+
+  const showToast = (message, type = 'error') => {
+    setToast({ show: true, message, type });
+  };
 
   const fetchOrders = async () => {
     try {
@@ -37,8 +73,11 @@ function PurchaseOrderList() {
           ? { ...order, status: newStatus } 
           : order
       ));
+      showToast(`Order status updated to ${newStatus.replace('_', ' ')}`, 'success');
     } catch (err) {
-      setError('Failed to update order status');
+      const errorMessage = err.response?.data?.message || 'Failed to update order status';
+      setError(errorMessage);
+      showToast(errorMessage);
       console.error(err);
     }
   };
@@ -76,6 +115,36 @@ function PurchaseOrderList() {
 
   return (
     <div className="container mx-auto p-4">
+      {/* Custom Toast Notification */}
+      {toast.show && (
+        <div 
+          className={`fixed top-4 right-4 z-50 p-4 rounded shadow-lg transition-all transform translate-x-0 
+            ${toast.type === 'error' ? 'bg-red-500 text-white' : 'bg-green-500 text-white'}`}
+          style={{ animation: 'slideIn 0.3s ease-out' }}
+        >
+          <div className="flex items-center">
+            {toast.type === 'error' ? (
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+              </svg>
+            ) : (
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+              </svg>
+            )}
+            <p>{toast.message}</p>
+            <button 
+              onClick={() => setToast({ ...toast, show: false })} 
+              className="ml-4 text-white hover:text-gray-200 focus:outline-none"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 011.414 1.414L11.414 10l4.293 4.293a1 1 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 01-1.414-1.414L8.586 10 4.293 5.707a1 1 010-1.414z" clipRule="evenodd" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      )}
+      
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Purchase Orders</h1>
         <Link 
@@ -219,7 +288,7 @@ function PurchaseOrderList() {
                         </>
                       )}
                       
-                      {order.status === 'submitted' && (
+                      {order.status === 'submitted' && userRole === 'admin' && (
                         <button
                           onClick={() => handleStatusChange(order._id, 'approved')}
                           className="text-green-600 hover:text-green-900"

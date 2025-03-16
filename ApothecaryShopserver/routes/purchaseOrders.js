@@ -392,7 +392,7 @@ router.patch('/:id/status', auth, staffAccess, async (req, res) => {
     
     // For approval, only admins can approve
     if (status === 'approved' && req.user.role !== 'admin') {
-      return res.status(403).json({ message: 'Only administrators can approve purchase orders' });
+      return res.status(403).json({ message: 'you not have permission to approve purchase orders' });
     }
     
     // Status validation logic
