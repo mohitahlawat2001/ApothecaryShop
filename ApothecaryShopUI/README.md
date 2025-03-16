@@ -79,3 +79,45 @@ A modern pharmaceutical inventory management system built with React, featuring 
 - **JWT Authentication**: Secure user sessions
 - **Form Validation**: Input validation for data integrity
 - **Responsive Design**: Works on all device sizes
+
+## Release 2.0 - New Features
+
+### Procurement Management
+- **Purchase Order System**: Create, track, and manage purchase orders
+- **Supplier Management**: Maintain a database of product suppliers
+- **Approval Workflow**: Multi-stage approval process for purchase orders
+- **Receipt Tracking**: Record and track product deliveries
+- **Quality Control**: Document quality checks for received products
+- **PDF Generation**: Generate professional PDF documents for purchase orders and receipts
+
+### Enhanced Stock Management
+- **Advanced Stock Movement Visualization**: 
+  - Toggle between line, bar, and in/out movement charts
+  - Improved tooltip information with detailed movement data
+  - Historical stock level trend analysis
+  
+### Dark Mode Enhancements
+- **System Preference Detection**: Automatically adjust based on system settings
+- **Manual Toggle**: User preference setting that persists between sessions
+- **Optimized Color Schemes**: Carefully selected palettes for light and dark modes
+
+### Performance Optimization
+- **Caching Improvements**: Better caching strategies for frequently accessed data
+- **Build Optimization**: Timestamp-based versioning of assets to prevent caching issues
+- **Load Time Reduction**: Optimized asset loading and rendering
+
+### Security Enhancements
+- **Improved Token Management**: Better handling of authentication tokens
+- **Enhanced Authorization Checks**: More granular role-based access control
+- **Request Validation**: Stronger input validation for all API requests
+
+### User Experience Improvements
+- **Responsive Design Refinements**: Better layouts across all device sizes
+- **Form Accessibility**: Improved keyboard navigation and screen reader support
+- **Error Handling**: More user-friendly error messages and recovery options
+- **Interactive Tooltips**: Contextual help and information throughout the interface
+
+### PDF Document Generation
+- **Professional Document Templates**: Well-designed templates for business documents
+- **Custom Branding**: Company information and styling in generated documents
+- **Digital Records**: Easily save and share important procurement records

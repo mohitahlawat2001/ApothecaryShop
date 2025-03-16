@@ -217,6 +217,153 @@ The tests cover:
 - Stock management functionality
 - Stock movement endpoints
 
+## Release 2.0
+
+### New Features
+
+- **Supplier Management**
+  - Create, read, update, and delete suppliers
+  - Track supplier details including contact information, address, tax ID
+  - Rate suppliers and track payment terms
+  - Mark suppliers as Jan Aushadhi partners
+  - Role-based access control for supplier operations
+
+- **Purchase Order Management**
+  - Create and track purchase orders with unique PO numbers 
+  - Associate purchase orders with suppliers
+  - Track order status (draft, submitted, approved, shipped, received, etc.)
+  - Manage expected and actual delivery dates
+  - Calculate order totals, taxes, and discounts
+  - Support for payment tracking and invoice management
+  - Automatically generate sequential PO numbers
+
+- **Purchase Receipt Management**
+  - Record receipt of purchased items with unique GRN numbers
+  - Link receipts to purchase orders
+  - Track received quantities vs ordered quantities
+  - Conduct and record quality checks
+  - Automatically update product stock quantities
+  - Automatically generate stock movement records
+  - Create new products from received items if they don't exist
+  - Automatically generate sequential GRN numbers
+
+- **External Product Integration**
+  - Connect to Jan Aushadhi external API
+  - Search and fetch product data from external sources
+  - Integrate external products into purchase orders
+  - Automatic token management for API access
+  - Cache mechanism to optimize API requests
+
+### New API Endpoints
+
+#### Suppliers
+
+- **Get All Suppliers**
+  - **URL**: `/api/suppliers`
+  - **Method**: `GET`
+  - **Authentication**: Required (Bearer Token)
+  - **Access**: Staff and Admin
+  - **Response**: `200 OK` with array of suppliers
+
+- **Get Supplier by ID**
+  - **URL**: `/api/suppliers/:id`
+  - **Method**: `GET`
+  - **Authentication**: Required (Bearer Token)
+  - **Access**: Staff and Admin
+  - **Response**: `200 OK` with supplier details
+
+- **Create Supplier**
+  - **URL**: `/api/suppliers`
+  - **Method**: `POST`
+  - **Authentication**: Required (Bearer Token)
+  - **Access**: Admin only
+  - **Body**: Supplier details
+  - **Response**: `201 Created` with created supplier
+
+- **Update Supplier**
+  - **URL**: `/api/suppliers/:id`
+  - **Method**: `PUT`
+  - **Authentication**: Required (Bearer Token)
+  - **Access**: Admin only
+  - **Body**: Any supplier fields to update
+  - **Response**: `200 OK` with updated supplier
+
+- **Delete Supplier**
+  - **URL**: `/api/suppliers/:id`
+  - **Method**: `DELETE`
+  - **Authentication**: Required (Bearer Token)
+  - **Access**: Admin only
+  - **Response**: `200 OK` with success message
+
+#### Purchase Orders
+
+- **Get All Purchase Orders**
+  - **URL**: `/api/purchase-orders`
+  - **Method**: `GET`
+  - **Authentication**: Required (Bearer Token)
+  - **Response**: `200 OK` with array of purchase orders
+
+- **Get Purchase Order by ID**
+  - **URL**: `/api/purchase-orders/:id`
+  - **Method**: `GET`
+  - **Authentication**: Required (Bearer Token)
+  - **Response**: `200 OK` with purchase order details
+
+- **Create Purchase Order**
+  - **URL**: `/api/purchase-orders`
+  - **Method**: `POST`
+  - **Authentication**: Required (Bearer Token)
+  - **Body**: Purchase order details
+  - **Response**: `201 Created` with created purchase order
+
+- **Update Purchase Order**
+  - **URL**: `/api/purchase-orders/:id`
+  - **Method**: `PUT`
+  - **Authentication**: Required (Bearer Token)
+  - **Body**: Any purchase order fields to update
+  - **Response**: `200 OK` with updated purchase order
+
+- **Delete Purchase Order**
+  - **URL**: `/api/purchase-orders/:id`
+  - **Method**: `DELETE`
+  - **Authentication**: Required (Bearer Token)
+  - **Response**: `200 OK` with success message
+
+#### Purchase Receipts
+
+- **Get All Purchase Receipts**
+  - **URL**: `/api/purchase-receipts`
+  - **Method**: `GET`
+  - **Authentication**: Required (Bearer Token)
+  - **Response**: `200 OK` with array of purchase receipts
+
+- **Get Purchase Receipt by ID**
+  - **URL**: `/api/purchase-receipts/:id`
+  - **Method**: `GET`
+  - **Authentication**: Required (Bearer Token)
+  - **Response**: `200 OK` with purchase receipt details
+
+- **Create Purchase Receipt**
+  - **URL**: `/api/purchase-receipts`
+  - **Method**: `POST`
+  - **Authentication**: Required (Bearer Token)
+  - **Body**: Purchase receipt details
+  - **Response**: `201 Created` with created purchase receipt
+
+#### External Products
+
+- **Get External Products**
+  - **URL**: `/api/external-products`
+  - **Method**: `GET`
+  - **Authentication**: Required (Bearer Token)
+  - **Query Parameters**: 
+    - `pageIndex` (default: 0)
+    - `pageSize` (default: 100)
+    - `searchText` (default: "")
+    - `columnName` (default: "id")
+    - `orderBy` (default: "asc")
+  - **Response**: `200 OK` with external products data
+
 ## License
 
 [MIT](LICENSE)
