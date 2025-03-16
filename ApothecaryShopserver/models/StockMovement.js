@@ -27,6 +27,16 @@ const StockMovementSchema = new mongoose.Schema({
     type: Number,
     required: true
   },
+  batchNumber: {
+    type: String
+  },
+  expiryDate: {
+    type: Date
+  },
+  purchaseReceipt: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'PurchaseReceipt'
+  },
   createdBy: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',

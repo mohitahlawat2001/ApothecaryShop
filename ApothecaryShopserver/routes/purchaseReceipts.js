@@ -65,9 +65,34 @@ router.post('/', auth, async (req, res) => {
       });
     }
     
-    // Create receipt
+    // Generate receipt number
+    const date = new Date();
+    const dateStr = date.getFullYear().toString() + 
+                   (date.getMonth() + 1).toString().padStart(2, '0') + 
+                   date.getDate().toString().padStart(2, '0');
+    
+    // Find the last receipt number for today to increment
+    const lastReceipt = await PurchaseReceipt.findOne(
+      { receiptNumber: new RegExp(`GRN-${dateStr}-\\d+$`) },
+      {},
+      { sort: { receiptNumber: -1 } }
+    ).session(session);
+    
+    let sequenceNumber = 1;
+    if (lastReceipt && lastReceipt.receiptNumber) {
+      // Extract the sequence number from the last receipt number
+      const parts = lastReceipt.receiptNumber.split('-');
+      if (parts.length === 3) {
+        sequenceNumber = parseInt(parts[2]) + 1;
+      }
+    }
+    
+    const receiptNumber = `GRN-${dateStr}-${sequenceNumber.toString().padStart(4, '0')}`;
+    
+    // Create receipt with the generated receipt number
     const receipt = new PurchaseReceipt({
       ...req.body,
+      receiptNumber,
       receivedBy: req.user.id
     });
     
@@ -98,14 +123,28 @@ router.post('/', auth, async (req, res) => {
         allItemsFullyReceived = false;
       }
       
-      // Update product stock if it exists in our system
+      // Check if product exists in our system
       if (receiptItem.product) {
+        // Update existing product stock
         const product = await Product.findById(receiptItem.product).session(session);
         
         if (product) {
           // Update stock quantity
           const previousStock = product.stockQuantity;
           product.stockQuantity += receiptItem.receivedQuantity;
+          
+          // Set category from groupName if provided
+          if (receiptItem.groupName) {
+            product.category = receiptItem.groupName;
+          }
+          
+          // Update description to include unitSize if provided
+          if (receiptItem.unitSize) {
+            product.description = product.description ? 
+              `${product.description} | Unit Size: ${receiptItem.unitSize}` : 
+              `Unit Size: ${receiptItem.unitSize}`;
+          }
+          
           await product.save({ session });
           
           // Create stock movement record
@@ -124,6 +163,99 @@ router.post('/', auth, async (req, res) => {
           
           await stockMovement.save({ session });
         }
+      } else if (receiptItem.externalProductId) {
+        // Look for a product with matching name
+        let product = await Product.findOne({
+          genericName: { $regex: new RegExp(receiptItem.genericName, 'i') }
+        }).session(session);
+        
+        // If product doesn't exist, create a new one
+        if (!product) {
+          product = new Product({
+            name: receiptItem.genericName,
+            genericName: receiptItem.genericName,
+            // Set category as groupName with fallback
+            category: receiptItem.groupName || 'General',
+            manufacturer: purchaseOrder.supplier ? 'From Supplier' : 'External',
+            batchNumber: receiptItem.batchNumber,
+            expiryDate: receiptItem.expiryDate,
+            stockQuantity: receiptItem.receivedQuantity,
+            unitPrice: receiptItem.unitPrice,
+            reorderLevel: 10, // Default reorder level
+            // Include unitSize in description
+            description: `Imported via Purchase Receipt ${receipt.receiptNumber}${receiptItem.unitSize ? ` | Unit Size: ${receiptItem.unitSize}` : ''}`
+          });
+          
+          await product.save({ session });
+          
+          // Create stock movement record
+          const stockMovement = new StockMovement({
+            product: product._id,
+            type: 'in',
+            quantity: receiptItem.receivedQuantity,
+            previousStock: 0,
+            newStock: receiptItem.receivedQuantity,
+            reason: `New Product from Purchase Receipt: ${receipt.receiptNumber}`,
+            batchNumber: receiptItem.batchNumber,
+            expiryDate: receiptItem.expiryDate,
+            createdBy: req.user.id,
+            purchaseReceipt: receipt._id
+          });
+          
+          await stockMovement.save({ session });
+        } else {
+          // Update existing product found by name
+          const previousStock = product.stockQuantity;
+          product.stockQuantity += receiptItem.receivedQuantity;
+          
+          // Update batch and expiry if newer
+          if (!product.expiryDate || new Date(receiptItem.expiryDate) > new Date(product.expiryDate)) {
+            product.batchNumber = receiptItem.batchNumber;
+            product.expiryDate = receiptItem.expiryDate;
+          }
+          
+          // Update category if groupName provided
+          if (receiptItem.groupName) {
+            product.category = receiptItem.groupName;
+          }
+          
+          // Update description to include unitSize if provided
+          if (receiptItem.unitSize) {
+            // Check if description already includes Unit Size
+            if (product.description && !product.description.includes('Unit Size:')) {
+              product.description = `${product.description} | Unit Size: ${receiptItem.unitSize}`;
+            } else if (!product.description) {
+              product.description = `Unit Size: ${receiptItem.unitSize}`;
+            } else {
+              // If Unit Size already exists in description, update it
+              product.description = product.description.replace(
+                /Unit Size:.*?(?=\||$)/,
+                `Unit Size: ${receiptItem.unitSize}`
+              );
+            }
+          }
+          
+          await product.save({ session });
+          
+          // Create stock movement record
+          const stockMovement = new StockMovement({
+            product: product._id,
+            type: 'in',
+            quantity: receiptItem.receivedQuantity,
+            previousStock,
+            newStock: product.stockQuantity,
+            reason: `Purchase Receipt: ${receipt.receiptNumber}`,
+            batchNumber: receiptItem.batchNumber,
+            expiryDate: receiptItem.expiryDate,
+            createdBy: req.user.id,
+            purchaseReceipt: receipt._id
+          });
+          
+          await stockMovement.save({ session });
+        }
+        
+        // Update receipt item with the associated product
+        receiptItem.product = product._id;
       }
     }
     
