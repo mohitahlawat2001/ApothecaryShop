@@ -11,6 +11,16 @@ import EditProduct from './pages/EditProduct';
 import Navbar from './components/Navbar';
 import { AuthContext } from './context/AuthContext';
 import PrivateRoute from './components/routing/PrivateRoute';
+import ProcurementLayout from './components/procurement/ProcurementLayout';
+import SupplierList from './components/procurement/SupplierList';
+import SupplierForm from './components/procurement/SupplierForm';
+import PurchaseOrderList from './components/procurement/PurchaseOrderList';
+import PurchaseOrderForm from './components/procurement/PurchaseOrderForm';
+import PurchaseReceiptForm from './components/procurement/PurchaseReceiptForm';
+import PurchaseReceiptList from './components/procurement/PurchaseReceiptList';
+import PurchaseOrderDetail from './components/procurement/PurchaseOrderDetail';
+import SupplierDetail from './components/procurement/SupplierDetail';
+import PurchaseReceiptDetail from './components/procurement/PurchaseReceiptDetail';
 import './App.css';
 // Make sure Tailwind is imported
 //import './index.css'; // Add this line to import the main CSS file with Tailwind directives
@@ -25,7 +35,7 @@ function App() {
   // Helper function to get formatted bearer token
   const getBearerToken = () => {
     const token = auth.token;
-    return token ? `Bearer ${token}` : null;
+    return token ? `${token}` : null;
   };
 
   return (
@@ -49,6 +59,25 @@ function App() {
                 <Route path="/products/edit/:id" element={<ProductFormPage />} />
                 <Route path="/products/:id" element={<ProductDetailPage />} />
                 <Route path="/products/:id/edit" element={<EditProduct />} />
+
+                <Route path="/procurement" element={<ProcurementLayout />}>
+          {/* Suppliers */}
+          <Route path="suppliers" element={<SupplierList />} />
+          <Route path="suppliers/new" element={<SupplierForm />} />
+          <Route path="suppliers/:id" element={<SupplierDetail />} />
+          <Route path="suppliers/:id/edit" element={<SupplierForm />} />
+          
+          {/* Purchase Orders */}
+          <Route path="purchase-orders" element={<PurchaseOrderList />} />
+          <Route path="purchase-orders/new" element={<PurchaseOrderForm />} />
+          <Route path="purchase-orders/:id" element={<PurchaseOrderDetail />} />
+          <Route path="purchase-orders/:id/edit" element={<PurchaseOrderForm />} />
+          
+          {/* Receipts */}
+          <Route path="purchase-receipts" element={<PurchaseReceiptList />} />
+          <Route path="receive/:id" element={<PurchaseReceiptForm />} />
+          <Route path="purchase-receipts/:id" element={<PurchaseReceiptDetail />} />
+        </Route>
               </Route>
             </Routes>
           </div>
