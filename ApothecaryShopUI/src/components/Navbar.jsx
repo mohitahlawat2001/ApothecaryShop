@@ -68,6 +68,9 @@ const Navbar = () => {
               <Link to="/procurement/purchase-orders" className="px-3 py-1 hover:text-green-200 hover:underline transition-all duration-300">
                 Procurement
               </Link>
+              <Link to="/distributions" className="px-3 py-1 hover:text-green-200 hover:underline transition-all duration-300">
+                Distribution
+              </Link>
               <button 
                 onClick={handleLogout}
                 className="px-4 py-1 bg-green-700 hover:bg-green-600 rounded-md shadow-md hover:shadow-lg transition-all duration-300"
@@ -109,6 +112,13 @@ const Navbar = () => {
                 onClick={() => setIsMenuOpen(false)}
               >
                 Procurement
+              </Link>
+              <Link 
+                to="/distributions" 
+                className="block px-3 py-2 rounded hover:bg-green-700 hover:text-green-200"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Distribution
               </Link>
               <button 
                 onClick={() => {

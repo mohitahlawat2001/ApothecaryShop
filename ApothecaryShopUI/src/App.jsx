@@ -21,6 +21,10 @@ import PurchaseReceiptList from './components/procurement/PurchaseReceiptList';
 import PurchaseOrderDetail from './components/procurement/PurchaseOrderDetail';
 import SupplierDetail from './components/procurement/SupplierDetail';
 import PurchaseReceiptDetail from './components/procurement/PurchaseReceiptDetail';
+import DistributionList from './components/distribution/DistributionList';
+import DistributionForm from './components/distribution/DistributionForm';
+import DistributionDetail from './components/distribution/DistributionDetail';
+import DistributionDashboard from './components/distribution/DistributionDashboard';
 import './App.css';
 // Make sure Tailwind is imported
 //import './index.css'; // Add this line to import the main CSS file with Tailwind directives
@@ -77,7 +81,14 @@ function App() {
           <Route path="purchase-receipts" element={<PurchaseReceiptList />} />
           <Route path="receive/:id" element={<PurchaseReceiptForm />} />
           <Route path="purchase-receipts/:id" element={<PurchaseReceiptDetail />} />
+
+          
+
         </Route>
+        <Route path="/distributions" element={<DistributionList />} />
+          <Route path="/distributions/new" element={<DistributionForm />} />
+          <Route path="/distributions/:id" element={<DistributionDetail />} />
+          <Route path="/distribution-dashboard" element={<DistributionDashboard />} />
               </Route>
             </Routes>
           </div>
