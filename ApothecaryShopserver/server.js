@@ -8,6 +8,8 @@ const supplierRoutes = require('./routes/suppliers');
 const purchaseOrderRoutes = require('./routes/purchaseOrders');
 const purchaseReceiptRoutes = require('./routes/purchaseReceipts');
 const externalProductRoutes = require('./routes/externalProducts');
+const distributionRoutes = require('./routes/distribution');
+
 
 dotenv.config();
 const app = express();
@@ -50,6 +52,9 @@ app.use('/api/external-products', externalProductRoutes);
 // Use routes
 app.use('/api/products', productsRouter);
 app.use('/api/stockMovements', stockMovementRouter);
+
+app.use('/api/distributions', distributionRoutes);
+
 
 // Auth routes
 // POST http://localhost:5000/api/register
