@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import Login from './pages/Login';
 import Register from './pages/Register';
@@ -25,9 +25,8 @@ import DistributionList from './components/distribution/DistributionList';
 import DistributionForm from './components/distribution/DistributionForm';
 import DistributionDetail from './components/distribution/DistributionDetail';
 import DistributionDashboard from './components/distribution/DistributionDashboard';
+import LeafLoading from './components/LeafLoading';
 import './App.css';
-// Make sure Tailwind is imported
-//import './index.css'; // Add this line to import the main CSS file with Tailwind directives
 
 function App() {
   const [auth, setAuth] = useState({
@@ -35,6 +34,22 @@ function App() {
     isAuthenticated: localStorage.getItem('token') ? true : false,
     user: JSON.parse(localStorage.getItem('user'))
   });
+
+  // Increase the loading time a bit to ensure leaf animation is visible
+  const [isLoading, setIsLoading] = useState(true);
+  
+  useEffect(() => {
+    // Ensure image is preloaded
+    const leafImage = new Image();
+    leafImage.src = `${window.location.origin}/leaf.png`;
+    
+    // Use longer loading time to ensure animation has time to initialize
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 3000); // Increased to 3 seconds
+    
+    return () => clearTimeout(timer);
+  }, []);
 
   // Helper function to get formatted bearer token
   const getBearerToken = () => {
@@ -47,7 +62,8 @@ function App() {
       <Router>
         <div className="app">
           {auth.isAuthenticated && <Navbar />}
-          <div className="container">
+          <LeafLoading isLoading={isLoading} />
+          <div className={`container transition-opacity duration-500 ${isLoading ? 'opacity-0' : 'opacity-100'}`}>
             <Routes>
               <Route path="/" element={auth.isAuthenticated ? <Navigate to="/dashboard" /> : <Login />} />
               <Route path="/register" element={<Register />} />
@@ -65,30 +81,24 @@ function App() {
                 <Route path="/products/:id/edit" element={<EditProduct />} />
 
                 <Route path="/procurement" element={<ProcurementLayout />}>
-          {/* Suppliers */}
-          <Route path="suppliers" element={<SupplierList />} />
-          <Route path="suppliers/new" element={<SupplierForm />} />
-          <Route path="suppliers/:id" element={<SupplierDetail />} />
-          <Route path="suppliers/:id/edit" element={<SupplierForm />} />
-          
-          {/* Purchase Orders */}
-          <Route path="purchase-orders" element={<PurchaseOrderList />} />
-          <Route path="purchase-orders/new" element={<PurchaseOrderForm />} />
-          <Route path="purchase-orders/:id" element={<PurchaseOrderDetail />} />
-          <Route path="purchase-orders/:id/edit" element={<PurchaseOrderForm />} />
-          
-          {/* Receipts */}
-          <Route path="purchase-receipts" element={<PurchaseReceiptList />} />
-          <Route path="receive/:id" element={<PurchaseReceiptForm />} />
-          <Route path="purchase-receipts/:id" element={<PurchaseReceiptDetail />} />
-
-          
-
-        </Route>
-        <Route path="/distributions" element={<DistributionList />} />
-          <Route path="/distributions/new" element={<DistributionForm />} />
-          <Route path="/distributions/:id" element={<DistributionDetail />} />
-          <Route path="/distribution-dashboard" element={<DistributionDashboard />} />
+                  <Route path="suppliers" element={<SupplierList />} />
+                  <Route path="suppliers/new" element={<SupplierForm />} />
+                  <Route path="suppliers/:id" element={<SupplierDetail />} />
+                  <Route path="suppliers/:id/edit" element={<SupplierForm />} />
+                  
+                  <Route path="purchase-orders" element={<PurchaseOrderList />} />
+                  <Route path="purchase-orders/new" element={<PurchaseOrderForm />} />
+                  <Route path="purchase-orders/:id" element={<PurchaseOrderDetail />} />
+                  <Route path="purchase-orders/:id/edit" element={<PurchaseOrderForm />} />
+                  
+                  <Route path="purchase-receipts" element={<PurchaseReceiptList />} />
+                  <Route path="receive/:id" element={<PurchaseReceiptForm />} />
+                  <Route path="purchase-receipts/:id" element={<PurchaseReceiptDetail />} />
+                </Route>
+                <Route path="/distributions" element={<DistributionList />} />
+                <Route path="/distributions/new" element={<DistributionForm />} />
+                <Route path="/distributions/:id" element={<DistributionDetail />} />
+                <Route path="/distribution-dashboard" element={<DistributionDashboard />} />
               </Route>
             </Routes>
           </div>
