@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import AddStockMovementModal from '../components/AddStockMovementModal';
 import StockMovementGraph from '../components/StockMovementGraph';
+import StockMovementAiAnalysis from '../components/StockMovementAiAnalysis';
 
 const StockMovements = () => {
   const [stockMovements, setStockMovements] = useState([]);
@@ -9,6 +10,7 @@ const StockMovements = () => {
   const [loading, setLoading] = useState(true);
   const [selectedProduct, setSelectedProduct] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedProductName, setSelectedProductName] = useState('');
 
   useEffect(() => {
     const fetchData = async () => {
@@ -33,8 +35,15 @@ const StockMovements = () => {
             }
           });
           setStockMovements(movementsRes.data);
+          
+          // Find the product name for the selected product
+          const selectedProd = productsRes.data.find(prod => prod._id === selectedProduct);
+          if (selectedProd) {
+            setSelectedProductName(selectedProd.name);
+          }
         } else {
           setStockMovements([]);
+          setSelectedProductName('');
         }
         
         setLoading(false);
@@ -117,6 +126,14 @@ const StockMovements = () => {
         
         {selectedProduct && (
           <StockMovementGraph stockMovements={stockMovements} />
+        )}
+        
+        {/* Add the AI Analysis component when there are enough stock movements */}
+        {selectedProduct && stockMovements.length > 2 && (
+          <StockMovementAiAnalysis 
+            stockMovements={stockMovements} 
+            productName={selectedProductName} 
+          />
         )}
         
         {selectedProduct ? (
