@@ -36,7 +36,7 @@ function PurchaseOrderForm() {
     return acc + totalPrice;
   }, 0);
   
-  const totalAmount = subtotal + (formData.shippingCost || 0) - (formData.discountAmount || 0);
+  const totalAmount = subtotal + parseFloat(formData.shippingCost || 0) - parseFloat(formData.discountAmount || 0);
   
   useEffect(() => {
     fetchSuppliers();
