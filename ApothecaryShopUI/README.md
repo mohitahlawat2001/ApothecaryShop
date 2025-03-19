@@ -121,3 +121,29 @@ A modern pharmaceutical inventory management system built with React, featuring 
 - **Professional Document Templates**: Well-designed templates for business documents
 - **Custom Branding**: Company information and styling in generated documents
 - **Digital Records**: Easily save and share important procurement records
+
+## Release 3.0 - New Features
+
+### Distribution Management
+- **Distribution Order System**: Create, track, and manage distribution orders
+- **Multiple Recipient Types**: Support for distributing to pharmacies, hospitals, departments, and patients
+- **Status Tracking**: Complete workflow from pending to delivered with status updates
+- **Item Management**: Track distributed products with batch numbers and expiry dates
+- **Shipping Information**: Record delivery addresses and contact details
+- **Distribution Reports**: Generate summary reports of distributed products
+
+### Enhanced PDF Generation
+- **Distribution Documents**: Generate professional PDF documents for distribution orders
+- **Custom Templates**: Specialized templates for different document types
+- **QR Code Integration**: Easy scanning and tracking of orders via QR codes
+
+### Inventory Integration
+- **Automated Stock Updates**: Automatic inventory reduction when items are distributed
+- **Distribution History**: Complete audit trail of all products distributed
+- **Batch Tracking**: Follow specific product batches through the distribution chain
+
+### Analytics Dashboard
+- **Distribution Metrics**: Track distribution volumes and patterns
+- **Recipient Analysis**: Insights into distribution by recipient type
+- **Distribution Timeline**: Visual representation of distribution activities over time
+- **Product Distribution Trends**: Most frequently distributed products analysis
