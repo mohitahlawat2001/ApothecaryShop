@@ -109,3 +109,30 @@ export const getProductUsageInfo = async (productName) => {
     throw error;
   }
 };
+
+/**
+ * Get recommended products for trending diseases
+ * @param {boolean} isJanAushadhi - Whether to focus on JanAushadhi products
+ * @returns {Promise<Object>} List of recommended products
+ */
+export const getTrendingDiseaseProducts = async (isJanAushadhi = false) => {
+  try {
+    const prompt = isJanAushadhi 
+      ? "List 5-8 essential JanAushadhi generic medicines to stock based on current seasonal disease outbreaks and trends" 
+      : "List 5-8 essential medicines to stock based on current seasonal disease outbreaks and trends";
+    
+    const requestData = {
+      prompt,
+      userName: 'Procurement Manager',
+      userContext: 'Planning inventory for upcoming disease outbreaks',
+      outputFormat: 'list',
+      structuredOutput: true
+    };
+    
+    const response = await generateAiResponse(requestData);
+    return response;
+  } catch (error) {
+    console.error('Error getting trending disease products:', error);
+    throw error;
+  }
+};

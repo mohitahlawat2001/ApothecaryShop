@@ -4,6 +4,7 @@ import { getSuppliers } from '../../services/supplierService';
 import { getPurchaseOrder, createPurchaseOrder, updatePurchaseOrder } from '../../services/purchaseOrderService';
 import { getProducts } from '../../services/productService';
 import { getExternalProducts } from '../../services/externalProductService';
+import DiseaseTrendSuggestions from './DiseaseTrendSuggestions';
 
 function PurchaseOrderForm() {
   const { id } = useParams();
@@ -97,11 +98,16 @@ function PurchaseOrderForm() {
     }
   }, [selectedSupplier]);
   
-  const fetchExternalProducts = async () => {
+  // Modified to accept an optional searchText parameter
+  const fetchExternalProducts = async (customSearchTerm = null) => {
     try {
       setLoading(true);
+      
+      // Use the custom search term if provided, otherwise use the state value
+      const searchTextToUse = customSearchTerm !== null ? customSearchTerm : searchTerm;
+      
       const response = await getExternalProducts({
-        searchText: searchTerm,
+        searchText: searchTextToUse,
         pageSize: 100
       });
       if (response && response.responseBody) {
@@ -231,6 +237,21 @@ function PurchaseOrderForm() {
         }
       };
       
+      // Updated handler for AI suggestion selection with improved search functionality
+      const handleAISuggestion = (suggestion, searchImmediately = false) => {
+        // Update state with the new search term
+        setSearchTerm(suggestion);
+        
+        // If searchImmediately is true, trigger the search right away
+        if (searchImmediately && selectedSupplier) {
+          if (selectedSupplier.isJanAushadhi) {
+            // For JanAushadhi suppliers, directly pass the suggestion to the search
+            fetchExternalProducts(suggestion);
+          }
+          // For regular suppliers, the filter will happen automatically through render
+        }
+      };
+      
       if (loading && isEditMode) return <div className="text-center p-4">Loading purchase order data...</div>;
       
       return (
@@ -348,13 +369,19 @@ function PurchaseOrderForm() {
                     {selectedSupplier.isJanAushadhi && (
                       <button
                         type="button"
-                        onClick={fetchExternalProducts}
+                        onClick={() => fetchExternalProducts()}
                         className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
                       >
                         Search JanAushadhi Products
                       </button>
                     )}
                   </div>
+                  
+                  {/* Modified DiseaseTrendSuggestions component */}
+                  <DiseaseTrendSuggestions 
+                    onProductSelect={handleAISuggestion} 
+                    isJanAushadhi={selectedSupplier?.isJanAushadhi} 
+                  />
                 </div>
               )}
               
