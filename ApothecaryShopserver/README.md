@@ -364,6 +364,123 @@ The tests cover:
     - `orderBy` (default: "asc")
   - **Response**: `200 OK` with external products data
 
+## Release 3.0
+
+### New Features
+
+- **Distribution Management**
+  - Create and track distribution orders with unique DO numbers
+  - Record distribution of products to patients, pharmacies, departments, and hospitals
+  - Track complete distribution lifecycle with status updates (pending, processed, shipped, delivered)
+  - Handle returns and cancellations with automatic inventory adjustments
+  - Generate distribution reports with analytics on top recipients and products
+  - Automated stock movement entries for distribution activities
+  - Track shipping information including addresses and contact details
+
+- **MaoMao AI Pharmaceutical Assistant**
+  - AI-powered pharmaceutical knowledge assistant using Google's Generative AI
+  - Maintains conversation history for contextual responses
+  - Configurable output formats (text, list, HTML, etc.)
+  - Support for structured JSON responses for integration with other systems
+  - Specialized medical information formatting options
+  - Personalized interactions based on user context and role
+  - Provides evidence-based pharmaceutical and herbal medicine information
+
+### New API Endpoints
+
+#### Distribution Management
+
+- **Create Distribution Order**
+  - **URL**: `/api/distributions`
+  - **Method**: `POST`
+  - **Authentication**: Required (Bearer Token)
+  - **Body**:
+    ```json
+    {
+      "recipient": "Patient Name or Organization",
+      "recipientType": "patient", // Options: "patient", "pharmacy", "department", "hospital"
+      "items": [
+        {
+          "product": "60d21b4667d0d8992e610c85", // Product ID
+          "quantity": 5,
+          "batchNumber": "BATCH123",
+          "expiryDate": "2025-12-31"
+        }
+      ],
+      "shippingInfo": {
+        "address": "123 Main St",
+        "contactPerson": "Contact Name",
+        "contactNumber": "555-1234"
+      }
+    }
+    ```
+  - **Response**: `201 Created` with created distribution order
+
+- **Get All Distribution Orders**
+  - **URL**: `/api/distributions`
+  - **Method**: `GET`
+  - **Authentication**: Required (Bearer Token)
+  - **Query Parameters**: `status`, `startDate`, `endDate`, `recipient` (all optional)
+  - **Response**: `200 OK` with array of distribution orders
+
+- **Get Distribution Order By ID**
+  - **URL**: `/api/distributions/:id`
+  - **Method**: `GET`
+  - **Authentication**: Required (Bearer Token)
+  - **Response**: `200 OK` with distribution order details
+
+- **Update Distribution Status**
+  - **URL**: `/api/distributions/:id/status`
+  - **Method**: `PATCH`
+  - **Authentication**: Required (Bearer Token)
+  - **Body**:
+    ```json
+    {
+      "status": "shipped" // Options: "pending", "processed", "shipped", "delivered", "returned", "cancelled"
+    }
+    ```
+  - **Response**: `200 OK` with updated distribution order
+
+- **Delete Distribution Order**
+  - **URL**: `/api/distributions/:id`
+  - **Method**: `DELETE`
+  - **Authentication**: Required (Bearer Token)
+  - **Response**: `200 OK` with success message (only allowed for pending orders)
+
+- **Generate Distribution Report**
+  - **URL**: `/api/distributions/reports/summary`
+  - **Method**: `GET`
+  - **Authentication**: Required (Bearer Token)
+  - **Query Parameters**: `startDate`, `endDate` (optional)
+  - **Response**: `200 OK` with distribution statistics and analytics
+
+#### MaoMao AI Pharmaceutical Assistant
+
+- **Generate AI Response**
+  - **URL**: `/api/maomao-ai/generate`
+  - **Method**: `POST`
+  - **Authentication**: Required (Bearer Token)
+  - **Body**:
+    ```json
+    {
+      "prompt": "Tell me about herbs for headaches",
+      "userName": "Pharmacist",
+      "userContext": "Working at a pharmacy counter helping a customer",
+      "clearHistory": false,
+      "outputFormat": "text", 
+      "structuredOutput": false
+    }
+    ```
+  - **Output Format Options**: 
+    - `"text"`: Plain text paragraphs (default)
+    - `"list"`: Comma-separated list of items
+    - `"sentence"`: Single concise sentence 
+    - `"html"`: Formatted HTML content
+    - `"medical"`: Medical information with uses, side effects, etc.
+    - `"recipe"`: Medicinal preparation recipe with ingredients and steps
+  
+  - **Response**: `200 OK` with AI-generated response and conversation details
+
 ## License
 
 [MIT](LICENSE)
