@@ -2,6 +2,7 @@ import React, { useState, useEffect, useContext } from 'react';
 import axios from 'axios';
 import { AuthContext } from '../context/AuthContext';
 import { Link } from 'react-router-dom';
+import DashboardAiAnalysis from '../components/DashboardAiAnalysis';
 
 const Dashboard = () => {
   const { auth } = useContext(AuthContext);
@@ -173,6 +174,11 @@ const Dashboard = () => {
           <h3 className="text-gray-500 text-sm font-semibold uppercase">Total Value</h3>
           <p className="text-3xl font-bold text-gray-800">${stats.totalValue.toFixed(2)}</p>
         </div>
+      </div>
+      
+      {/* AI Analysis Component - Full Width */}
+      <div className="mb-6">
+        <DashboardAiAnalysis stats={stats} />
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
