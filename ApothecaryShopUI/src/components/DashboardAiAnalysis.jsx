@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { generateAiResponse } from '../services/maomaoAiService';
-import { FaRobot, FaSpinner, FaChevronUp, FaChevronDown } from 'react-icons/fa';
+import { FaSpinner, FaChevronUp, FaChevronDown } from 'react-icons/fa';
+import aiGif from '../assets/ai.gif';
 
 const DashboardAiAnalysis = ({ stats }) => {
   const [analysis, setAnalysis] = useState(null);
@@ -53,7 +54,13 @@ const DashboardAiAnalysis = ({ stats }) => {
       <div className="p-5 border-b border-gray-200">
         <div className="flex justify-between items-center">
           <h3 className="text-lg font-semibold text-gray-800 flex items-center">
-            <FaRobot className="mr-2 text-blue-500" />
+            <div className="w-10 h-10 mr-2 overflow-hidden flex items-center justify-center rounded-full">
+              <img 
+                src={aiGif} 
+                alt="MaoMao AI" 
+                className="object-cover w-14 h-10 -ml-3 -mr-3" 
+              />
+            </div>
             MaoMao AI Inventory Analysis
           </h3>
           
