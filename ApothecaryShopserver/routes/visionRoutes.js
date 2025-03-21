@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const multer = require('multer');
 const visionController = require('../controllers/maomaoVisionController');
+const auth = require('../middleware/auth'); // Import authentication middleware
 
 // Configure multer for memory storage (files as buffer)
 const storage = multer.memoryStorage();
@@ -19,10 +20,10 @@ const upload = multer({
     }
 });
 
-// Route for analyzing a product image
-router.post('/analyze', upload.single('image'), visionController.analyzeProductImage);
+// Route for analyzing a product image - protected with auth middleware
+router.post('/analyze', auth, upload.single('image'), visionController.analyzeProductImage);
 
-// Route for extracting text from a product image
-router.post('/extract-text', upload.single('image'), visionController.extractTextFromImage);
+// Route for extracting text from a product image - protected with auth middleware
+router.post('/extract-text', auth, upload.single('image'), visionController.extractTextFromImage);
 
 module.exports = router;
