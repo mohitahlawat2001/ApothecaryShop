@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
+import MaomaoVision from '../components/MaomaoVision';
 
 const Inventory = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
+  const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'info' });
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -54,6 +56,24 @@ const Inventory = () => {
     return matchesSearch;
   });
 
+  // Handle product found via image search
+  const handleProductFound = (productName) => {
+    // Set the search term directly with the product name
+    setSearchTerm(productName);
+    
+    // Show a notification
+    setSnackbar({
+      open: true,
+      message: `Searching for: ${productName}`,
+      severity: 'info'
+    });
+    
+    // Auto-hide the snackbar after 5 seconds
+    setTimeout(() => {
+      setSnackbar(prev => ({ ...prev, open: false }));
+    }, 5000);
+  };
+
   if (loading) return <div className="flex justify-center items-center h-64">Loading...</div>;
   
   return (
@@ -61,7 +81,7 @@ const Inventory = () => {
       <h1 className="text-3xl font-bold text-gray-800 mb-6">Inventory Management</h1>
       
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
-        <div className="w-full sm:w-auto">
+        <div className="w-full sm:w-auto relative">
           <input
             type="text"
             placeholder="Search by name or SKU..."
@@ -69,13 +89,23 @@ const Inventory = () => {
             onChange={(e) => setSearchTerm(e.target.value)}
             className="block w-full sm:w-80 px-4 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
           />
+          {searchTerm && (
+            <button 
+              onClick={() => setSearchTerm('')}
+              className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-500"
+            >
+              <svg className="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          )}
         </div>
         
-        <div className="w-full sm:w-auto flex gap-2">
+        <div className="flex flex-wrap gap-2 items-center">
           <select
             value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value)}
-            className="block w-full sm:w-auto px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+            className="block px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
           >
             <option value="all">All Products</option>
             <option value="low-stock">Low Stock</option>
@@ -84,14 +114,39 @@ const Inventory = () => {
             <option value="expired">Expired</option>
           </select>
           
+          <MaomaoVision onProductFound={handleProductFound} />
+          
           <Link
             to="/products/new"
             className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
           >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
+              <path fillRule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clipRule="evenodd" />
+            </svg>
             Add Product
           </Link>
         </div>
       </div>
+      
+      {/* Snackbar notification */}
+      {snackbar.open && (
+        <div className={`mb-4 p-3 rounded-md ${
+          snackbar.severity === 'info' ? 'bg-blue-50 text-blue-700' :
+          snackbar.severity === 'success' ? 'bg-green-50 text-green-700' :
+          snackbar.severity === 'error' ? 'bg-red-50 text-red-700' :
+          'bg-yellow-50 text-yellow-700'
+        }`}>
+          {snackbar.message}
+          <button 
+            onClick={() => setSnackbar(prev => ({ ...prev, open: false }))}
+            className="float-right text-gray-400 hover:text-gray-500"
+          >
+            <svg className="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+      )}
       
       {filteredProducts.length === 0 ? (
         <div className="bg-white rounded-lg shadow-md p-6 text-center w-full">
