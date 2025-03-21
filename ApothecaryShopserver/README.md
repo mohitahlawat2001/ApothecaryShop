@@ -481,6 +481,123 @@ The tests cover:
   
   - **Response**: `200 OK` with AI-generated response and conversation details
 
+## Release 4.0
+
+### New Features
+
+- **Image Recognition & Analysis**
+  - Upload and analyze images of pharmaceutical products using AI
+  - Extract text from medicine packaging and labels automatically
+  - Identify medicinal products from images with detailed information
+  - Process images for inventory management and verification
+  - Integration with Google's Gemini 1.5 Pro model for advanced analysis
+
+- **Enhanced AI Capabilities**
+  - Improved MaoMao AI with Gemini 2.0 integration
+  - Support for multiple output formats (text, JSON, HTML)
+  - Structured data output with custom schemas for system integration
+  - Specialized pharmaceutical knowledge formatting
+  - Persistent conversation history management
+  - Contextual responses based on user role and situation
+
+- **Transaction Optimization**
+  - MongoDB transaction support for complex inventory operations
+  - Atomic database operations with rollback capability
+  - Improved error handling and recovery for critical processes
+  - Advanced session management for multi-step operations
+  - Data consistency guarantees for inventory movements
+
+- **Unit and Batch Size Management**
+  - Track and update product unit sizes during receipt
+  - Automatic product categorization based on group names
+  - Enhanced product description with unit size information
+  - Dynamic batch number and expiry date tracking
+  - Improved product creation from external sources
+
+### New API Endpoints
+
+#### Image Analysis
+
+- **Analyze Product Image**
+  - **URL**: `/api/vision/analyze`
+  - **Method**: `POST`
+  - **Authentication**: Required (Bearer Token)
+  - **Content-Type**: `multipart/form-data`
+  - **Body**:
+    ```
+    image: [binary file data]
+    prompt: "Optional custom prompt for analysis"
+    ```
+  - **Response**: `200 OK` with AI analysis of the product image
+
+- **Extract Text from Image**
+  - **URL**: `/api/vision/extract-text`
+  - **Method**: `POST`
+  - **Authentication**: Required (Bearer Token)
+  - **Content-Type**: `multipart/form-data`
+  - **Body**:
+    ```
+    image: [binary file data]
+    ```
+  - **Response**: `200 OK` with extracted text content from the image
+
+#### Enhanced MaoMao AI
+
+- **Generate Structured AI Response**
+  - **URL**: `/api/maomao-ai/generate`
+  - **Method**: `POST`
+  - **Authentication**: Required (Bearer Token)
+  - **Body**:
+    ```json
+    {
+      "prompt": "Tell me about the proper dosage of ibuprofen",
+      "userName": "Pharmacist",
+      "userContext": "Consulting with elderly patient",
+      "clearHistory": false,
+      "outputFormat": "medical",
+      "structuredOutput": true
+    }
+    ```
+  - **Additional Output Format Options**:
+    - `"recipe"`: Structured medicinal preparation instructions
+    - `"medical"`: Detailed medical information with predefined fields
+  
+  - **Response**: `200 OK` with AI-generated structured response in selected format
+
+#### Purchase Receipt Improvements
+
+- **Create Purchase Receipt with Unit Size Information**
+  - **URL**: `/api/purchase-receipts`
+  - **Method**: `POST` 
+  - **Authentication**: Required (Bearer Token)
+  - **Body**:
+    ```json
+    {
+      "purchaseOrder": "60d21b4667d0d8992e610c85",
+      "receiptDate": "2023-12-10T10:30:00.000Z",
+      "items": [
+        {
+          "product": "60d21b4667d0d8992e610c86",
+          "genericName": "Paracetamol",
+          "groupName": "Analgesics",
+          "unitSize": "10's",
+          "expectedQuantity": 100,
+          "receivedQuantity": 100,
+          "batchNumber": "BATCH123",
+          "expiryDate": "2025-10-10T00:00:00.000Z",
+          "unitPrice": 5.99,
+          "comments": "All items in good condition"
+        }
+      ],
+      "qualityCheck": {
+        "passed": true,
+        "notes": "All products passed quality check"
+      },
+      "notes": "Delivery was on time"
+    }
+    ```
+  - **Response**: `201 Created` with created purchase receipt including updated product information
+
 ## License
 
 [MIT](LICENSE)

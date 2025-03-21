@@ -147,3 +147,40 @@ A modern pharmaceutical inventory management system built with React, featuring 
 - **Recipient Analysis**: Insights into distribution by recipient type
 - **Distribution Timeline**: Visual representation of distribution activities over time
 - **Product Distribution Trends**: Most frequently distributed products analysis
+
+## Release 4.0 - New Features
+
+### Image-Based Product Search
+- **Product Recognition**: Search products by uploading or taking a photo
+- **AI-Powered Analysis**: Intelligent identification of pharmaceutical products
+- **Automatic Product Matching**: Quick navigation to product details from images
+- **Custom Analysis Prompts**: User-configurable image analysis parameters
+- **Structured Results Display**: Clear presentation of recognized product attributes
+
+### Enhanced Distribution Management
+- **Advanced Filtering**: Filter distribution orders by status, recipient, and date
+- **Status Workflow Management**: Comprehensive status update capabilities
+- **Detailed Analytics**: Distribution metrics dashboard with visual representations
+- **Recipient Analysis**: Track top distribution recipients
+- **Product Distribution Trends**: Insights into most distributed products
+
+### Purchase Receipt Enhancements
+- **Quality Control Integration**: Enhanced quality check documentation
+- **Batch and Expiry Tracking**: Improved management of product batches
+- **PDF Documentation**: Professional receipt documentation with detailed product information
+- **Receipt History**: Comprehensive view of all purchase receipts
+
+### Performance Improvements
+- **Enhanced Asset Caching Control**: Better versioning of assets to prevent cache issues
+- **UI Responsiveness**: Faster loading times and smoother transitions
+- **Optimized API Calls**: More efficient data fetching and state management
+
+### Visual Loading Experience
+- **Interactive Loading Animation**: Engaging leaf animation during loading screens
+- **Responsive Feedback**: Clear visual indicators during data processing operations
+- **Branded Loading Screens**: Company-themed loading experience
+
+### PDF Generation Improvements
+- **Enhanced Document Styling**: More professional and visually appealing PDF documents
+- **Custom Templates**: Specialized document layouts for different business processes
+- **Dynamic Content Formatting**: Improved handling of document content with better layout
