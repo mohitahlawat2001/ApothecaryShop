@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from 'react';
+import leafImage from '../assets/leaf.png';
 
 const LeafLoading = ({ isLoading }) => {
   const canvasRef = useRef(null);
@@ -24,18 +25,13 @@ const LeafLoading = ({ isLoading }) => {
 
     // Create leaf image - try different path formats
     const img = imgRef.current;
-    // Try absolute path from root
-    img.src = `${window.location.origin}/leaf.png`;
+    // Use imported image path
+    img.src = leafImage;
     
     // Error handling for image loading
     img.onerror = () => {
-      console.error("Failed to load leaf.png, trying alternative path");
-      // Use the fallback leaf if available
-      if (window.createFallbackLeaf) {
-        img.src = window.createFallbackLeaf();
-      } else {
-        img.src = './leaf.png'; // Try relative path
-      }
+      console.error("Failed to load leaf.png");
+      // You can remove or modify the fallback since we're using direct import
     };
     
     const setup = () => {

@@ -27,6 +27,7 @@ import DistributionDetail from './components/distribution/DistributionDetail';
 import DistributionDashboard from './components/distribution/DistributionDashboard';
 import LeafLoading from './components/LeafLoading';
 import './App.css';
+import leafImage from './assets/leaf.png';
 
 function App() {
   const [auth, setAuth] = useState({
@@ -39,14 +40,13 @@ function App() {
   const [isLoading, setIsLoading] = useState(true);
   
   useEffect(() => {
-    // Ensure image is preloaded
-    const leafImage = new Image();
-    leafImage.src = `${window.location.origin}/leaf.png`;
+    // Use imported image for preloading
+    const img = new Image();
+    img.src = leafImage;
     
-    // Use longer loading time to ensure animation has time to initialize
     const timer = setTimeout(() => {
       setIsLoading(false);
-    }, 3000); // Increased to 3 seconds
+    }, 3000);
     
     return () => clearTimeout(timer);
   }, []);
