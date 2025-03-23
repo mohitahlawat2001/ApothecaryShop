@@ -6,7 +6,7 @@ This comprehensive Pharmaceutical Inventory System helps you manage product stoc
 
 ## Video Demo
 Watch our brief overview of ApothecaryShop in action here:
-[![ApothecaryShop Demo](https://img.youtube.com/vi/your-demo-video-id/0.jpg)](https://youtu.be/SM8juofgxy0)
+[![ApothecaryShop Demo](https://i9.ytimg.com/vi/SM8juofgxy0/mqdefault.jpg?sqp=CNiD_74G-oaymwEmCMACELQB8quKqQMa8AEB-AH-CYAC0AWKAgwIABABGBggcigyMA8=&rs=AOn4CLChiclGVroyHfiKftI9OAUIt2YWGQ)](https://youtu.be/SM8juofgxy0)
 
 ## Installation & Usage
 1. Clone the repository: `git clone https://github.com/yourusername/ApothecaryShop.git`
