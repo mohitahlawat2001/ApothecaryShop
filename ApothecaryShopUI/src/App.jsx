@@ -26,6 +26,10 @@ import DistributionForm from './components/distribution/DistributionForm';
 import DistributionDetail from './components/distribution/DistributionDetail';
 import DistributionDashboard from './components/distribution/DistributionDashboard';
 import LeafLoading from './components/LeafLoading';
+import BatchManagement from './pages/BatchManagement';
+import Notifications from './pages/Notifications';
+import Scanner from './pages/Scanner';
+import Forecasting from './pages/Forecasting';
 import './App.css';
 import leafImage from './assets/leaf.png';
 
@@ -99,6 +103,12 @@ function App() {
                 <Route path="/distributions/new" element={<DistributionForm />} />
                 <Route path="/distributions/:id" element={<DistributionDetail />} />
                 <Route path="/distribution-dashboard" element={<DistributionDashboard />} />
+                
+                {/* New enhanced features */}
+                <Route path="/batches" element={<BatchManagement />} />
+                <Route path="/notifications" element={<Notifications />} />
+                <Route path="/scanner" element={<Scanner />} />
+                <Route path="/forecasting" element={<Forecasting />} />
               </Route>
             </Routes>
           </div>

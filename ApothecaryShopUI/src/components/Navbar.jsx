@@ -71,6 +71,18 @@ const Navbar = () => {
               <Link to="/distributions" className="px-3 py-1 hover:text-green-200 hover:underline transition-all duration-300">
                 Distribution
               </Link>
+              <Link to="/batches" className="px-3 py-1 hover:text-green-200 hover:underline transition-all duration-300">
+                Batches
+              </Link>
+              <Link to="/scanner" className="px-3 py-1 hover:text-green-200 hover:underline transition-all duration-300">
+                Scanner
+              </Link>
+              <Link to="/forecasting" className="px-3 py-1 hover:text-green-200 hover:underline transition-all duration-300">
+                Forecasting
+              </Link>
+              <Link to="/notifications" className="px-3 py-1 hover:text-green-200 hover:underline transition-all duration-300">
+                Alerts
+              </Link>
               <button 
                 onClick={handleLogout}
                 className="px-4 py-1 bg-green-700 hover:bg-green-600 rounded-md shadow-md hover:shadow-lg transition-all duration-300"
@@ -119,6 +131,34 @@ const Navbar = () => {
                 onClick={() => setIsMenuOpen(false)}
               >
                 Distribution
+              </Link>
+              <Link 
+                to="/batches" 
+                className="block px-3 py-2 rounded hover:bg-green-700 hover:text-green-200"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Batches
+              </Link>
+              <Link 
+                to="/scanner" 
+                className="block px-3 py-2 rounded hover:bg-green-700 hover:text-green-200"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Scanner
+              </Link>
+              <Link 
+                to="/forecasting" 
+                className="block px-3 py-2 rounded hover:bg-green-700 hover:text-green-200"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Forecasting
+              </Link>
+              <Link 
+                to="/notifications" 
+                className="block px-3 py-2 rounded hover:bg-green-700 hover:text-green-200"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Alerts
               </Link>
               <button 
                 onClick={() => {
