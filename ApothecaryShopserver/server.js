@@ -11,6 +11,10 @@ const externalProductRoutes = require('./routes/externalProducts');
 const distributionRoutes = require('./routes/distribution');
 const maomaoAiRoutes = require('./routes/maomaoAi'); // Import MaoMao AI routes
 const visionRoutes = require('./routes/visionRoutes'); // Import Vision routes
+const batchRoutes = require('./routes/batches'); // Import Batch routes
+const notificationRoutes = require('./routes/notifications'); // Import Notification routes
+const scanningRoutes = require('./routes/scanning'); // Import Scanning routes
+const forecastingRoutes = require('./routes/forecasting'); // Import Forecasting routes
 
 dotenv.config();
 const app = express();
@@ -79,6 +83,10 @@ app.use('/api/distributions', distributionRoutes);
 
 app.use('/api/maomao-ai', maomaoAiRoutes);
 app.use('/api/vision', visionRoutes); // Add vision routes
+app.use('/api/batches', batchRoutes); // Add batch routes
+app.use('/api/notifications', notificationRoutes); // Add notification routes
+app.use('/api/scanning', scanningRoutes); // Add scanning routes
+app.use('/api/forecasting', forecastingRoutes); // Add forecasting routes
 
 // Auth routes
 // POST http://localhost:5000/api/register
