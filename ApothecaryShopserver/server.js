@@ -126,7 +126,7 @@ app.post('/api/login', async (req, res) => {
   }
 });
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5001;
 
 // Only start the server if this file is run directly (not required by tests)
 let server;
