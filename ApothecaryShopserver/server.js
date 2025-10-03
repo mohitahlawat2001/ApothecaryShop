@@ -124,6 +124,8 @@ app.post('/api/login', async (req, res) => {
   }
 });
 
+app.use('/api/auth/google', googleRoutes);
+
 const PORT = process.env.PORT || 5000;
 
 // Only start the server if this file is run directly (not required by tests)
