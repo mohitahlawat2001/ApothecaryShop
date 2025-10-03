@@ -56,10 +56,10 @@ mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log('MongoDB connected'))
   .catch(err => console.error('MongoDB connection error:', err));
 
-// Can use this for testing the google auth
-app.get('/',(req,res)=>{
+// Root route (Google auth test link)
+app.get('/', (req, res) => {
   res.send("<a href='/api/auth/google'>ApothecaryShop - Login with google</a>");
-})
+});
 
 // Import routes
 const productsRouter = require('./routes/products');
@@ -76,6 +76,7 @@ app.use('/api/distributions', distributionRoutes);
 
 app.use('/api/maomao-ai', maomaoAiRoutes);
 app.use('/api/vision', visionRoutes); // Add vision routes
+app.use('/api/auth/google', googleRoutes);
 
 // Auth routes
 // POST http://localhost:5000/api/register
