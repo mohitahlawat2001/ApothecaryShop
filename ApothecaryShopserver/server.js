@@ -4,6 +4,13 @@ const cors = require('cors');
 const dotenv = require('dotenv');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const passport = require('passport');
+const User = require('./models/user');
+//OAUTH import
+require('./config/passport.config');
+//Middle-ware import
+const cookieParser = require('cookie-parser');
+//Routes imports
 const supplierRoutes = require('./routes/suppliers');
 const purchaseOrderRoutes = require('./routes/purchaseOrders');
 const purchaseReceiptRoutes = require('./routes/purchaseReceipts');
@@ -11,6 +18,7 @@ const externalProductRoutes = require('./routes/externalProducts');
 const distributionRoutes = require('./routes/distribution');
 const maomaoAiRoutes = require('./routes/maomaoAi'); // Import MaoMao AI routes
 const visionRoutes = require('./routes/visionRoutes'); // Import Vision routes
+const googleRoutes = require('./routes/google'); // Import Google OAuth routes
 
 dotenv.config();
 const app = express();
@@ -38,31 +46,20 @@ const corsOptions = {
 };
 
 // Middleware
+app.use(passport.initialize());
 app.use(cors(corsOptions));
 app.use(express.json());
+app.use(cookieParser());
 
 // Database connection
 mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log('MongoDB connected'))
   .catch(err => console.error('MongoDB connection error:', err));
 
-// User model (simplified)
-const UserSchema = new mongoose.Schema({
-  name: { type: String, required: true },
-  email: { type: String, required: true, unique: true },
-  password: { type: String, required: true },
-  role: { type: String, default: 'staff', enum: ['admin', 'staff'] }
+// Can use this for testing the google auth
+app.get('/', (req, res) => {
+  res.send("<a href='/api/auth/google'>ApothecaryShop - Login with google</a>");
 });
-
-// Hash password before saving
-UserSchema.pre('save', async function(next) {
-  if (this.isModified('password')) {
-    this.password = await bcrypt.hash(this.password, 10);
-  }
-  next();
-});
-
-const User = mongoose.model('User', UserSchema);
 
 // Import routes
 const productsRouter = require('./routes/products');
@@ -79,6 +76,7 @@ app.use('/api/distributions', distributionRoutes);
 
 app.use('/api/maomao-ai', maomaoAiRoutes);
 app.use('/api/vision', visionRoutes); // Add vision routes
+app.use('/api/auth/google', googleRoutes);
 
 // Auth routes
 // POST http://localhost:5000/api/register
@@ -126,7 +124,7 @@ app.post('/api/login', async (req, res) => {
   }
 });
 
-const PORT = process.env.PORT || 5001;
+const PORT = process.env.PORT || 5000;
 
 // Only start the server if this file is run directly (not required by tests)
 let server;
