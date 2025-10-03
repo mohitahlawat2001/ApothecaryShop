@@ -56,7 +56,7 @@ mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log('MongoDB connected'))
   .catch(err => console.error('MongoDB connection error:', err));
 
-// Can use this for testing the google auth
+// Root route (Google auth test link)
 app.get('/', (req, res) => {
   res.send("<a href='/api/auth/google'>ApothecaryShop - Login with google</a>");
 });
