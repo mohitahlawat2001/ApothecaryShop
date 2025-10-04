@@ -1,9 +1,9 @@
 import React, { useContext, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { AuthContext } from '../context/AuthContext';
+import { AuthContext } from '../context/AuthContext.jsx';
 
 const Navbar = () => {
-  const { auth, setAuth } = useContext(AuthContext);
+  const { isAuthenticated, setAuth } = useContext(AuthContext);
   const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   
@@ -57,7 +57,7 @@ const Navbar = () => {
         
         {/* Desktop menu */}
         <div className="hidden md:flex space-x-6">
-          {auth?.isAuthenticated && (
+          {isAuthenticated && (
             <>
               <Link to="/dashboard" className="px-3 py-1 hover:text-green-200 hover:underline transition-all duration-300">
                 Dashboard
@@ -79,7 +79,7 @@ const Navbar = () => {
               </button>
             </>
           )}
-          {!auth?.isAuthenticated && (
+          {!isAuthenticated && (
             <Link to="/" className="px-4 py-1 bg-green-700 hover:bg-green-600 rounded-md shadow-md hover:shadow-lg transition-all duration-300">
               Login
             </Link>
@@ -90,7 +90,7 @@ const Navbar = () => {
       {/* Mobile menu dropdown */}
       {isMenuOpen && (
         <div className="md:hidden mt-2 px-2 pt-2 pb-4 bg-green-800 rounded-md shadow-lg">
-          {auth?.isAuthenticated ? (
+          {isAuthenticated ? (
             <div className="flex flex-col space-y-2">
               <Link 
                 to="/dashboard" 
