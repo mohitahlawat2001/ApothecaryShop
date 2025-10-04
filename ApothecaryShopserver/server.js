@@ -25,6 +25,7 @@ const app = express();
 
 // CORS configuration
 const allowedOrigins = [
+  'http://localhost:5173',                  // Frontend development server
   'http://localhost:5000',                  // Local development
   'https://your-deployed-frontend-url.com', // Replace with your actual deployed frontend URL
   process.env.FRONTEND_URL                  // Optional: configure via environment variable
@@ -57,9 +58,9 @@ mongoose.connect(process.env.MONGO_URI)
   .catch(err => console.error('MongoDB connection error:', err));
 
 // Root route (Google auth test link)
-app.get('/', (req, res) => {
-  res.send("<a href='/api/auth/google'>ApothecaryShop - Login with google</a>");
-});
+// app.get('/', (req, res) => {
+//   res.send("<a href='/api/auth/google'>ApothecaryShop - Login with google</a>");
+// });
 
 // Import routes
 const productsRouter = require('./routes/products');
