@@ -8,5 +8,8 @@
     "client": "cd ApothecaryShopUI && npm run dev",
     "dev": "concurrently \"npm run server\" \"npm run client\"",
     "install-all": "npm install && cd ApothecaryShopserver && npm install && cd ../ApothecaryShopUI && npm install"
+  },
+  "dependencies": {
+    "react-toastify": "^11.0.5"
   }
 }
