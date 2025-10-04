@@ -29,6 +29,10 @@ import LeafLoading from './components/LeafLoading';
 import './App.css';
 import leafImage from './assets/leaf.png';
 
+// ✅ Import Toastify
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
 function App() {
   const [auth, setAuth] = useState({
     token: localStorage.getItem('token'),
@@ -36,22 +40,19 @@ function App() {
     user: JSON.parse(localStorage.getItem('user'))
   });
 
-  // Increase the loading time a bit to ensure leaf animation is visible
   const [isLoading, setIsLoading] = useState(true);
-  
+
   useEffect(() => {
-    // Use imported image for preloading
     const img = new Image();
     img.src = leafImage;
-    
+
     const timer = setTimeout(() => {
       setIsLoading(false);
     }, 3000);
-    
+
     return () => clearTimeout(timer);
   }, []);
 
-  // Helper function to get formatted bearer token
   const getBearerToken = () => {
     const token = auth.token;
     return token ? `${token}` : null;
@@ -64,22 +65,27 @@ function App() {
           {auth.isAuthenticated && <Navbar />}
           <LeafLoading isLoading={isLoading} />
           <div className={`container transition-opacity duration-500 ${isLoading ? 'opacity-0' : 'opacity-100'}`}>
+            
+            {/* ✅ Toast container mounted globally */}
+            <ToastContainer position="top-right" autoClose={3000} />
+
             <Routes>
               <Route path="/" element={auth.isAuthenticated ? <Navigate to="/dashboard" /> : <Login />} />
               <Route path="/register" element={<Register />} />
-              
+
               {/* Protected Routes */}
               <Route path="/" element={<PrivateRoute />}>
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/inventory" element={<Inventory />} />
                 <Route path="/stock-movements" element={<StockMovements />} />
-                
-                {/* Order matters for these routes - most specific first */}
+
+                {/* Product routes */}
                 <Route path="/products/new" element={<ProductFormPage />} />
                 <Route path="/products/edit/:id" element={<ProductFormPage />} />
                 <Route path="/products/:id" element={<ProductDetailPage />} />
                 <Route path="/products/:id/edit" element={<EditProduct />} />
 
+                {/* Procurement */}
                 <Route path="/procurement" element={<ProcurementLayout />}>
                   <Route path="suppliers" element={<SupplierList />} />
                   <Route path="suppliers/new" element={<SupplierForm />} />
@@ -95,6 +101,8 @@ function App() {
                   <Route path="receive/:id" element={<PurchaseReceiptForm />} />
                   <Route path="purchase-receipts/:id" element={<PurchaseReceiptDetail />} />
                 </Route>
+
+                {/* Distribution */}
                 <Route path="/distributions" element={<DistributionList />} />
                 <Route path="/distributions/new" element={<DistributionForm />} />
                 <Route path="/distributions/:id" element={<DistributionDetail />} />

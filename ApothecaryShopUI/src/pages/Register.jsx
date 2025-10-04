@@ -2,15 +2,12 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
 import axios from 'axios';
+import { toast } from 'react-toastify';  // ✅ added
 
 const Register = () => {
   const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    password: '',
-    confirmPassword: ''
+    name: '', email: '', password: '', confirmPassword: ''
   });
-  const [error, setError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const navigate = useNavigate();
@@ -21,49 +18,39 @@ const Register = () => {
 
   const onSubmit = async e => {
     e.preventDefault();
-
-    // Validate passwords match
     if (password !== confirmPassword) {
-      setError('Passwords do not match');
+      toast.error('Passwords do not match');
       return;
     }
-
-    // Validate password length
     if (password.length < 6) {
-      setError('Password must be at least 6 characters');
+      toast.warn('Password must be at least 6 characters');
       return;
     }
 
     try {
-      // Remove confirmPassword from data sent to API
-      const registerData = {
-        name,
-        email,
-        password,
-        role: 'staff' // Default role
-      };
-
+      const registerData = { name, email, password, role: 'staff' };
       await axios.post(`${import.meta.env.VITE_API_URL}/register`, registerData);
-
-      // Redirect to login page on successful registration
-      navigate('/');
+      toast.success('Account created successfully 🎉 Please login.');
+      setTimeout(() => navigate('/'), 1500);
     } catch (err) {
-      setError(err.response?.data?.message || err.response?.data?.error || 'Registration failed');
+      toast.error(err.response?.data?.message || err.response?.data?.error || 'Registration failed');
     }
   };
 
   return (
+    
+
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8 bg-white p-10 rounded-lg shadow-md">
         <div>
           <h1 className="text-center text-3xl font-extrabold text-gray-900">Create Account</h1>
           <p className="mt-2 text-center text-sm text-gray-600">
             Register for the Apothecary Shop system
+            
           </p>
+          
         </div>
-        {error && <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
-          <span className="block sm:inline">{error}</span>
-        </div>}
+        
         <form className="mt-8 space-y-6" onSubmit={onSubmit}>
           <div className="rounded-md shadow-sm -space-y-px">
             <div className="mb-4">

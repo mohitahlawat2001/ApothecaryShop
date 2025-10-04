@@ -1,45 +1,39 @@
+
 import React, { useState, useContext } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
 import axios from 'axios';
 import { AuthContext } from '../context/AuthContext';
+import { toast } from 'react-toastify';  // ✅ added
 
 const Login = () => {
-  const [formData, setFormData] = useState({
-    email: '',
-    password: ''
-  });
-  const [error, setError] = useState('');
+  const [formData, setFormData] = useState({ email: '', password: '' });
   const [showPassword, setShowPassword] = useState(false);
   const { setAuth } = useContext(AuthContext);
   const navigate = useNavigate();
-  
+
   const { email, password } = formData;
-  
+
   const onChange = e => setFormData({ ...formData, [e.target.name]: e.target.value });
-  
+
   const onSubmit = async e => {
     e.preventDefault();
     try {
       const res = await axios.post(`${import.meta.env.VITE_API_URL}/login`, formData);
-      
       const token = res.data.token;
-      // Set Bearer token in localStorage with proper format
       localStorage.setItem('token', `Bearer ${token}`);
       localStorage.setItem('user', JSON.stringify(res.data.user));
-      
-      // Set default Authorization header for all future axios requests
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-      
       setAuth({
         token: token,
         isAuthenticated: true,
         user: res.data.user
       });
-      
-      navigate('/dashboard');
+
+      toast.success('Login successful 👋 Redirecting...');
+      setTimeout(() => navigate('/dashboard'), 1000);
     } catch (err) {
-      setError(err.response?.data?.message || 'Login failed');
+      toast.error(err.response?.data?.message || 'Login failed');
     }
   };
   
@@ -52,9 +46,7 @@ const Login = () => {
             Access your pharmaceutical inventory
           </p>
         </div>
-        {error && <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
-          <span className="block sm:inline">{error}</span>
-        </div>}
+        
         <form className="mt-8 space-y-6" onSubmit={onSubmit}>
           <div className="rounded-md shadow-sm -space-y-px">
             <div className="mb-4">
