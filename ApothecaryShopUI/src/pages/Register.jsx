@@ -4,6 +4,7 @@ import { FaEye, FaEyeSlash } from 'react-icons/fa';
 import axios from 'axios';
 import { AuthContext } from '../context/AuthContext.jsx';
 import { googleAuthService } from '../services/googleAuthService';
+import { motion } from 'framer-motion';
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -19,6 +20,24 @@ const Register = () => {
   const navigate = useNavigate();
 
   const { name, email, password, confirmPassword } = formData;
+
+  // Framer Motion variants
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: { opacity: 1, transition: { staggerChildren: 0.08 } }
+  };
+  const panelLeftVariants = {
+    hidden: { opacity: 0, x: -24 },
+    visible: { opacity: 1, x: 0, transition: { type: 'spring', stiffness: 140, damping: 18 } }
+  };
+  const cardVariants = {
+    hidden: { opacity: 0, x: 24 },
+    visible: { opacity: 1, x: 0, transition: { type: 'spring', stiffness: 140, damping: 18 } }
+  };
+  const itemVariants = {
+    hidden: { opacity: 0, y: 8 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.22 } }
+  };
 
   // Handle Google OAuth callback
   useEffect(() => {
@@ -94,34 +113,50 @@ const Register = () => {
   };
 
   return (
-    <div className="min-h-screen md:h-screen flex items-center justify-center overflow-hidden bg-gray-50 py-4 md:py-0 px-4 sm:px-6 lg:px-8">
+    <motion.div
+      initial="hidden"
+      animate="visible"
+      variants={containerVariants}
+      className="min-h-screen md:h-screen flex items-center justify-center overflow-hidden bg-gray-50 py-4 md:py-0 px-4 sm:px-6 lg:px-8"
+    >
       <div className="w-full max-w-5xl grid grid-cols-1 md:grid-cols-2 gap-0">
         {/* Left Welcome Panel */}
-        <div className="hidden md:flex flex-col justify-center rounded-l-2xl bg-emerald-600 text-white px-8 py-16 shadow-lg">
+        <motion.div
+          variants={panelLeftVariants}
+          className="hidden md:flex flex-col justify-center rounded-l-2xl bg-emerald-600 text-white px-8 py-16 shadow-xl"
+        >
           <div className="mx-auto text-center max-w-xs">
-            <p className="text-lg">Welcome To</p>
-            <h2 className="text-3xl font-extrabold">ApothecaryShop</h2>
-            <p className="mt-4 text-lg opacity-90">Access your pharmaceutical inventory</p>
+            <motion.p variants={itemVariants} className="text-lg">Welcome To</motion.p>
+            <motion.h2 variants={itemVariants} className="text-3xl font-extrabold">ApothecaryShop</motion.h2>
+            <motion.p variants={itemVariants} className="mt-4 text-lg opacity-90">Access your pharmaceutical inventory</motion.p>
           </div>
-        </div>
+        </motion.div>
 
         {/* Right Form Card */}
-        <div className="bg-white rounded-2xl md:rounded-l-none md:rounded-r-2xl shadow-xl p-8 md:p-10">
+        <motion.div
+          variants={cardVariants}
+          className="bg-white rounded-2xl md:rounded-l-none md:rounded-r-2xl shadow-2xl p-8 md:p-10"
+        >
           <div className="mb-6">
-            <h1 className="text-2xl font-extrabold text-emerald-800">Sign up to ApothecaryShop</h1>
+            <h1 className="text-2xl font-extrabold text-emerald-800">Create your account</h1>
             <p className="mt-2 text-sm text-gray-600">
               Already have an account? <Link to="/" className="text-emerald-700 font-medium hover:underline">Sign In</Link>
             </p>
           </div>
 
           {error && (
-            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md" role="alert">
+            <motion.div
+              initial={{ opacity: 0, y: -6 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md"
+              role="alert"
+            >
               <span className="block sm:inline">{error}</span>
-            </div>
+            </motion.div>
           )}
 
-          <form className="mt-6 space-y-5" onSubmit={onSubmit}>
-            <div>
+          <motion.form className="mt-6 space-y-5" onSubmit={onSubmit}>
+            <motion.div variants={itemVariants}>
               <label htmlFor="name" className="block text-xs font-medium text-gray-700 mb-2">Full Name</label>
               <input
                 id="name"
@@ -130,11 +165,11 @@ const Register = () => {
                 value={name}
                 onChange={onChange}
                 required
-                className="w-full px-4 py-2.5 rounded-full bg-emerald-50 border border-emerald-100 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-300"
+                className="w-full px-4 py-2.5 rounded-full bg-emerald-50 border border-emerald-100 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-300 hover:bg-emerald-50/80 transition"
               />
-            </div>
+            </motion.div>
 
-            <div>
+            <motion.div variants={itemVariants}>
               <label htmlFor="email" className="block text-xs font-medium text-gray-700 mb-2">Email</label>
               <input
                 id="email"
@@ -143,11 +178,11 @@ const Register = () => {
                 value={email}
                 onChange={onChange}
                 required
-                className="w-full px-4 py-2.5 rounded-full bg-emerald-50 border border-emerald-100 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-300"
+                className="w-full px-4 py-2.5 rounded-full bg-emerald-50 border border-emerald-100 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-300 hover:bg-emerald-50/80 transition"
               />
-            </div>
+            </motion.div>
 
-            <div>
+            <motion.div variants={itemVariants}>
               <label htmlFor="password" className="block text-xs font-medium text-gray-700 mb-2">Password</label>
               <div className="relative flex items-center">
                 <input
@@ -157,7 +192,7 @@ const Register = () => {
                   value={password}
                   onChange={onChange}
                   required
-                  className="w-full pr-10 px-4 py-2.5 rounded-full bg-emerald-50 border border-emerald-100 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-300"
+                  className="w-full pr-10 px-4 py-2.5 rounded-full bg-emerald-50 border border-emerald-100 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-300 hover:bg-emerald-50/80 transition"
                 />
                 <button
                   type="button"
@@ -167,9 +202,9 @@ const Register = () => {
                   {showPassword ? <FaEyeSlash /> : <FaEye />}
                 </button>
               </div>
-            </div>
+            </motion.div>
 
-            <div>
+            <motion.div variants={itemVariants}>
               <label htmlFor="confirmPassword" className="block text-xs font-medium text-gray-700 mb-2">Confirm Password</label>
               <div className="relative flex items-center">
                 <input
@@ -179,7 +214,7 @@ const Register = () => {
                   value={confirmPassword}
                   onChange={onChange}
                   required
-                  className="w-full pr-10 px-4 py-2.5 rounded-full bg-emerald-50 border border-emerald-100 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-300"
+                  className="w-full pr-10 px-4 py-2.5 rounded-full bg-emerald-50 border border-emerald-100 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-300 hover:bg-emerald-50/80 transition"
                 />
                 <button
                   type="button"
@@ -189,15 +224,19 @@ const Register = () => {
                   {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
                 </button>
               </div>
-            </div>
+            </motion.div>
 
-            <button
-              type="submit"
-              className="w-full py-2.5 rounded-full bg-emerald-700 text-white font-medium hover:bg-emerald-800 transition-colors"
-            >
-              Sign Up
-            </button>
-          </form>
+            <motion.div variants={itemVariants}>
+              <motion.button
+                whileHover={{ scale: 1.02, y: -1 }}
+                whileTap={{ scale: 0.98 }}
+                type="submit"
+                className="w-full py-2.5 rounded-full bg-emerald-700 text-white font-medium hover:bg-emerald-800 transition-colors shadow-md"
+              >
+                Sign Up
+              </motion.button>
+            </motion.div>
+          </motion.form>
 
           {/* Divider */}
           <div className="mt-6">
@@ -213,7 +252,9 @@ const Register = () => {
 
           {/* Google Sign-In Button */}
           <div className="mt-6">
-            <button
+            <motion.button
+              whileHover={{ scale: 1.02, y: -1 }}
+              whileTap={{ scale: 0.98 }}
               type="button"
               onClick={handleGoogleSignIn}
               className="w-full flex justify-center items-center px-6 py-2.5 border border-emerald-100 rounded-full shadow-sm bg-white text-sm font-semibold text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-emerald-300"
@@ -227,11 +268,11 @@ const Register = () => {
                 </svg>
                 <span>Continue with Google</span>
               </div>
-            </button>
+            </motion.button>
           </div>
-        </div>
+        </motion.div>
       </div>
-    </div>
+    </motion.div>
   );
 };
 

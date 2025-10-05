@@ -17,6 +17,7 @@
     "date-fns": "^4.1.0",
     "jspdf": "^3.0.0",
     "jspdf-autotable": "^5.0.2",
+    "motion": "^12.23.22",
     "react": "^19.0.0",
     "react-chartjs-2": "^5.3.0",
     "react-dom": "^19.0.0",
