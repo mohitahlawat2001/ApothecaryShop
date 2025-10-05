@@ -94,14 +94,14 @@ const Register = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen md:h-screen flex items-center justify-center overflow-hidden bg-gray-50 py-4 md:py-0 px-4 sm:px-6 lg:px-8">
       <div className="w-full max-w-5xl grid grid-cols-1 md:grid-cols-2 gap-0">
         {/* Left Welcome Panel */}
         <div className="hidden md:flex flex-col justify-center rounded-l-2xl bg-emerald-600 text-white px-8 py-16 shadow-lg">
           <div className="mx-auto text-center max-w-xs">
             <p className="text-lg">Welcome To</p>
-            <h2 className="text-2xl font-extrabold">ApothecaryShop</h2>
-            <p className="mt-4 text-sm opacity-90">Access your pharmaceutical inventory</p>
+            <h2 className="text-3xl font-extrabold">ApothecaryShop</h2>
+            <p className="mt-4 text-lg opacity-90">Access your pharmaceutical inventory</p>
           </div>
         </div>
 

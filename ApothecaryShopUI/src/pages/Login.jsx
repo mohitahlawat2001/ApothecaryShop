@@ -89,8 +89,8 @@ const Login = () => {
         <div className="hidden md:flex flex-col justify-center rounded-l-2xl bg-emerald-600 text-white px-8 py-16 shadow-lg">
           <div className="mx-auto text-center max-w-xs">
             <p className="text-lg">Welcome To</p>
-            <h2 className="text-2xl font-extrabold">ApothecaryShop</h2>
-            <p className="mt-4 text-sm opacity-90">Access your pharmaceutical inventory</p>
+            <h2 className="text-3xl font-extrabold">ApothecaryShop</h2>
+            <p className="text-lg mt-4  opacity-90">Access your pharmaceutical inventory</p>
           </div>
         </div>
 
@@ -99,7 +99,7 @@ const Login = () => {
           <div className="mb-6">
             <h1 className="text-2xl font-extrabold text-emerald-800">Sign up to ApothecaryShop</h1>
             <p className="mt-2 text-sm text-gray-600">
-              Already have an account? <Link to="/register" className="text-emerald-700 font-medium hover:underline">Register</Link>
+              Already have an account? <Link to="/register" className="text-emerald-700 font-medium hover:underline">Sign Up</Link>
             </p>
           </div>
 
