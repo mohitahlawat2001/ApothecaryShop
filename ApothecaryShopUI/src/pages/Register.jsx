@@ -53,105 +53,120 @@ const Register = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8 bg-white p-10 rounded-lg shadow-md">
-        <div>
-          <h1 className="text-center text-3xl font-extrabold text-gray-900">Create Account</h1>
-          <p className="mt-2 text-center text-sm text-gray-600">
-            Register for the Apothecary Shop system
-          </p>
-        </div>
-        {error && <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
-          <span className="block sm:inline">{error}</span>
-        </div>}
-        <form className="mt-8 space-y-6" onSubmit={onSubmit}>
-          <div className="rounded-md shadow-sm -space-y-px">
-            <div className="mb-4">
-              <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
-              <input
-                id="name"
-                type="text"
-                name="name"
-                value={name}
-                onChange={onChange}
-                required
-                className="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-              />
-            </div>
-
-            <div className="mb-4">
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-              <input
-                id="email"
-                type="email"
-                name="email"
-                value={email}
-                onChange={onChange}
-                required
-                className="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-              />
-            </div>
-
-            <div className="mb-4">
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">Password</label>
-              <div className="relative flex items-center">
-                <input
-                  id="password"
-                  type={showPassword ? "text" : "password"}
-                  name="password"
-                  value={password}
-                  onChange={onChange}
-                  required
-                  className="appearance-none relative block w-full px-3 pr-10 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute inset-y-0 right-3 flex items-center cursor-pointer text-gray-600 hover:text-gray-800 focus:outline-none z-20"
-                >
-                  {showPassword ? <FaEyeSlash /> : <FaEye />}
-                </button>
-
-              </div>
-            </div>
-
-            <div className="mb-4">
-              <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-1">Confirm Password</label>
-              <div className="relative flex items-center">
-                <input
-                  id="confirmPassword"
-                  type={showConfirmPassword ? "text" : "password"}
-                  name="confirmPassword"
-                  value={confirmPassword}
-                  onChange={onChange}
-                  required
-                  className="appearance-none relative block w-full px-3 pr-10 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  className="absolute inset-y-0 right-3 flex items-center cursor-pointer text-gray-600 hover:text-gray-800 focus:outline-none z-20"
-                >
-                  {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
-                </button>
-
-              </div>
+    <div className="min-h-screen flex items-center justify-center bg-white py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-4xl w-full bg-white rounded-2xl shadow-lg overflow-hidden">
+        <div className="flex">
+          {/* Left Panel - Welcome Section */}
+          <div className="w-[350px] bg-teal-600 flex flex-col justify-center items-center text-white p-12">
+            <div className="text-center">
+              <h2 className="text-2xl font-light mb-2">Welcome To</h2>
+              <h1 className="text-4xl font-bold text-white mb-4">ApothecaryShop</h1>
+              <p className="text-lg text-teal-100">Access your pharmaceutical inventory</p>
             </div>
           </div>
 
-          <div>
-            <button
-              type="submit"
-              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-            >
-              Register
-            </button>
+          {/* Right Panel - Sign Up Form */}
+          <div className="w-2/3 p-12">
+            <div className="flex items-center mb-6">
+              <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center mr-3">
+                <span className="text-white text-xs">🌿</span>
+              </div>
+              <h2 className="text-2xl font-bold text-gray-800">Sign up to ApothecaryShop</h2>
+            </div>
+            
+            <p className="text-gray-600 mb-8">
+              Already have an account? <Link to="/" className="text-gray-800 underline">Sign In</Link>
+            </p>
+
+            {error && (
+              <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-6" role="alert">
+                <span className="block sm:inline">{error}</span>
+              </div>
+            )}
+
+            <form onSubmit={onSubmit} className="space-y-4">
+              <div>
+                <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
+                <input
+                  id="name"
+                  type="text"
+                  name="name"
+                  value={name}
+                  onChange={onChange}
+                  required
+                  className="w-full px-4 py-3 border border-green-200 rounded-lg bg-green-50 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                  placeholder="Enter your full name"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                <input
+                  id="email"
+                  type="email"
+                  name="email"
+                  value={email}
+                  onChange={onChange}
+                  required
+                  className="w-full px-4 py-3 border border-green-200 rounded-lg bg-green-50 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                  placeholder="Enter your email"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">Password</label>
+                <div className="relative">
+                  <input
+                    id="password"
+                    type={showPassword ? "text" : "password"}
+                    name="password"
+                    value={password}
+                    onChange={onChange}
+                    required
+                    className="w-full px-4 py-3 pr-12 border border-green-200 rounded-lg bg-green-50 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                    placeholder="Enter your password"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500 hover:text-gray-700"
+                  >
+                    {showPassword ? <FaEyeSlash /> : <FaEye />}
+                  </button>
+                </div>
+              </div>
+
+              <div>
+                <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-2">Confirm Password</label>
+                <div className="relative">
+                  <input
+                    id="confirmPassword"
+                    type={showConfirmPassword ? "text" : "password"}
+                    name="confirmPassword"
+                    value={confirmPassword}
+                    onChange={onChange}
+                    required
+                    className="w-full px-4 py-3 pr-12 border border-green-200 rounded-lg bg-green-50 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                    placeholder="Confirm your password"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500 hover:text-gray-700"
+                  >
+                    {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
+                  </button>
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                className="w-full bg-green-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition duration-200"
+              >
+                Sign Up
+              </button>
+            </form>
           </div>
-        </form>
-        <div className="text-center mt-4">
-          <p className="text-sm text-gray-600">
-            Already have an account? <Link to="/" className="font-medium text-indigo-600 hover:text-indigo-500">Sign in</Link>
-          </p>
         </div>
       </div>
     </div>
