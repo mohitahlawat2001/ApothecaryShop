@@ -3,6 +3,7 @@ import axios from "axios";
 import { AuthContext } from "../context/AuthContext.jsx";
 import { Link } from "react-router-dom";
 import DashboardAiAnalysis from "../components/DashboardAiAnalysis";
+import { addAbbreviation } from "../../utils/util.js";
 
 const Dashboard = () => {
   const { user } = useContext(AuthContext);
@@ -190,7 +191,7 @@ const Dashboard = () => {
               Total Value
             </h3>
             <p className="text-3xl font-bold text-gray-800">
-              ${stats.totalValue.toFixed(2)}
+              ${addAbbreviation(stats.totalValue)}
             </p>
           </div>
         </div>
