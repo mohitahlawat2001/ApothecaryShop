@@ -10,7 +10,7 @@ function googleOauthController(){
 
 function googleCallbackMiddleware(){
     return passport.authenticate('google', {
-        failureRedirect: 'http://localhost:5173/login', // Your login page
+        failureRedirect: process.env.GOOGLE_CALLBACK_FAIL_URL, // Your login page
         session: false // Use JWT, not session-based auth
     })
 }

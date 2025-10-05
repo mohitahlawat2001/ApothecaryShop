@@ -64,14 +64,35 @@ A comprehensive backend application for managing an apothecary/pharmacy shop inv
    npm install
    ```
 
-3. Create a `.env` file in the root directory with the following variables:
+3. You will need to make a account in google cloud console for the Oauth2 authentication.
+   ```
+   1. Create Credentials in Google Cloud Console
+    Go to the Google Cloud Console, create a new project, and navigate to APIs & Services.
+   
+   2. Go to the OAuth consent screen.
+    Choose External user type.
+    Add your App name, Support email, and your own email as a Test user.
+   
+   3. Go to the Credentials tab.
+    Click + Create Credentials > OAuth client ID.
+    Select Web application as the type.
+    Add an Authorized redirect URI, which will be your GOOGLE_CALLBACK_URL (e.g., http://localhost:5000/api/auth/google/callback). make sure this matches with the callback provided in passport.config
+
+    4. Get the GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET from the console and add it in the .env
+   ```
+
+4. Create a `.env` file in the root directory with the following variables:
    ```
    PORT=5000
    MONGO_URI=your_mongodb_connection_string
    JWT_SECRET=your_jwt_secret_key
+   GOOGLE_CLIENT_ID=your-google-client-id-here
+   GOOGLE_CLIENT_SECRET=your-google-client-secret-here
+   GOOGLE_CALLBACK_URL=your-google-callback-url
+   GOOGLE_CALLBACK_FAIL_URL=your-google-callback-fail-url
    ```
 
-4. Start the server:
+5. Start the server:
    ```
    npm start
    ```
