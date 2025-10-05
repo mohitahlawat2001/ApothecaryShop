@@ -1,11 +1,11 @@
 import React, { useEffect, useState, useContext } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { AuthContext } from '../../context/AuthContext';
+import { AuthContext } from '../../context/AuthContext.jsx';
 
 const SupplierDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { getBearerToken } = useContext(AuthContext);
+  const { token } = useContext(AuthContext);
   const [supplier, setSupplier] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -15,7 +15,7 @@ const SupplierDetail = () => {
       try {
         const response = await fetch(`${import.meta.env.VITE_API_URL}/suppliers/${id}`, {
           headers: {
-            Authorization: getBearerToken(),
+            Authorization: token,
           },
         });
 
@@ -33,7 +33,7 @@ const SupplierDetail = () => {
     };
 
     fetchSupplier();
-  }, [id, getBearerToken]);
+  }, [id, token]);
 
   const handleDelete = async () => {
     if (window.confirm('Are you sure you want to delete this supplier?')) {
@@ -41,7 +41,7 @@ const SupplierDetail = () => {
         const response = await fetch(`${import.meta.env.VITE_API_URL}/suppliers/${id}`, {
           method: 'DELETE',
           headers: {
-            Authorization: getBearerToken(),
+            Authorization: token,
           },
         });
 

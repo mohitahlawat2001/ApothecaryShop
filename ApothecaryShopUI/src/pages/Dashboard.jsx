@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useContext } from "react";
 import axios from "axios";
-import { AuthContext } from "../context/AuthContext";
+import { AuthContext } from "../context/AuthContext.jsx";
 import { Link } from "react-router-dom";
 import DashboardAiAnalysis from "../components/DashboardAiAnalysis";
 
 const Dashboard = () => {
-  const { auth } = useContext(AuthContext);
+  const { user } = useContext(AuthContext);
   const [stats, setStats] = useState({
     totalProducts: 0,
     lowStockProducts: 0,
@@ -149,7 +149,7 @@ const Dashboard = () => {
       <div className="container mx-auto p-4 sm:p-6 lg:p-8 bg-white">
         <h1 className="text-3xl font-bold text-gray-800 mb-2">Dashboard</h1>
         <p className="text-gray-600 mb-6">
-          Welcome, {auth.user?.name || "User"}
+          Welcome, {user?.name || "User"}
         </p>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">

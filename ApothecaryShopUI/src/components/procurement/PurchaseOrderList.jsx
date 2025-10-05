@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { format } from 'date-fns';
 import { getPurchaseOrders, updatePurchaseOrderStatus } from '../../services/purchaseOrderService';
 import { getCurrentUser } from '../../services/authService';
-import { AuthContext } from '../../context/AuthContext';
+import { AuthContext } from '../../context/AuthContext.jsx';
 
 function PurchaseOrderList() {
   const [orders, setOrders] = useState([]);
@@ -13,7 +13,7 @@ function PurchaseOrderList() {
   const [toast, setToast] = useState({ show: false, message: '', type: 'error' });
   const [userRole, setUserRole] = useState('');
   
-  const { auth } = useContext(AuthContext);
+  const { user } = useContext(AuthContext);
 
   useEffect(() => {
     fetchOrders();
@@ -23,8 +23,8 @@ function PurchaseOrderList() {
   // Fetch user role from AuthContext or authService
   const fetchUserRole = () => {
     // First try to get from context
-    if (auth && auth.user && auth.user.role) {
-      setUserRole(auth.user.role);
+    if (user && user.role) {
+      setUserRole(user.role);
     } else {
       // Fallback to authService if not available in context
       const user = getCurrentUser();

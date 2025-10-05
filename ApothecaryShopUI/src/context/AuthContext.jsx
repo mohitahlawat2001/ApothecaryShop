@@ -1,5 +1,6 @@
 import React, { createContext, useState, useEffect } from 'react';
 import axios from 'axios';
+import { googleAuthService } from '../services/googleAuthService';
 
 export const AuthContext = createContext();
 
@@ -14,6 +15,22 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     // Check if user is authenticated on initial load
     const checkAuth = async () => {
+      // First, check if we're returning from Google OAuth
+      const googleCallback = googleAuthService.checkGoogleCallback();
+      if (googleCallback) {
+        const result = await googleAuthService.handleGoogleCallback(googleCallback.token, googleCallback.user);
+        if (result.success) {
+          setAuth({
+            token: result.token,
+            isAuthenticated: true,
+            user: result.user,
+            loading: false
+          });
+          googleAuthService.clearCallbackParams();
+          return;
+        }
+      }
+
       if (localStorage.getItem('token')) {
         try {
           // Set token in axios headers

@@ -1,10 +1,10 @@
 import React, { useContext } from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
-import { AuthContext } from '../../context/AuthContext'; // Fixed import path
+import { AuthContext } from '../../context/AuthContext.jsx';
 
 function ProcurementLayout() {
-  const { auth } = useContext(AuthContext); // Access auth instead of user
-  const isAdmin = auth?.user?.role === 'admin'; // Check if user is an admin
+  const { user } = useContext(AuthContext);
+  const isAdmin = user?.role === 'admin';
   
   return (
     <div className="container mx-auto px-4 py-6">
