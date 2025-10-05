@@ -2,7 +2,6 @@ const express = require('express');
 const router = express.Router();
 const StockMovement = require('../models/StockMovement');
 const Product = require('../models/Product');
-const auth = require('../middleware/auth');
 
 /**
  * @route   GET /api/stockMovements/product/:productId
@@ -16,7 +15,7 @@ const auth = require('../middleware/auth');
  * Headers:
  *   x-auth-token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
  */
-router.get('/product/:productId', auth, async (req, res) => {
+router.get('/product/:productId', async (req, res) => {
   try {
     const movements = await StockMovement.find({ product: req.params.productId })
       .sort({ createdAt: -1 })
@@ -67,7 +66,7 @@ router.get('/product/:productId', auth, async (req, res) => {
  *   "expiryDate": "2023-12-31"
  * }
  */
-router.post('/', auth, async (req, res) => {
+router.post('/', async (req, res) => {
   try {
     const { productId, type, quantity, reason, batchNumber, expiryDate } = req.body;
     

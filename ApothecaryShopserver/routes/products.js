@@ -1,7 +1,6 @@
 const express = require('express');
 const router = express.Router();
 const Product = require('../models/Product');
-const auth = require('../middleware/auth');
 
 /**
  * @route   GET /api/products
@@ -11,7 +10,7 @@ const auth = require('../middleware/auth');
  * @test    Postman: GET http://localhost:PORT/api/products
  *          Headers required: Authorization: Bearer YOUR_JWT_TOKEN
  */
-router.get('/', auth, async (req, res) => {
+router.get('/', async (req, res) => {
   try {
     const products = await Product.find().sort({ name: 1 });
     res.json(products);
@@ -29,7 +28,7 @@ router.get('/', auth, async (req, res) => {
  * @test    Postman: GET http://localhost:PORT/api/products/:id
  *          Headers required: Authorization: Bearer YOUR_JWT_TOKEN
  */
-router.get('/:id', auth, async (req, res) => {
+router.get('/:id', async (req, res) => {
   try {
     const product = await Product.findById(req.params.id);
     if (!product) return res.status(404).json({ message: 'Product not found' });
@@ -70,7 +69,7 @@ router.get('/:id', auth, async (req, res) => {
  *            "reorderLevel": 50
  *          }
  */
-router.post('/', auth, async (req, res) => {
+router.post('/', async (req, res) => {
   try {
     const newProduct = new Product(req.body);
     const product = await newProduct.save();
@@ -105,7 +104,7 @@ router.post('/', auth, async (req, res) => {
  *            "reorderLevel": 75
  *          }
  */
-router.put('/:id', auth, async (req, res) => {
+router.put('/:id', async (req, res) => {
   try {
     const product = await Product.findByIdAndUpdate(
       req.params.id,
@@ -128,7 +127,7 @@ router.put('/:id', auth, async (req, res) => {
  * @test    Postman: DELETE http://localhost:PORT/api/products/:id
  *          Headers required: Authorization: Bearer YOUR_JWT_TOKEN
  */
-router.delete('/:id', auth, async (req, res) => {
+router.delete('/:id', async (req, res) => {
   try {
     const product = await Product.findByIdAndDelete(req.params.id);
     if (!product) return res.status(404).json({ message: 'Product not found' });
@@ -152,7 +151,7 @@ router.delete('/:id', auth, async (req, res) => {
  *          Headers required: Authorization: Bearer YOUR_JWT_TOKEN, Content-Type: application/json
  *          Body example: { "adjustment": 50, "reason": "New shipment" }
  */
-router.patch('/:id/stock', auth, async (req, res) => {
+router.patch('/:id/stock', async (req, res) => {
   try {
     const { adjustment, reason } = req.body;
     const product = await Product.findById(req.params.id);

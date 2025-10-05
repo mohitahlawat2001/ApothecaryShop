@@ -2,7 +2,6 @@ const express = require('express');
 const router = express.Router();
 const PurchaseOrder = require('../models/purchaseOrder');
 //const Product = require('../models/product');
-const auth = require('../middleware/auth');
 const { adminOnly, staffAccess } = require('../middleware/roleCheck');
 
 /**
@@ -53,7 +52,7 @@ const { adminOnly, staffAccess } = require('../middleware/roleCheck');
  *       }
  *     ]
  */
-router.get('/', auth, staffAccess, async (req, res) => {
+router.get('/', staffAccess, async (req, res) => {
   try {
     const purchaseOrders = await PurchaseOrder.find()
       .populate('supplier', 'name contactPerson')
@@ -120,7 +119,7 @@ router.get('/', auth, staffAccess, async (req, res) => {
  *       }
  *     }
  */
-router.get('/:id', auth, staffAccess, async (req, res) => {
+router.get('/:id', staffAccess, async (req, res) => {
   try {
     const purchaseOrder = await PurchaseOrder.findById(req.params.id)
       .populate('supplier')
@@ -209,7 +208,7 @@ router.get('/:id', auth, staffAccess, async (req, res) => {
  *       "createdAt": "2023-07-04T09:15:30.123Z"
  *     }
  */
-router.post('/', auth, staffAccess, async (req, res) => {
+router.post('/', staffAccess, async (req, res) => {
   try {
     // Calculate totals
     const items = req.body.items;
@@ -304,7 +303,7 @@ router.post('/', auth, staffAccess, async (req, res) => {
  *       "updatedAt": "2023-07-04T10:30:45.789Z"
  *     }
  */
-router.put('/:id', auth, staffAccess, async (req, res) => {
+router.put('/:id', staffAccess, async (req, res) => {
   try {
     const purchaseOrder = await PurchaseOrder.findById(req.params.id);
     if (!purchaseOrder) {
@@ -378,7 +377,7 @@ router.put('/:id', auth, staffAccess, async (req, res) => {
  *       "updatedAt": "2023-07-04T11:45:20.456Z"
  *     }
  */
-router.patch('/:id/status', auth, staffAccess, async (req, res) => {
+router.patch('/:id/status', staffAccess, async (req, res) => {
   try {
     const { status } = req.body;
     if (!status) {

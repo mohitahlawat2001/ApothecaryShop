@@ -1,7 +1,6 @@
 const express = require("express");
 const router = express.Router();
 const maomaoAiController = require("../controllers/maomaoAiController");
-const auth = require("../middleware/auth");
 
 // Routes - protected by auth middleware
 // MaoMao AI route
@@ -23,6 +22,6 @@ const auth = require("../middleware/auth");
 // - "medical": Returns structured medical information with uses, side effects, etc.
 // - "recipe": Returns a medicinal preparation recipe with ingredients and steps
 // - others: Returns an object with title, content, and references
-router.post("/generate", auth, maomaoAiController.generateResponse);
+router.post("/generate", maomaoAiController.generateResponse);
 
 module.exports = router;

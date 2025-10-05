@@ -10,6 +10,7 @@ const User = require('./models/user');
 require('./config/passport.config');
 //Middle-ware import
 const cookieParser = require('cookie-parser');
+const authMiddleware = require('./middleware/auth');
 //Routes imports
 const supplierRoutes = require('./routes/suppliers');
 const purchaseOrderRoutes = require('./routes/purchaseOrders');
@@ -65,18 +66,18 @@ mongoose.connect(process.env.MONGO_URI)
 // Import routes
 const productsRouter = require('./routes/products');
 const stockMovementRouter = require('./routes/stockMovement');
-app.use('/api/suppliers', supplierRoutes);
-app.use('/api/purchase-orders', purchaseOrderRoutes);
-app.use('/api/purchase-receipts', purchaseReceiptRoutes);
-app.use('/api/external-products', externalProductRoutes);
+app.use('/api/suppliers', authMiddleware, supplierRoutes);
+app.use('/api/purchase-orders', authMiddleware, purchaseOrderRoutes);
+app.use('/api/purchase-receipts', authMiddleware, purchaseReceiptRoutes);
+app.use('/api/external-products', authMiddleware, externalProductRoutes);
 
 // Use routes
-app.use('/api/products', productsRouter);
-app.use('/api/stockMovements', stockMovementRouter);
-app.use('/api/distributions', distributionRoutes);
+app.use('/api/products', authMiddleware, productsRouter);
+app.use('/api/stockMovements', authMiddleware, stockMovementRouter);
+app.use('/api/distributions', authMiddleware, distributionRoutes);
 
-app.use('/api/maomao-ai', maomaoAiRoutes);
-app.use('/api/vision', visionRoutes); // Add vision routes
+app.use('/api/maomao-ai', authMiddleware, maomaoAiRoutes);
+app.use('/api/vision', authMiddleware, visionRoutes); // Add vision routes
 app.use('/api/auth/google', googleRoutes);
 
 // Auth routes
