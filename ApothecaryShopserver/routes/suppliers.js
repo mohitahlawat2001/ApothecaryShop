@@ -1,12 +1,11 @@
 const express = require('express');
 const router = express.Router();
 const Supplier = require('../models/supplier');
-const auth = require('../middleware/auth');
 const { adminOnly, staffAccess } = require('../middleware/roleCheck');
 
 // GET http://localhost:5000/api/suppliers
 // Headers: { "Authorization": "Bearer YOUR_TOKEN_HERE" }
-router.get('/', auth, staffAccess, async (req, res) => {
+router.get('/', staffAccess, async (req, res) => {
   try {
     const suppliers = await Supplier.find();
     res.status(200).json(suppliers);
@@ -17,7 +16,7 @@ router.get('/', auth, staffAccess, async (req, res) => {
 
 // GET http://localhost:5000/api/suppliers/SUPPLIER_ID_HERE
 // Headers: { "Authorization": "Bearer YOUR_TOKEN_HERE" }
-router.get('/:id', auth, staffAccess, async (req, res) => {
+router.get('/:id', staffAccess, async (req, res) => {
   try {
     const supplier = await Supplier.findById(req.params.id);
     if (!supplier) {
@@ -51,7 +50,7 @@ Body:
   "status": "active"
 }
 */
-router.post('/', auth, adminOnly, async (req, res) => {
+router.post('/', adminOnly, async (req, res) => {
   const supplier = new Supplier(req.body);
   try {
     const newSupplier = await supplier.save();
@@ -70,7 +69,7 @@ Body:
   "rating": 5
 }
   */
-router.put('/:id', auth, adminOnly, async (req, res) => {
+router.put('/:id', adminOnly, async (req, res) => {
   try {
     const supplier = await Supplier.findByIdAndUpdate(
       req.params.id,
@@ -88,7 +87,7 @@ router.put('/:id', auth, adminOnly, async (req, res) => {
 
 // DELETE http://localhost:5000/api/suppliers/SUPPLIER_ID_HERE
 // Headers: { "Authorization": "Bearer YOUR_TOKEN_HERE" }
-router.delete('/:id', auth, adminOnly, async (req, res) => {
+router.delete('/:id', adminOnly, async (req, res) => {
   try {
     const supplier = await Supplier.findByIdAndDelete(req.params.id);
     if (!supplier) {

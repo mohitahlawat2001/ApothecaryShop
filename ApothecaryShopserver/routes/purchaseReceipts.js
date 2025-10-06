@@ -5,11 +5,10 @@ const PurchaseReceipt = require('../models/purchaseReceipt');
 const PurchaseOrder = require('../models/purchaseOrder');
 const Product = require('../models/Product');
 const StockMovement = require('../models/StockMovement');
-const auth = require('../middleware/auth');
 const { adminOnly } = require('../middleware/roleCheck');
 
 // Get all purchase receipts
-router.get('/', auth, async (req, res) => {
+router.get('/', async (req, res) => {
   try {
     const receipts = await PurchaseReceipt.find()
       .populate('purchaseOrder', 'poNumber')
@@ -23,7 +22,7 @@ router.get('/', auth, async (req, res) => {
 });
 
 // Get a single purchase receipt
-router.get('/:id', auth, async (req, res) => {
+router.get('/:id', async (req, res) => {
   try {
     const receipt = await PurchaseReceipt.findById(req.params.id)
       .populate('purchaseOrder')
@@ -41,7 +40,7 @@ router.get('/:id', auth, async (req, res) => {
 });
 
 // Create a new purchase receipt
-router.post('/', auth, async (req, res) => {
+router.post('/', async (req, res) => {
   const session = await mongoose.startSession();
   session.startTransaction();
   
