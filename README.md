@@ -13,7 +13,7 @@ Watch our brief overview of ApothecaryShop in action here:
 ## Prerequisites
 Before you begin, ensure you have the following installed on your system:
 
-* **Node.js** (v14 or higher)
+* **Node.js** (v18 or higher, LTS recommended)
 * **MongoDB** (A running local or remote instance)
 * **Google Cloud Account** (Required for Google OAuth and Gemini AI features)
 * **Git**
@@ -27,7 +27,7 @@ Follow these steps to set up and run the project locally for development.
 Clone the project repository to your local machine and navigate into the main directory.
 
 ```bash
-git clone https://github.com/yourusername/ApothecaryShop.git
+git clone https://github.com/mohitahlawat2001/ApothecaryShop.git
 cd ApothecaryShop
 ```
 
@@ -44,7 +44,7 @@ npm run dev
 
  Server will be available at http://localhost:5000
 
-### 4. Frontend Setup (ApothecaryShopUI).
+### 4. Frontend Setup (ApothecaryShopUI)
 
 ```bash
 
