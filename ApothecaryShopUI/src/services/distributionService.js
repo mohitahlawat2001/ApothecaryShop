@@ -44,3 +44,41 @@ export const getDistributionReports = async (filters = {}) => {
   });
   return response.data;
 };
+
+// Export distributions to CSV
+export const exportDistributionsCSV = async (filters = {}) => {
+  const response = await axios.get(`${API_URL}/export/csv`, {
+    ...getAuthConfig(),
+    params: filters,
+    responseType: 'blob'
+  });
+  
+  // Create download link
+  const url = window.URL.createObjectURL(new Blob([response.data]));
+  const link = document.createElement('a');
+  link.href = url;
+  link.setAttribute('download', `distributions_${new Date().toISOString().split('T')[0]}.csv`);
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  window.URL.revokeObjectURL(url);
+};
+
+// Export distributions to PDF
+export const exportDistributionsPDF = async (filters = {}) => {
+  const response = await axios.get(`${API_URL}/export/pdf`, {
+    ...getAuthConfig(),
+    params: filters,
+    responseType: 'blob'
+  });
+  
+  // Create download link
+  const url = window.URL.createObjectURL(new Blob([response.data]));
+  const link = document.createElement('a');
+  link.href = url;
+  link.setAttribute('download', `distributions_${new Date().toISOString().split('T')[0]}.pdf`);
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  window.URL.revokeObjectURL(url);
+};

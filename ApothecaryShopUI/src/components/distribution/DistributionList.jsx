@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { getDistributions, deleteDistribution } from '../../services/distributionService';
+import { getDistributions, deleteDistribution, exportDistributionsCSV, exportDistributionsPDF } from '../../services/distributionService';
 
 const DistributionList = () => {
   const [distributions, setDistributions] = useState([]);
@@ -61,6 +61,22 @@ const DistributionList = () => {
     }
   };
 
+  const handleExportCSV = async () => {
+    try {
+      await exportDistributionsCSV(filters);
+    } catch (error) {
+      console.error('Error exporting CSV:', error);
+    }
+  };
+
+  const handleExportPDF = async () => {
+    try {
+      await exportDistributionsPDF(filters);
+    } catch (error) {
+      console.error('Error exporting PDF:', error);
+    }
+  };
+
   const getStatusBadge = (status) => {
     const badgeColors = {
       'pending': 'bg-yellow-100 text-yellow-800',
@@ -82,11 +98,25 @@ const DistributionList = () => {
     <div className="bg-white shadow-md rounded-lg overflow-hidden">
       <div className="flex justify-between items-center px-6 py-4 border-b border-gray-200">
         <h4 className="text-xl font-semibold text-gray-700">Distribution Orders</h4>
-        <Link to="/distributions/new">
-          <button className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500">
-            New Distribution
+        <div className="flex space-x-2">
+          <button
+            onClick={handleExportCSV}
+            className="px-3 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 text-sm"
+          >
+            Export CSV
           </button>
-        </Link>
+          <button
+            onClick={handleExportPDF}
+            className="px-3 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 text-sm"
+          >
+            Export PDF
+          </button>
+          <Link to="/distributions/new">
+            <button className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500">
+              New Distribution
+            </button>
+          </Link>
+        </div>
       </div>
       <div className="p-6">
         <form onSubmit={applyFilters} className="mb-6">

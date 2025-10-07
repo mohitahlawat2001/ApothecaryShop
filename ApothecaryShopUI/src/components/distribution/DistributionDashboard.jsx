@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { getDistributionReports } from '../../services/distributionService';
+import { getDistributionReports, exportDistributionsCSV, exportDistributionsPDF } from '../../services/distributionService';
 
 const DistributionDashboard = () => {
   const [reportData, setReportData] = useState({
@@ -50,6 +50,22 @@ const DistributionDashboard = () => {
     setTimeout(fetchReports, 0);
   };
 
+  const handleExportCSV = async () => {
+    try {
+      await exportDistributionsCSV(filters);
+    } catch (error) {
+      console.error('Error exporting CSV:', error);
+    }
+  };
+
+  const handleExportPDF = async () => {
+    try {
+      await exportDistributionsPDF(filters);
+    } catch (error) {
+      console.error('Error exporting PDF:', error);
+    }
+  };
+
   // Status color mapping
   const getStatusColor = (status) => {
     const colors = {
@@ -84,11 +100,25 @@ const DistributionDashboard = () => {
     <div className="bg-white shadow-md rounded-lg overflow-hidden">
       <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
         <h4 className="text-xl font-semibold text-gray-700">Distribution Analytics</h4>
-        <Link to="/distributions">
-          <button className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600">
-            View All Orders
+        <div className="flex space-x-2">
+          <button
+            onClick={handleExportCSV}
+            className="px-3 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 text-sm"
+          >
+            Export CSV
           </button>
-        </Link>
+          <button
+            onClick={handleExportPDF}
+            className="px-3 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 text-sm"
+          >
+            Export PDF
+          </button>
+          <Link to="/distributions">
+            <button className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600">
+              View All Orders
+            </button>
+          </Link>
+        </div>
       </div>
       
       <div className="p-6">
