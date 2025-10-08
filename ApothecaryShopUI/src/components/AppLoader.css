@@ -94,3 +94,17 @@
     transform: translateY(-8px);
   }
 }
+
+@media (prefers-reduced-motion: reduce) {
+  .swing-animation,
+  .particle1-animation,
+  .particle2-animation,
+  .particle3-animation,
+  .progress-animation,
+  .bounce-1,
+  .bounce-2,
+  .bounce-3 {
+    animation: none;
+    transform: none;
+  }
+}
