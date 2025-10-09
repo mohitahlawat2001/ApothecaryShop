@@ -95,8 +95,8 @@ GOOGLE_CALLBACK_FAIL_URL=your-google-callback-fail-url
 # FaceBook OAuth
 FACEBOOK_APP_ID=your_actual_app_id_here
 FACEBOOK_APP_SECRET=your_actual_app_secret_here
-FACEBOOK_CALLBACK_URL= your-facebook-callback-url 
-FACEBOOK_CALLBACK_FAIL_URL=your-facebook-callback-fail-url 
+FACEBOOK_CALLBACK_URL=your-facebook-callback-url
+FACEBOOK_CALLBACK_FAIL_URL=your-facebook-callback-fail-url
 
 # Google Gemini AI (Required for AI features)
 AI_API_KEY=your-google-gemini-ai-api-key-here
