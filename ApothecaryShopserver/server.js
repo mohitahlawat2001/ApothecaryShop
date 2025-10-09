@@ -6,12 +6,12 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const passport = require('passport');
 const User = require('./models/user');
-//OAUTH import
+// OAUTH imports
 require('./config/passport.config');
-//Middle-ware import
+// Middleware imports
 const cookieParser = require('cookie-parser');
 const authMiddleware = require('./middleware/auth');
-//Routes imports
+// Routes imports
 const supplierRoutes = require('./routes/suppliers');
 const purchaseOrderRoutes = require('./routes/purchaseOrders');
 const purchaseReceiptRoutes = require('./routes/purchaseReceipts');
@@ -20,6 +20,7 @@ const distributionRoutes = require('./routes/distribution');
 const maomaoAiRoutes = require('./routes/maomaoAi'); // Import MaoMao AI routes
 const visionRoutes = require('./routes/visionRoutes'); // Import Vision routes
 const googleRoutes = require('./routes/google'); // Import Google OAuth routes
+const facebookRoutes = require('./routes/facebook'); // Import Facebook OAuth routes
 
 dotenv.config();
 const app = express();
@@ -58,9 +59,13 @@ mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log('MongoDB connected'))
   .catch(err => console.error('MongoDB connection error:', err));
 
-// Root route (Google auth test link)
+// Root route (Optional: for testing auth links)
 // app.get('/', (req, res) => {
-//   res.send("<a href='/api/auth/google'>ApothecaryShop - Login with google</a>");
+//   res.send(`
+//     <h1>ApothecaryShop API</h1>
+//     <a href='/api/auth/google'>Login with Google</a><br/>
+//     <a href='/api/auth/facebook'>Login with Facebook</a>
+//   `);
 // });
 
 // Import routes
@@ -78,9 +83,11 @@ app.use('/api/distributions', authMiddleware, distributionRoutes);
 
 app.use('/api/maomao-ai', authMiddleware, maomaoAiRoutes);
 app.use('/api/vision', authMiddleware, visionRoutes); // Add vision routes
-app.use('/api/auth/google', googleRoutes);
 
 // Auth routes
+app.use('/api/auth/google', googleRoutes);
+app.use('/api/auth/facebook', facebookRoutes); // Add Facebook OAuth routes
+
 // POST http://localhost:5000/api/register
 // Body: { "name": "Test User", "email": "test@example.com", "password": "password123", "role": "staff" }
 app.post('/api/register', async (req, res) => {
@@ -102,6 +109,13 @@ app.post('/api/login', async (req, res) => {
     const user = await User.findOne({ email });
     if (!user) return res.status(400).json({ message: 'Invalid credentials' });
     
+    // Check if user has a password (OAuth users might not have passwords)
+    if (!user.password) {
+      return res.status(400).json({ 
+        message: 'This account uses OAuth login. Please use Google or Facebook to sign in.' 
+      });
+    }
+    
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) return res.status(400).json({ message: 'Invalid credentials' });
     
@@ -120,13 +134,31 @@ app.post('/api/login', async (req, res) => {
     console.log('Token signed with JWT_SECRET first 4 chars:', 
       process.env.JWT_SECRET?.substring(0, 4) || 'undefined');
     
-    res.json({ token, user: { id: user._id, name: user.name, email: user.email, role: user.role } });
+    res.json({ 
+      token, 
+      user: { 
+        id: user._id, 
+        name: user.name, 
+        email: user.email, 
+        role: user.role,
+        provider: user.provider,
+        avatar: user.avatar 
+      } 
+    });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 });
 
-app.use('/api/auth/google', googleRoutes);
+// Optional: Get current user profile
+app.get('/api/profile', authMiddleware, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).select('-password');
+    res.json({ user });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
 
 const PORT = process.env.PORT || 5000;
 

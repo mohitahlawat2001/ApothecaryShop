@@ -20,12 +20,13 @@
     "mongoose": "^7.0.3",
     "multer": "^1.4.5-lts.2",
     "passport": "^0.7.0",
+    "passport-facebook": "^3.0.0",
     "passport-google-oauth20": "^2.0.0"
   },
   "devDependencies": {
     "jest": "^29.5.0",
     "mongodb-memory-server": "^10.1.4",
-    "nodemon": "^2.0.22",
+    "nodemon": "^3.1.10",
     "supertest": "^6.3.3"
   },
   "jest": {

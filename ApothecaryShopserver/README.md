@@ -90,6 +90,10 @@ A comprehensive backend application for managing an apothecary/pharmacy shop inv
    GOOGLE_CLIENT_SECRET=your-google-client-secret-here
    GOOGLE_CALLBACK_URL=your-google-callback-url
    GOOGLE_CALLBACK_FAIL_URL=your-google-callback-fail-url
+   FACEBOOK_APP_ID=your_actual_app_id_here
+   FACEBOOK_APP_SECRET=your_actual_app_secret_here
+   FACEBOOK_CALLBACK_URL= your-facebook-callback-url 
+   FACEBOOK_CALLBACK_FAIL_URL=your-facebook-callback-fail-url 
    ```
 
 5. Start the server:
