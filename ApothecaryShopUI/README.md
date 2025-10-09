@@ -184,3 +184,15 @@ A modern pharmaceutical inventory management system built with React, featuring 
 - **Enhanced Document Styling**: More professional and visually appealing PDF documents
 - **Custom Templates**: Specialized document layouts for different business processes
 - **Dynamic Content Formatting**: Improved handling of document content with better layout
+
+## Favicon
+
+This project prefers a proper ICO at `/favicon.ico`. To generate one from the existing `src/assets/leaf.png` you'll find a helper script in `scripts/generate-favicon.ps1`.
+
+Usage (PowerShell):
+
+```powershell
+cd ApothecaryShopUI/scripts; ./generate-favicon.ps1
+```
+
+The script uses ImageMagick (`magick convert`) to create a multi-size `favicon.ico` placed in the UI root. Install ImageMagick and ensure `magick` is in your PATH before running.
