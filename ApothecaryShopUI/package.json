@@ -10,7 +10,7 @@
     "preview": "vite preview",
     "clean": "rm -rf node_modules/.vite",
     "generate:favicon": "node ./scripts/generate-favicon.js",
-    "generate:favicon:magick": "powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/generate-favicon.ps1"
+    "generate:favicon:magick": "powershell -NoProfile -File ./scripts/generate-favicon.ps1"
   },
   "dependencies": {
     "@tailwindcss/postcss": "^4.0.12",

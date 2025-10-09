@@ -187,12 +187,50 @@ A modern pharmaceutical inventory management system built with React, featuring 
 
 ## Favicon
 
-This project prefers a proper ICO at `/favicon.ico`. To generate one from the existing `src/assets/leaf.png` you'll find a helper script in `scripts/generate-favicon.ps1`.
+This project prefers a proper ICO at `/favicon.ico`. There are two supported ways to generate it:
 
-Usage (PowerShell):
+1) Cross-platform Node.js method (recommended)
+
+- Script: `scripts/generate-favicon.js`
+- NPM script: `npm run generate:favicon`
+- Library: uses `png-to-ico` to convert a PNG into a multi-size `favicon.ico`.
+- Prerequisite: Node.js/npm installed. Run `npm install` in the UI folder to install dependencies.
+- Usage:
 
 ```powershell
-cd ApothecaryShopUI/scripts; ./generate-favicon.ps1
+cd ApothecaryShopUI
+npm install
+npm run generate:favicon
 ```
 
-The script uses ImageMagick (`magick convert`) to create a multi-size `favicon.ico` placed in the UI root. Install ImageMagick and ensure `magick` is in your PATH before running.
+2) ImageMagick + PowerShell method
+
+- Script: `scripts/generate-favicon.ps1`
+- NPM script: `npm run generate:favicon:magick`
+- Direct PowerShell invocation: `./scripts/generate-favicon.ps1`
+- Prerequisite: ImageMagick installed and `magick` available on your PATH.
+- Usage:
+
+```powershell
+cd ApothecaryShopUI
+npm run generate:favicon:magick
+# or directly
+cd scripts
+./generate-favicon.ps1
+```
+
+Both methods produce a multi-size `favicon.ico` and write it to the UI root (`ApothecaryShopUI/favicon.ico`).
+
+PowerShell execution policy note
+
+The PowerShell script will run under your user/system execution policy. If the script is blocked by policy, run the script manually using PowerShell and follow your organization's security guidance. To run a single script (without permanently changing policy) you can invoke PowerShell and pass the script file; if you need to change policy temporarily, a common manual command is:
+
+```powershell
+# Run the script as your user (if policy permits)
+./scripts/generate-favicon.ps1
+
+# If you must change policy (requires admin to set MachinePolicy/SystemPolicy)
+Set-ExecutionPolicy RemoteSigned -Scope CurrentUser
+```
+
+If you change execution policy, prefer `-Scope CurrentUser` and use `RemoteSigned` rather than `Unrestricted` for better security. Revert the policy after if required by your environment.
