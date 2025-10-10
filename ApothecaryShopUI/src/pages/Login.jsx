@@ -205,6 +205,7 @@ const Login = () => {
                   required
                   className="w-full pl-12 pr-4 py-3 rounded-xl bg-gray-50/50 border border-gray-200 text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent hover:bg-gray-50 transition-all duration-200 shadow-sm"
                   placeholder="Enter your email"
+                  autoComplete='off'
                 />
               </div>
             </motion.div>
@@ -226,6 +227,7 @@ const Login = () => {
                   required
                   className="w-full pl-12 pr-12 py-3 rounded-xl bg-gray-50/50 border border-gray-200 text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent hover:bg-gray-50 transition-all duration-200 shadow-sm"
                   placeholder="Enter your password"
+                  autoComplete='off'
                 />
                 <button
                   type="button"
