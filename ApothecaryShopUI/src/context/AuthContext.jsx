@@ -1,6 +1,7 @@
 import React, { createContext, useState, useEffect } from 'react';
 import axios from 'axios';
 import { googleAuthService } from '../services/googleAuthService';
+import { facebookAuthService } from '../services/facebookAuthService';
 
 export const AuthContext = createContext();
 
@@ -27,6 +28,22 @@ export const AuthProvider = ({ children }) => {
             loading: false
           });
           googleAuthService.clearCallbackParams();
+          return;
+        }
+      }
+
+      // Check if we're returning from Facebook OAuth
+      const facebookCallback = facebookAuthService.checkFacebookCallback();
+      if (facebookCallback) {
+        const result = await facebookAuthService.handleFacebookCallback(facebookCallback.token, facebookCallback.user);
+        if (result.success) {
+          setAuth({
+            token: result.token,
+            isAuthenticated: true,
+            user: result.user,
+            loading: false
+          });
+          facebookAuthService.clearCallbackParams();
           return;
         }
       }
