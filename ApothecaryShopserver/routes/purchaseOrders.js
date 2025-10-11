@@ -44,7 +44,7 @@ const { adminOnly, staffAccess } = require('../middleware/roleCheck');
  *                         example: "John Smith"
  *                   status:
  *                     type: string
- *                     enum: ["draft", "submitted", "approved", "shipped", "received", "cancelled"]
+ *                     enum: ["draft", "submitted", "approved", "shipped", "received", "partially_received", "cancelled"]
  *                     example: "draft"
  *                   items:
  *                     type: array
@@ -185,7 +185,7 @@ router.get('/', staffAccess, async (req, res) => {
  *                       example: "123-456-7890"
  *                 status:
  *                   type: string
- *                   enum: ["draft", "submitted", "approved", "shipped", "received", "cancelled"]
+ *                   enum: ["draft", "submitted", "approved", "shipped", "received", "partially_received", "cancelled"]
  *                   example: "draft"
  *                 orderDate:
  *                   type: string
