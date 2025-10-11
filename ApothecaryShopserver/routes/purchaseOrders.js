@@ -5,52 +5,120 @@ const PurchaseOrder = require('../models/purchaseOrder');
 const { adminOnly, staffAccess } = require('../middleware/roleCheck');
 
 /**
- * @api {get} /purchase-orders Get all purchase orders
- * @apiName GetPurchaseOrders
- * @apiGroup PurchaseOrder
- * @apiPermission staff
- * 
- * @apiHeader {String} Authorization Bearer token
- * 
- * @apiExample {curl} Example usage:
- *     curl -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." http://localhost:5000/api/purchase-orders
- * 
- * @apiSuccess {Object[]} purchaseOrders List of purchase orders
- * @apiSuccessExample {json} Success-Response:
- *     HTTP/1.1 200 OK
- *     [
- *       {
- *         "_id": "64a2b7cc87c345a123456789",
- *         "poNumber": "PO-2307-0001",
- *         "supplier": {
- *           "_id": "64a1a5cc87c345a123456789",
- *           "name": "MediSupply Inc.",
- *           "contactPerson": "John Smith"
- *         },
- *         "status": "draft",
- *         "items": [
- *           {
- *             "product": {
- *               "_id": "64a1a5cc87c345a123456780",
- *               "name": "Ibuprofen 200mg",
- *               "sku": "IBU-200"
- *             },
- *             "quantity": 100,
- *             "unitPrice": 0.5,
- *             "discount": 0,
- *             "tax": 5,
- *             "totalPrice": 52.5
- *           }
- *         ],
- *         "subtotal": 52.5,
- *         "totalAmount": 52.5,
- *         "createdBy": {
- *           "_id": "64a1a5cc87c345a123456700",
- *           "name": "Admin User"
- *         },
- *         "createdAt": "2023-07-03T14:22:52.838Z"
- *       }
- *     ]
+ * @swagger
+ * /api/purchase-orders:
+ *   get:
+ *     tags:
+ *       - Purchase Orders
+ *     summary: Get all purchase orders
+ *     description: Retrieve all purchase orders with supplier and product information (requires staff or admin access)
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: List of all purchase orders
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   _id:
+ *                     type: string
+ *                     example: "64a2b7cc87c345a123456789"
+ *                   poNumber:
+ *                     type: string
+ *                     example: "PO-2307-0001"
+ *                   supplier:
+ *                     type: object
+ *                     properties:
+ *                       _id:
+ *                         type: string
+ *                         example: "64a1a5cc87c345a123456789"
+ *                       name:
+ *                         type: string
+ *                         example: "MediSupply Inc."
+ *                       contactPerson:
+ *                         type: string
+ *                         example: "John Smith"
+ *                   status:
+ *                     type: string
+ *                     enum: ["draft", "submitted", "approved", "shipped", "received", "cancelled"]
+ *                     example: "draft"
+ *                   items:
+ *                     type: array
+ *                     items:
+ *                       type: object
+ *                       properties:
+ *                         product:
+ *                           type: object
+ *                           properties:
+ *                             _id:
+ *                               type: string
+ *                               example: "64a1a5cc87c345a123456780"
+ *                             name:
+ *                               type: string
+ *                               example: "Ibuprofen 200mg"
+ *                             sku:
+ *                               type: string
+ *                               example: "IBU-200"
+ *                         quantity:
+ *                           type: integer
+ *                           example: 100
+ *                         unitPrice:
+ *                           type: number
+ *                           format: float
+ *                           example: 0.5
+ *                         discount:
+ *                           type: number
+ *                           example: 0
+ *                         tax:
+ *                           type: number
+ *                           example: 5
+ *                         totalPrice:
+ *                           type: number
+ *                           format: float
+ *                           example: 52.5
+ *                   subtotal:
+ *                     type: number
+ *                     format: float
+ *                     example: 52.5
+ *                   totalAmount:
+ *                     type: number
+ *                     format: float
+ *                     example: 52.5
+ *                   createdBy:
+ *                     type: object
+ *                     properties:
+ *                       _id:
+ *                         type: string
+ *                         example: "64a1a5cc87c345a123456700"
+ *                       name:
+ *                         type: string
+ *                         example: "Admin User"
+ *                   createdAt:
+ *                     type: string
+ *                     format: date-time
+ *                     example: "2023-07-03T14:22:52.838Z"
+ *       401:
+ *         description: Unauthorized - Invalid or missing token
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       403:
+ *         description: Forbidden - Insufficient permissions
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       500:
+ *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
  */
 router.get('/', staffAccess, async (req, res) => {
   try {
@@ -66,58 +134,153 @@ router.get('/', staffAccess, async (req, res) => {
 });
 
 /**
- * @api {get} /purchase-orders/:id Get a single purchase order
- * @apiName GetPurchaseOrder
- * @apiGroup PurchaseOrder
- * @apiPermission staff
- * 
- * @apiHeader {String} Authorization Bearer token
- * 
- * @apiParam {String} id Purchase order ID
- * 
- * @apiExample {curl} Example usage:
- *     curl -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." http://localhost:5000/api/purchase-orders/64a2b7cc87c345a123456789
- * 
- * @apiSuccess {Object} purchaseOrder Purchase order data
- * @apiSuccessExample {json} Success-Response:
- *     HTTP/1.1 200 OK
- *     {
- *       "_id": "64a2b7cc87c345a123456789",
- *       "poNumber": "PO-2307-0001",
- *       "supplier": {
- *         "_id": "64a1a5cc87c345a123456789",
- *         "name": "MediSupply Inc.",
- *         "contactPerson": "John Smith",
- *         "email": "john@medisupply.com",
- *         "phone": "123-456-7890"
- *       },
- *       "status": "draft",
- *       "orderDate": "2023-07-03T14:22:52.838Z",
- *       "expectedDeliveryDate": "2023-07-10T00:00:00.000Z",
- *       "items": [
- *         {
- *           "product": {
- *             "_id": "64a1a5cc87c345a123456780",
- *             "name": "Ibuprofen 200mg",
- *             "sku": "IBU-200",
- *             "description": "Pain reliever"
- *           },
- *           "genericName": "Ibuprofen",
- *           "quantity": 100,
- *           "unitPrice": 0.5,
- *           "discount": 0,
- *           "tax": 5,
- *           "totalPrice": 52.5,
- *           "receivedQuantity": 0
- *         }
- *       ],
- *       "subtotal": 52.5,
- *       "totalAmount": 52.5,
- *       "createdBy": {
- *         "_id": "64a1a5cc87c345a123456700",
- *         "name": "Admin User"
- *       }
- *     }
+ * @swagger
+ * /api/purchase-orders/{id}:
+ *   get:
+ *     tags:
+ *       - Purchase Orders
+ *     summary: Get purchase order by ID
+ *     description: Retrieve a specific purchase order with complete details
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Purchase order ID (MongoDB ObjectId)
+ *         example: "64a2b7cc87c345a123456789"
+ *     responses:
+ *       200:
+ *         description: Purchase order found successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 _id:
+ *                   type: string
+ *                   example: "64a2b7cc87c345a123456789"
+ *                 poNumber:
+ *                   type: string
+ *                   example: "PO-2307-0001"
+ *                 supplier:
+ *                   type: object
+ *                   properties:
+ *                     _id:
+ *                       type: string
+ *                       example: "64a1a5cc87c345a123456789"
+ *                     name:
+ *                       type: string
+ *                       example: "MediSupply Inc."
+ *                     contactPerson:
+ *                       type: string
+ *                       example: "John Smith"
+ *                     email:
+ *                       type: string
+ *                       example: "john@medisupply.com"
+ *                     phone:
+ *                       type: string
+ *                       example: "123-456-7890"
+ *                 status:
+ *                   type: string
+ *                   enum: ["draft", "submitted", "approved", "shipped", "received", "cancelled"]
+ *                   example: "draft"
+ *                 orderDate:
+ *                   type: string
+ *                   format: date-time
+ *                   example: "2023-07-03T14:22:52.838Z"
+ *                 expectedDeliveryDate:
+ *                   type: string
+ *                   format: date-time
+ *                   example: "2023-07-10T00:00:00.000Z"
+ *                 items:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       product:
+ *                         type: object
+ *                         properties:
+ *                           _id:
+ *                             type: string
+ *                             example: "64a1a5cc87c345a123456780"
+ *                           name:
+ *                             type: string
+ *                             example: "Ibuprofen 200mg"
+ *                           sku:
+ *                             type: string
+ *                             example: "IBU-200"
+ *                           description:
+ *                             type: string
+ *                             example: "Pain reliever"
+ *                       genericName:
+ *                         type: string
+ *                         example: "Ibuprofen"
+ *                       quantity:
+ *                         type: integer
+ *                         example: 100
+ *                       unitPrice:
+ *                         type: number
+ *                         format: float
+ *                         example: 0.5
+ *                       discount:
+ *                         type: number
+ *                         example: 0
+ *                       tax:
+ *                         type: number
+ *                         example: 5
+ *                       totalPrice:
+ *                         type: number
+ *                         format: float
+ *                         example: 52.5
+ *                       receivedQuantity:
+ *                         type: integer
+ *                         example: 0
+ *                 subtotal:
+ *                   type: number
+ *                   format: float
+ *                   example: 52.5
+ *                 totalAmount:
+ *                   type: number
+ *                   format: float
+ *                   example: 52.5
+ *                 createdBy:
+ *                   type: object
+ *                   properties:
+ *                     _id:
+ *                       type: string
+ *                       example: "64a1a5cc87c345a123456700"
+ *                     name:
+ *                       type: string
+ *                       example: "Admin User"
+ *       404:
+ *         description: Purchase order not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *             example:
+ *               message: "Purchase order not found"
+ *       401:
+ *         description: Unauthorized - Invalid or missing token
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       403:
+ *         description: Forbidden - Insufficient permissions
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       500:
+ *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
  */
 router.get('/:id', staffAccess, async (req, res) => {
   try {

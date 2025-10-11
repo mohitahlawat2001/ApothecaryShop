@@ -44,6 +44,28 @@ A comprehensive backend application for managing an apothecary/pharmacy shop inv
 - **Jest** - Testing framework
 - **Supertest** - HTTP assertions for testing
 
+## API Documentation
+
+### Interactive API Documentation
+
+This API now includes **interactive Swagger UI documentation** that provides:
+
+- **Live API Explorer**: Test endpoints directly from your browser
+- **Automatic Documentation**: Always up-to-date with code changes
+- **Request/Response Examples**: See exactly what to send and expect
+- **Authentication Testing**: Built-in support for JWT Bearer tokens
+- **Schema Validation**: Clear parameter and response format documentation
+
+**Access the interactive documentation at: [http://localhost:5000/api-docs](http://localhost:5000/api-docs)**
+
+### Benefits of Swagger Integration
+
+✅ **Always Synchronized**: Documentation automatically updates when code changes  
+✅ **Interactive Testing**: Try API calls without external tools like Postman  
+✅ **Developer Friendly**: Improved onboarding and collaboration  
+✅ **Reduced Maintenance**: No more manually updating static documentation  
+✅ **Professional Standards**: OpenAPI 3.0 compliant documentation  
+
 ## Getting Started
 
 ### Prerequisites
@@ -107,6 +129,8 @@ A comprehensive backend application for managing an apothecary/pharmacy shop inv
    ```
 
 ## API Endpoints
+
+> **📋 Note**: The following static documentation is being replaced by our new interactive Swagger UI documentation. For the most up-to-date and comprehensive API documentation with testing capabilities, please visit [http://localhost:5000/api-docs](http://localhost:5000/api-docs) when the server is running.
 
 ### Authentication
 

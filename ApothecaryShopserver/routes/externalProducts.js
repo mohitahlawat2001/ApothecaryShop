@@ -3,24 +3,128 @@ const router = express.Router();
 const externalProductController = require('../controllers/externalProductController');
 
 /**
- * @api {get} /api/external-products Get External Products
- * @apiDescription Fetches products from the Jan Aushadhi external API
- * @apiName GetExternalProducts
- * 
- * @apiParam {Number} [pageIndex=0] Page index for pagination
- * @apiParam {Number} [pageSize=100] Number of items per page
- * @apiParam {String} [searchText=""] Text to search for
- * @apiParam {String} [columnName="id"] Column name to sort by
- * @apiParam {String} [orderBy="asc"] Sort order (asc or desc)
- * 
- * @apiExample {curl} Example usage:
- *     curl -X GET 'http://localhost:5000/api/external-products?pageIndex=0&pageSize=10&searchText=paracetamol' \
- *       -H 'Authorization: Bearer YOUR_AUTH_TOKEN'
- * 
- * @apiSuccessExample {json} Success Response:
- *     HTTP/1.1 200 OK
- *     
- *     {"responseBody":{"newProductResponsesList":[{"productId":1,"genericName":"Aceclofenac 100mg and Paracetamol 325mg Tablets","groupName":"Acute","drugCode":1,"unitSize":"10's","mrp":10,"status":1,"serialNo":1},{"productId":5,"genericName":"Chlorzoxazone 500mg, Diclofenac 50mg and Paracetamol 325mg Tablets","groupName":"Acute","drugCode":6,"unitSize":"10's","mrp":25,"status":1,"serialNo":2},{"productId":13,"genericName":"Ibuprofen 400mg and Paracetamol 325mg Tablets IP","groupName":"Acute","drugCode":14,"unitSize":"10's","mrp":8,"status":1,"serialNo":3},{"productId":18,"genericName":"Nimesulide 100mg and Paracetamol 325mg Tablets","groupName":"Acute","drugCode":19,"unitSize":"10's","mrp":11,"status":1,"serialNo":4},{"productId":20,"genericName":"Diclofenac Sodium 50mg and Paracetamol 325mg Tablets IP","groupName":"Acute","drugCode":21,"unitSize":"10's","mrp":9.9,"status":1,"serialNo":5},{"productId":21,"genericName":"Paracetamol Paediatric Oral Suspension IP 125 mg per 5 ml","groupName":"Acute","drugCode":22,"unitSize":"60 ml","mrp":11,"status":1,"serialNo":6},{"productId":22,"genericName":"Paracetamol Tablets IP 500 mg","groupName":"OTC","drugCode":23,"unitSize":"10's","mrp":7,"status":1,"serialNo":7},{"productId":150,"genericName":"Paracetamol 325mg and Dicyclomine Hydrochloride 20mg Tablets","groupName":"Acute","drugCode":184,"unitSize":"10's","mrp":8,"status":1,"serialNo":8},{"productId":397,"genericName":"Paracetamol 325mg and Tramadol 37.5mg Tablets","groupName":"Acute","drugCode":510,"unitSize":"10's","mrp":13.2,"status":1,"serialNo":9},{"productId":398,"genericName":"Paracetamol Tablets IP 650 mg","groupName":"OTC","drugCode":511,"unitSize":"15's","mrp":15,"status":1,"serialNo":10}],"pageIndex":0,"pageSize":10,"totalElement":40,"isLastPage":false,"isFirstPage":true,"totalPages":4},"message":"record found successfully","responseCode":200}
+ * @swagger
+ * /api/external-products:
+ *   get:
+ *     tags:
+ *       - External Products
+ *     summary: Get external products from Jan Aushadhi API
+ *     description: Fetch products from the Jan Aushadhi external API with pagination and search capabilities
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: pageIndex
+ *         schema:
+ *           type: integer
+ *           minimum: 0
+ *           default: 0
+ *         description: Page index for pagination
+ *       - in: query
+ *         name: pageSize
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           maximum: 1000
+ *           default: 100
+ *         description: Number of items per page
+ *       - in: query
+ *         name: searchText
+ *         schema:
+ *           type: string
+ *           default: ""
+ *         description: Text to search for in product names
+ *         example: "paracetamol"
+ *       - in: query
+ *         name: columnName
+ *         schema:
+ *           type: string
+ *           default: "id"
+ *         description: Column name to sort by
+ *       - in: query
+ *         name: orderBy
+ *         schema:
+ *           type: string
+ *           enum: ["asc", "desc"]
+ *           default: "asc"
+ *         description: Sort order
+ *     responses:
+ *       200:
+ *         description: External products retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 responseBody:
+ *                   type: object
+ *                   properties:
+ *                     newProductResponsesList:
+ *                       type: array
+ *                       items:
+ *                         type: object
+ *                         properties:
+ *                           productId:
+ *                             type: integer
+ *                             example: 22
+ *                           genericName:
+ *                             type: string
+ *                             example: "Paracetamol Tablets IP 500 mg"
+ *                           groupName:
+ *                             type: string
+ *                             example: "OTC"
+ *                           drugCode:
+ *                             type: integer
+ *                             example: 23
+ *                           unitSize:
+ *                             type: string
+ *                             example: "10's"
+ *                           mrp:
+ *                             type: number
+ *                             format: float
+ *                             example: 7
+ *                           status:
+ *                             type: integer
+ *                             example: 1
+ *                           serialNo:
+ *                             type: integer
+ *                             example: 7
+ *                     pageIndex:
+ *                       type: integer
+ *                       example: 0
+ *                     pageSize:
+ *                       type: integer
+ *                       example: 10
+ *                     totalElement:
+ *                       type: integer
+ *                       example: 40
+ *                     isLastPage:
+ *                       type: boolean
+ *                       example: false
+ *                     isFirstPage:
+ *                       type: boolean
+ *                       example: true
+ *                     totalPages:
+ *                       type: integer
+ *                       example: 4
+ *                 message:
+ *                   type: string
+ *                   example: "record found successfully"
+ *                 responseCode:
+ *                   type: integer
+ *                   example: 200
+ *       401:
+ *         description: Unauthorized - Invalid or missing token
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       500:
+ *         description: Server error or external API error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
  */
 router.get('/', externalProductController.getExternalProducts);
 

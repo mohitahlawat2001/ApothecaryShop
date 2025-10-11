@@ -8,5 +8,12 @@
     "client": "cd ApothecaryShopUI && npm run dev",
     "dev": "concurrently \"npm run server\" \"npm run client\"",
     "install-all": "npm install && cd ApothecaryShopserver && npm install && cd ../ApothecaryShopUI && npm install"
+  },
+  "dependencies": {
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.1"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1"
   }
 }
