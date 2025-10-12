@@ -312,10 +312,13 @@ app.use((err, req, res, next) => {
 
   // Handle specific error types
   if (err.name === 'ValidationError') {
+    const errorMessages = err.errors
+      ? Object.values(err.errors).map(e => e.message)
+      : [err.message];
     return res.status(400).json({
       success: false,
       message: 'Validation Error',
-      errors: Object.values(err.errors).map(e => e.message)
+      errors: errorMessages
     });
   }
 
@@ -353,8 +356,7 @@ app.use((err, req, res, next) => {
   if (err.message === 'Not allowed by CORS') {
     return res.status(403).json({
       success: false,
-      message: 'CORS policy violation',
-      origin: req.headers.origin
+      message: 'CORS policy violation'
     });
   }
 
