@@ -7,7 +7,127 @@ const Product = require('../models/Product');
 const StockMovement = require('../models/StockMovement');
 const { adminOnly } = require('../middleware/roleCheck');
 
-// Get all purchase receipts
+/**
+ * @swagger
+ * /api/purchase-receipts:
+ *   get:
+ *     tags:
+ *       - Purchase Receipts
+ *     summary: Get all purchase receipts
+ *     description: Retrieve all purchase receipts with populated reference data
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: List of all purchase receipts
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *       401:
+ *         description: Unauthorized - Invalid or missing token
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       500:
+ *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *   post:
+ *     tags:
+ *       - Purchase Receipts
+ *     summary: Create a purchase receipt
+ *     description: Create a new purchase receipt and automatically update inventory
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - purchaseOrder
+ *               - items
+ *             properties:
+ *               purchaseOrder:
+ *                 type: string
+ *                 example: "60d21b4667d0d8992e610c85"
+ *               receiptDate:
+ *                 type: string
+ *                 format: date-time
+ *                 example: "2023-12-10T10:30:00.000Z"
+ *               items:
+ *                 type: array
+ *                 items:
+ *                   type: object
+ *                   properties:
+ *                     product:
+ *                       type: string
+ *                       example: "60d21b4667d0d8992e610c86"
+ *                     genericName:
+ *                       type: string
+ *                       example: "Paracetamol"
+ *                     groupName:
+ *                       type: string
+ *                       example: "Analgesics"
+ *                     unitSize:
+ *                       type: string
+ *                       example: "10's"
+ *                     expectedQuantity:
+ *                       type: integer
+ *                       example: 100
+ *                     receivedQuantity:
+ *                       type: integer
+ *                       example: 100
+ *                     batchNumber:
+ *                       type: string
+ *                       example: "BATCH123"
+ *                     expiryDate:
+ *                       type: string
+ *                       format: date
+ *                       example: "2025-10-10"
+ *                     unitPrice:
+ *                       type: number
+ *                       format: float
+ *                       example: 5.99
+ *     responses:
+ *       201:
+ *         description: Purchase receipt created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *       400:
+ *         description: Bad request - Invalid data or business logic error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       404:
+ *         description: Purchase order not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       401:
+ *         description: Unauthorized - Invalid or missing token
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       500:
+ *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
 router.get('/', async (req, res) => {
   try {
     const receipts = await PurchaseReceipt.find()
@@ -21,7 +141,50 @@ router.get('/', async (req, res) => {
   }
 });
 
-// Get a single purchase receipt
+/**
+ * @swagger
+ * /api/purchase-receipts/{id}:
+ *   get:
+ *     tags:
+ *       - Purchase Receipts
+ *     summary: Get a purchase receipt by ID
+ *     description: Retrieve a single purchase receipt with populated reference data
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Purchase receipt ID
+ *         example: "60d21b4667d0d8992e610c85"
+ *     responses:
+ *       200:
+ *         description: Purchase receipt found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *       404:
+ *         description: Receipt not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       401:
+ *         description: Unauthorized - Invalid or missing token
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       500:
+ *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
 router.get('/:id', async (req, res) => {
   try {
     const receipt = await PurchaseReceipt.findById(req.params.id)

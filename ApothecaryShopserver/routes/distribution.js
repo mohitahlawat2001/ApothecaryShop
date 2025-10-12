@@ -5,7 +5,96 @@ const Product = require('../models/Product');
 const StockMovement = require('../models/StockMovement'); // Add this import
 const auth = require('../middleware/auth');
 
-// Create a new distribution order
+/**
+ * @swagger
+ * /api/distributions:
+ *   post:
+ *     tags:
+ *       - Distributions
+ *     summary: Create a new distribution order
+ *     description: Create a distribution order and automatically update inventory
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - recipient
+ *               - recipientType
+ *               - items
+ *             properties:
+ *               recipient:
+ *                 type: string
+ *                 example: "City General Hospital"
+ *               recipientType:
+ *                 type: string
+ *                 enum: ["patient", "pharmacy", "department", "hospital"]
+ *                 example: "hospital"
+ *               items:
+ *                 type: array
+ *                 items:
+ *                   type: object
+ *                   properties:
+ *                     product:
+ *                       type: string
+ *                       example: "60d21b4667d0d8992e610c85"
+ *                     quantity:
+ *                       type: integer
+ *                       example: 50
+ *                     batchNumber:
+ *                       type: string
+ *                       example: "B12345"
+ *                     expiryDate:
+ *                       type: string
+ *                       format: date
+ *                       example: "2024-12-31"
+ *               shippingInfo:
+ *                 type: object
+ *                 properties:
+ *                   address:
+ *                     type: string
+ *                     example: "123 Main St, City"
+ *                   contactPerson:
+ *                     type: string
+ *                     example: "Dr. Smith"
+ *                   contactNumber:
+ *                     type: string
+ *                     example: "555-1234"
+ *     responses:
+ *       201:
+ *         description: Distribution order created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *       400:
+ *         description: Bad request - Insufficient stock or invalid data
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       404:
+ *         description: Product not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       401:
+ *         description: Unauthorized - Invalid or missing token
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       500:
+ *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
 router.post('/', auth, async (req, res) => {
   try {
     const { recipient, recipientType, items, shippingInfo } = req.body;
@@ -72,7 +161,62 @@ router.post('/', auth, async (req, res) => {
   }
 });
 
-// Get all distribution orders
+/**
+ * @swagger
+ * /api/distributions:
+ *   get:
+ *     tags:
+ *       - Distributions
+ *     summary: Get all distribution orders
+ *     description: Retrieve all distribution orders with optional filtering
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: status
+ *         schema:
+ *           type: string
+ *           enum: ["pending", "processed", "shipped", "delivered", "returned", "cancelled"]
+ *         description: Filter by distribution status
+ *       - in: query
+ *         name: startDate
+ *         schema:
+ *           type: string
+ *           format: date
+ *         description: Filter distributions created after this date
+ *       - in: query
+ *         name: endDate
+ *         schema:
+ *           type: string
+ *           format: date
+ *         description: Filter distributions created before this date
+ *       - in: query
+ *         name: recipient
+ *         schema:
+ *           type: string
+ *         description: Search by recipient name (case insensitive)
+ *     responses:
+ *       200:
+ *         description: List of distribution orders
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *       401:
+ *         description: Unauthorized - Invalid or missing token
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       500:
+ *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
 router.get('/', auth, async (req, res) => {
   try {
     const { status, startDate, endDate, recipient } = req.query;
