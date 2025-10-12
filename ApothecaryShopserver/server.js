@@ -331,10 +331,18 @@ app.use((err, req, res, next) => {
   }
 
   if (err.code === 11000) {
+    // Safely extract the duplicate field name
+    let duplicateField = null;
+    if (err.keyPattern) {
+      duplicateField = Object.keys(err.keyPattern)[0];
+    } else if (err.keyValue) {
+      duplicateField = Object.keys(err.keyValue)[0];
+    }
+    
     return res.status(409).json({
       success: false,
       message: 'Duplicate entry',
-      field: Object.keys(err.keyPattern)[0]
+      ...(duplicateField && { field: duplicateField })
     });
   }
 
