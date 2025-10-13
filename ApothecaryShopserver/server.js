@@ -201,7 +201,19 @@ app.post('/api/login', async (req, res) => {
   try {
     const { email, password } = req.body;
     const user = await User.findOne({ email });
-    if (!user) return res.status(400).json({ message: 'Invalid credentials' });
+    
+    // Handle invalid credentials with email alert
+    if (!user) {
+      // Send invalid credentials alert
+      try {
+        const attemptTime = new Date().toLocaleString();
+        const ipAddress = req.ip || req.connection.remoteAddress;
+        await sendInvalidCredentialsEmail(email, attemptTime, ipAddress);
+      } catch (emailError) {
+        console.error('Failed to send invalid credentials email:', emailError);
+      }
+      return res.status(400).json({ message: 'Invalid credentials' });
+    }
     
     // Check if user has a password (OAuth users might not have passwords)
     if (!user.password) {
@@ -211,7 +223,26 @@ app.post('/api/login', async (req, res) => {
     }
     
     const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) return res.status(400).json({ message: 'Invalid credentials' });
+    if (!isMatch) {
+      // Send invalid credentials alert for wrong password
+      try {
+        const attemptTime = new Date().toLocaleString();
+        const ipAddress = req.ip || req.connection.remoteAddress;
+        await sendInvalidCredentialsEmail(email, attemptTime, ipAddress);
+      } catch (emailError) {
+        console.error('Failed to send invalid credentials email:', emailError);
+      }
+      return res.status(400).json({ message: 'Invalid credentials' });
+    }
+    
+    // Send signin alert
+    try {
+      const loginTime = new Date().toLocaleString();
+      await sendSigninEmail(user.name, user.email, loginTime);
+    } catch (emailError) {
+      console.error('Failed to send signin email:', emailError);
+      // Don't fail the login if email sending fails
+    }
     
     // Modified token payload to match what your auth middleware expects
     const token = jwt.sign(
