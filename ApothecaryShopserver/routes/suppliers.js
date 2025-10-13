@@ -2,6 +2,8 @@ const express = require('express');
 const router = express.Router();
 const Supplier = require('../models/supplier');
 const { adminOnly, staffAccess } = require('../middleware/roleCheck');
+const { validate } = require('../middleware/validation');
+const { supplierSchemas, paramSchemas } = require('../validation/schemas');
 
 /**
  * @swagger
@@ -41,12 +43,52 @@ const { adminOnly, staffAccess } = require('../middleware/roleCheck');
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-router.get('/', staffAccess, async (req, res) => {
+router.get('/', staffAccess, validate({ query: paramSchemas.list }), async (req, res) => {
   try {
-    const suppliers = await Supplier.find();
-    res.status(200).json(suppliers);
+    const { search, status, sort = 'name', page = 1, limit = 10 } = req.query;
+    
+    // Build query filter
+    let filter = {};
+    if (search) {
+      filter.$or = [
+        { name: { $regex: search, $options: 'i' } },
+        { contactPerson: { $regex: search, $options: 'i' } },
+        { email: { $regex: search, $options: 'i' } }
+      ];
+    }
+    if (status) {
+      filter.status = status;
+    }
+
+    // Calculate pagination
+    const skip = (page - 1) * limit;
+    
+    const suppliers = await Supplier.find(filter)
+      .sort(sort)
+      .skip(skip)
+      .limit(parseInt(limit));
+      
+    const total = await Supplier.countDocuments(filter);
+    
+    res.json({
+      success: true,
+      data: suppliers,
+      pagination: {
+        page: parseInt(page),
+        limit: parseInt(limit),
+        total,
+        pages: Math.ceil(total / limit)
+      },
+      timestamp: new Date().toISOString()
+    });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error('Error fetching suppliers:', error);
+    res.status(500).json({ 
+      success: false,
+      message: 'Error fetching suppliers',
+      error: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error',
+      timestamp: new Date().toISOString()
+    });
   }
 });
 
@@ -102,15 +144,30 @@ router.get('/', staffAccess, async (req, res) => {
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-router.get('/:id', staffAccess, async (req, res) => {
+router.get('/:id', staffAccess, validate({ params: paramSchemas.id }), async (req, res) => {
   try {
     const supplier = await Supplier.findById(req.params.id);
     if (!supplier) {
-      return res.status(404).json({ message: 'Supplier not found' });
+      return res.status(404).json({ 
+        success: false,
+        message: 'Supplier not found',
+        timestamp: new Date().toISOString()
+      });
     }
-    res.status(200).json(supplier);
+    
+    res.json({
+      success: true,
+      data: supplier,
+      timestamp: new Date().toISOString()
+    });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error('Error fetching supplier:', error);
+    res.status(500).json({ 
+      success: false,
+      message: 'Error fetching supplier',
+      error: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error',
+      timestamp: new Date().toISOString()
+    });
   }
 });
 
@@ -178,13 +235,37 @@ router.get('/:id', staffAccess, async (req, res) => {
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-router.post('/', adminOnly, async (req, res) => {
-  const supplier = new Supplier(req.body);
+router.post('/', adminOnly, validate({ body: supplierSchemas.create }), async (req, res) => {
   try {
+    // Check if supplier with same email already exists
+    if (req.body.email) {
+      const existingSupplier = await Supplier.findOne({ email: req.body.email });
+      if (existingSupplier) {
+        return res.status(400).json({
+          success: false,
+          message: 'Supplier with this email already exists',
+          timestamp: new Date().toISOString()
+        });
+      }
+    }
+
+    const supplier = new Supplier(req.body);
     const newSupplier = await supplier.save();
-    res.status(201).json(newSupplier);
+    
+    res.status(201).json({
+      success: true,
+      data: newSupplier,
+      message: 'Supplier created successfully',
+      timestamp: new Date().toISOString()
+    });
   } catch (error) {
-    res.status(400).json({ message: error.message });
+    console.error('Error creating supplier:', error);
+    res.status(500).json({ 
+      success: false,
+      message: 'Error creating supplier',
+      error: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error',
+      timestamp: new Date().toISOString()
+    });
   }
 });
 
@@ -256,19 +337,51 @@ router.post('/', adminOnly, async (req, res) => {
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-router.put('/:id', adminOnly, async (req, res) => {
+router.put('/:id', adminOnly, validate({ params: paramSchemas.id, body: supplierSchemas.update }), async (req, res) => {
   try {
+    // Check if email is being updated and if it conflicts with existing suppliers
+    if (req.body.email) {
+      const existingSupplier = await Supplier.findOne({ 
+        email: req.body.email, 
+        _id: { $ne: req.params.id } 
+      });
+      if (existingSupplier) {
+        return res.status(400).json({
+          success: false,
+          message: 'Another supplier with this email already exists',
+          timestamp: new Date().toISOString()
+        });
+      }
+    }
+
     const supplier = await Supplier.findByIdAndUpdate(
       req.params.id,
       req.body,
       { new: true, runValidators: true }
     );
+    
     if (!supplier) {
-      return res.status(404).json({ message: 'Supplier not found' });
+      return res.status(404).json({ 
+        success: false,
+        message: 'Supplier not found',
+        timestamp: new Date().toISOString()
+      });
     }
-    res.status(200).json(supplier);
+    
+    res.json({
+      success: true,
+      data: supplier,
+      message: 'Supplier updated successfully',
+      timestamp: new Date().toISOString()
+    });
   } catch (error) {
-    res.status(400).json({ message: error.message });
+    console.error('Error updating supplier:', error);
+    res.status(500).json({ 
+      success: false,
+      message: 'Error updating supplier',
+      error: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error',
+      timestamp: new Date().toISOString()
+    });
   }
 });
 
@@ -326,15 +439,31 @@ router.put('/:id', adminOnly, async (req, res) => {
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-router.delete('/:id', adminOnly, async (req, res) => {
+router.delete('/:id', adminOnly, validate({ params: paramSchemas.id }), async (req, res) => {
   try {
     const supplier = await Supplier.findByIdAndDelete(req.params.id);
     if (!supplier) {
-      return res.status(404).json({ message: 'Supplier not found' });
+      return res.status(404).json({ 
+        success: false,
+        message: 'Supplier not found',
+        timestamp: new Date().toISOString()
+      });
     }
-    res.status(200).json({ message: 'Supplier deleted successfully' });
+    
+    res.json({ 
+      success: true,
+      message: 'Supplier deleted successfully',
+      data: { deletedSupplier: supplier },
+      timestamp: new Date().toISOString()
+    });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error('Error deleting supplier:', error);
+    res.status(500).json({ 
+      success: false,
+      message: 'Error deleting supplier',
+      error: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error',
+      timestamp: new Date().toISOString()
+    });
   }
 });
 

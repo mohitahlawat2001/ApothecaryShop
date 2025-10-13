@@ -1,6 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const Product = require('../models/Product');
+const { validate } = require('../middleware/validation');
+const { productSchemas, paramSchemas } = require('../validation/schemas');
 
 /**
  * @swagger
@@ -34,12 +36,52 @@ const Product = require('../models/Product');
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-router.get('/', async (req, res) => {
+router.get('/', validate({ query: paramSchemas.list }), async (req, res) => {
   try {
-    const products = await Product.find().sort({ name: 1 });
-    res.json(products);
+    const { search, category, sort = 'name', page = 1, limit = 10 } = req.query;
+    
+    // Build query filter
+    let filter = {};
+    if (search) {
+      filter.$or = [
+        { name: { $regex: search, $options: 'i' } },
+        { genericName: { $regex: search, $options: 'i' } },
+        { manufacturer: { $regex: search, $options: 'i' } }
+      ];
+    }
+    if (category) {
+      filter.category = { $regex: category, $options: 'i' };
+    }
+
+    // Calculate pagination
+    const skip = (page - 1) * limit;
+    
+    const products = await Product.find(filter)
+      .sort(sort)
+      .skip(skip)
+      .limit(parseInt(limit));
+      
+    const total = await Product.countDocuments(filter);
+    
+    res.json({
+      success: true,
+      data: products,
+      pagination: {
+        page: parseInt(page),
+        limit: parseInt(limit),
+        total,
+        pages: Math.ceil(total / limit)
+      },
+      timestamp: new Date().toISOString()
+    });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error('Error fetching products:', error);
+    res.status(500).json({ 
+      success: false,
+      message: 'Error fetching products',
+      error: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error',
+      timestamp: new Date().toISOString()
+    });
   }
 });
 
@@ -89,14 +131,30 @@ router.get('/', async (req, res) => {
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-router.get('/:id', async (req, res) => {
+router.get('/:id', validate({ params: paramSchemas.id }), async (req, res) => {
   try {
     const product = await Product.findById(req.params.id);
-    if (!product) return res.status(404).json({ message: 'Product not found' });
-    res.json(product);
+    if (!product) {
+      return res.status(404).json({ 
+        success: false,
+        message: 'Product not found',
+        timestamp: new Date().toISOString()
+      });
+    }
+    
+    res.json({
+      success: true,
+      data: product,
+      timestamp: new Date().toISOString()
+    });
   } catch (error) {
     console.error('Error fetching product:', error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ 
+      success: false,
+      message: 'Error fetching product',
+      error: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error',
+      timestamp: new Date().toISOString()
+    });
   }
 });
 
@@ -153,13 +211,45 @@ router.get('/:id', async (req, res) => {
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-router.post('/', async (req, res) => {
+router.post('/', validate({ body: productSchemas.create }), async (req, res) => {
   try {
+    // Check if a product with the same SKU already exists (if SKU is provided)
+    if (req.body.sku) {
+      const existingProduct = await Product.findOne({ sku: req.body.sku });
+      if (existingProduct) {
+        return res.status(400).json({
+          success: false,
+          message: 'Product with this SKU already exists',
+          timestamp: new Date().toISOString()
+        });
+      }
+    }
+
     const newProduct = new Product(req.body);
     const product = await newProduct.save();
-    res.status(201).json(product);
+    
+    res.status(201).json({
+      success: true,
+      data: product,
+      message: 'Product created successfully',
+      timestamp: new Date().toISOString()
+    });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error('Error creating product:', error);
+    if (error.code === 11000) {
+      // Handle duplicate key error
+      return res.status(400).json({
+        success: false,
+        message: 'Product with this SKU already exists',
+        timestamp: new Date().toISOString()
+      });
+    }
+    res.status(500).json({ 
+      success: false,
+      message: 'Error creating product',
+      error: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error',
+      timestamp: new Date().toISOString()
+    });
   }
 });
 
@@ -264,27 +354,86 @@ router.post('/', async (req, res) => {
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-router.put('/:id', async (req, res) => {
+router.put('/:id', validate({ params: paramSchemas.id, body: productSchemas.update }), async (req, res) => {
   try {
+    // Check if SKU is being updated and if it conflicts with existing products
+    if (req.body.sku) {
+      const existingProduct = await Product.findOne({ 
+        sku: req.body.sku, 
+        _id: { $ne: req.params.id } 
+      });
+      if (existingProduct) {
+        return res.status(400).json({
+          success: false,
+          message: 'Another product with this SKU already exists',
+          timestamp: new Date().toISOString()
+        });
+      }
+    }
+
     const product = await Product.findByIdAndUpdate(
       req.params.id,
       req.body,
-      { new: true }
+      { new: true, runValidators: true }
     );
-    if (!product) return res.status(404).json({ message: 'Product not found' });
-    res.json(product);
+    
+    if (!product) {
+      return res.status(404).json({ 
+        success: false,
+        message: 'Product not found',
+        timestamp: new Date().toISOString()
+      });
+    }
+    
+    res.json({
+      success: true,
+      data: product,
+      message: 'Product updated successfully',
+      timestamp: new Date().toISOString()
+    });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error('Error updating product:', error);
+    if (error.code === 11000) {
+      return res.status(400).json({
+        success: false,
+        message: 'Product with this SKU already exists',
+        timestamp: new Date().toISOString()
+      });
+    }
+    res.status(500).json({ 
+      success: false,
+      message: 'Error updating product',
+      error: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error',
+      timestamp: new Date().toISOString()
+    });
   }
 });
 
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', validate({ params: paramSchemas.id }), async (req, res) => {
   try {
     const product = await Product.findByIdAndDelete(req.params.id);
-    if (!product) return res.status(404).json({ message: 'Product not found' });
-    res.json({ message: 'Product deleted successfully' });
+    if (!product) {
+      return res.status(404).json({ 
+        success: false,
+        message: 'Product not found',
+        timestamp: new Date().toISOString()
+      });
+    }
+    
+    res.json({ 
+      success: true,
+      message: 'Product deleted successfully',
+      data: { deletedProduct: product },
+      timestamp: new Date().toISOString()
+    });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error('Error deleting product:', error);
+    res.status(500).json({ 
+      success: false,
+      message: 'Error deleting product',
+      error: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error',
+      timestamp: new Date().toISOString()
+    });
   }
 });
 
@@ -349,19 +498,53 @@ router.delete('/:id', async (req, res) => {
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-router.patch('/:id/stock', async (req, res) => {
+router.patch('/:id/stock', validate({ params: paramSchemas.id, body: productSchemas.stockAdjustment }), async (req, res) => {
   try {
     const { adjustment, reason } = req.body;
     const product = await Product.findById(req.params.id);
     
-    if (!product) return res.status(404).json({ message: 'Product not found' });
+    if (!product) {
+      return res.status(404).json({ 
+        success: false,
+        message: 'Product not found',
+        timestamp: new Date().toISOString()
+      });
+    }
     
-    product.stockQuantity += Number(adjustment);
+    // Check if the adjustment would result in negative stock
+    const newQuantity = product.stockQuantity + Number(adjustment);
+    if (newQuantity < 0) {
+      return res.status(400).json({
+        success: false,
+        message: `Insufficient stock. Current stock: ${product.stockQuantity}, requested adjustment: ${adjustment}`,
+        timestamp: new Date().toISOString()
+      });
+    }
+    
+    const previousQuantity = product.stockQuantity;
+    product.stockQuantity = newQuantity;
     await product.save();
     
-    res.json(product);
+    res.json({
+      success: true,
+      data: product,
+      message: 'Stock quantity updated successfully',
+      adjustment: {
+        previous: previousQuantity,
+        adjustment: Number(adjustment),
+        new: newQuantity,
+        reason
+      },
+      timestamp: new Date().toISOString()
+    });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error('Error updating stock:', error);
+    res.status(500).json({ 
+      success: false,
+      message: 'Error updating stock quantity',
+      error: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error',
+      timestamp: new Date().toISOString()
+    });
   }
 });
 
