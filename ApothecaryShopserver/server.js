@@ -11,16 +11,8 @@ require('./config/passport.config');
 // Middleware imports
 const cookieParser = require('cookie-parser');
 const authMiddleware = require('./middleware/auth');
-// Routes imports
-const supplierRoutes = require('./routes/suppliers');
-const purchaseOrderRoutes = require('./routes/purchaseOrders');
-const purchaseReceiptRoutes = require('./routes/purchaseReceipts');
-const externalProductRoutes = require('./routes/externalProducts');
-const distributionRoutes = require('./routes/distribution');
-const maomaoAiRoutes = require('./routes/maomaoAi'); // Import MaoMao AI routes
-const visionRoutes = require('./routes/visionRoutes'); // Import Vision routes
-const googleRoutes = require('./routes/google'); // Import Google OAuth routes
-const facebookRoutes = require('./routes/facebook'); // Import Facebook OAuth routes
+// Email service import
+const { sendSignupEmail } = require('./services/emailService');
 
 dotenv.config();
 const app = express();
@@ -95,6 +87,15 @@ app.post('/api/register', async (req, res) => {
     const { name, email, password, role } = req.body;
     const user = new User({ name, email, password, role });
     await user.save();
+    
+    // Send signup email with user role
+    try {
+      await sendSignupEmail(name, email, role);
+    } catch (emailError) {
+      console.error('Failed to send signup email:', emailError);
+      // Don't fail the registration if email sending fails
+    }
+    
     res.status(201).json({ message: 'User registered successfully' });
   } catch (error) {
     res.status(500).json({ error: error.message });
