@@ -352,27 +352,93 @@ app.get('/api/profile', authMiddleware, async (req, res) => {
   }
 });
 
-// Global validation error handler
-app.use(handleValidationError);
-
-// Global error handler
-app.use((error, req, res, next) => {
-  console.error('Global error handler:', error);
-  
-  // Default error response
-  const errorResponse = {
+// 404 Handler - Catch all undefined routes
+app.use((req, res, next) => {
+  res.status(404).json({
     success: false,
-    message: 'Internal server error',
+    message: 'Route not found',
+    path: req.originalUrl,
+    method: req.method,
     timestamp: new Date().toISOString()
-  };
+  });
+});
 
-  // Include error details in development
-  if (process.env.NODE_ENV === 'development') {
-    errorResponse.error = error.message;
-    errorResponse.stack = error.stack;
+// Global Error Handler - Catch all errors
+app.use((err, req, res, next) => {
+  // Log error for debugging
+  console.error('Error occurred:', {
+    message: err.message,
+    stack: process.env.NODE_ENV === 'development' ? err.stack : undefined,
+    path: req.originalUrl,
+    method: req.method,
+    timestamp: new Date().toISOString()
+  });
+
+  // Handle specific error types
+  if (err.name === 'ValidationError') {
+    const errorMessages = err.errors
+      ? Object.values(err.errors).map(e => e.message)
+      : [err.message];
+    return res.status(400).json({
+      success: false,
+      message: 'Validation Error',
+      errors: errorMessages
+    });
   }
 
-  res.status(500).json(errorResponse);
+  if (err.name === 'CastError') {
+    return res.status(400).json({
+      success: false,
+      message: 'Invalid ID format',
+      field: err.path
+    });
+  }
+
+  if (err.code === 11000) {
+    // Safely extract the duplicate field name
+    let duplicateField = null;
+    if (err.keyPattern) {
+      duplicateField = Object.keys(err.keyPattern)[0];
+    } else if (err.keyValue) {
+      duplicateField = Object.keys(err.keyValue)[0];
+    }
+    
+    return res.status(409).json({
+      success: false,
+      message: 'Duplicate entry',
+      ...(duplicateField && { field: duplicateField })
+    });
+  }
+
+  if (err.name === 'JsonWebTokenError') {
+    return res.status(401).json({
+      success: false,
+      message: 'Invalid token'
+    });
+  }
+
+  if (err.name === 'TokenExpiredError') {
+    return res.status(401).json({
+      success: false,
+      message: 'Token expired'
+    });
+  }
+
+  // CORS errors
+  if (err.message === 'Not allowed by CORS') {
+    return res.status(403).json({
+      success: false,
+      message: 'CORS policy violation'
+    });
+  }
+
+  // Default error response
+  const statusCode = err.statusCode || err.status || 500;
+  res.status(statusCode).json({
+    success: false,
+    message: err.message || 'Internal Server Error',
+    ...(process.env.NODE_ENV === 'development' && { stack: err.stack })
+  });
 });
 
 const PORT = process.env.PORT || 5000;
