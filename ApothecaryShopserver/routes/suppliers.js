@@ -250,7 +250,7 @@ router.post('/', adminOnly, validate({ body: supplierSchemas.create }), async (r
     if (req.body.email) {
       const existingSupplier = await Supplier.findOne({ email: req.body.email });
       if (existingSupplier) {
-        return res.status(400).json({
+        return res.status(409).json({
           success: false,
           message: 'Supplier with this email already exists',
           timestamp: new Date().toISOString()
@@ -269,6 +269,25 @@ router.post('/', adminOnly, validate({ body: supplierSchemas.create }), async (r
     });
   } catch (error) {
     console.error('Error creating supplier:', error);
+    
+    // Handle MongoDB unique index violations (duplicate key errors)
+    if (error.code === 11000 || (error.name === 'MongoServerError' && error.code === 11000)) {
+      let duplicateMessage = 'Supplier with this information already exists';
+      
+      // In development, include which field caused the duplicate
+      if (process.env.NODE_ENV === 'development' && error.keyValue) {
+        const duplicateField = Object.keys(error.keyValue)[0];
+        const duplicateValue = error.keyValue[duplicateField];
+        duplicateMessage = `Supplier with ${duplicateField} '${duplicateValue}' already exists`;
+      }
+      
+      return res.status(409).json({
+        success: false,
+        message: duplicateMessage,
+        timestamp: new Date().toISOString()
+      });
+    }
+    
     res.status(500).json({ 
       success: false,
       message: 'Error creating supplier',
@@ -355,7 +374,7 @@ router.put('/:id', adminOnly, validate({ params: paramSchemas.id, body: supplier
         _id: { $ne: req.params.id } 
       });
       if (existingSupplier) {
-        return res.status(400).json({
+        return res.status(409).json({
           success: false,
           message: 'Another supplier with this email already exists',
           timestamp: new Date().toISOString()
@@ -385,6 +404,25 @@ router.put('/:id', adminOnly, validate({ params: paramSchemas.id, body: supplier
     });
   } catch (error) {
     console.error('Error updating supplier:', error);
+    
+    // Handle MongoDB unique index violations (duplicate key errors)
+    if (error.code === 11000 || (error.name === 'MongoServerError' && error.code === 11000)) {
+      let duplicateMessage = 'Supplier with this information already exists';
+      
+      // In development, include which field caused the duplicate
+      if (process.env.NODE_ENV === 'development' && error.keyValue) {
+        const duplicateField = Object.keys(error.keyValue)[0];
+        const duplicateValue = error.keyValue[duplicateField];
+        duplicateMessage = `Supplier with ${duplicateField} '${duplicateValue}' already exists`;
+      }
+      
+      return res.status(409).json({
+        success: false,
+        message: duplicateMessage,
+        timestamp: new Date().toISOString()
+      });
+    }
+    
     res.status(500).json({ 
       success: false,
       message: 'Error updating supplier',

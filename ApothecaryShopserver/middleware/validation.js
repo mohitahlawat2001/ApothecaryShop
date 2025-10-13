@@ -34,8 +34,8 @@ const validate = (schema) => {
     const errors = [];
 
     // Validate request body
-    if (schema.body && req.body) {
-      const { value, error } = schema.body.validate(req.body, { 
+    if (schema.body) {
+      const { value, error } = schema.body.validate(req.body || {}, { 
         abortEarly: false,
         stripUnknown: true, // Remove unknown properties
         convert: true // Enable type coercion
@@ -67,8 +67,8 @@ const validate = (schema) => {
     }
 
     // Validate URL parameters
-    if (schema.params && req.params) {
-      const { value, error } = schema.params.validate(req.params, { 
+    if (schema.params) {
+      const { value, error } = schema.params.validate(req.params || {}, { 
         abortEarly: false,
         stripUnknown: true,
         convert: true // Enable type coercion
@@ -100,8 +100,8 @@ const validate = (schema) => {
     }
 
     // Validate query parameters
-    if (schema.query && req.query) {
-      const { value, error } = schema.query.validate(req.query, { 
+    if (schema.query) {
+      const { value, error } = schema.query.validate(req.query || {}, { 
         abortEarly: false,
         stripUnknown: true,
         convert: true // Enable type coercion
