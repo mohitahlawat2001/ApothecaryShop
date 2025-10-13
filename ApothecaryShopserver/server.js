@@ -27,6 +27,17 @@ const facebookRoutes = require('./routes/facebook'); // Import Facebook OAuth ro
 dotenv.config();
 const app = express();
 
+// Helper function to send invalid login alerts
+const sendInvalidLoginAlert = async (email, req) => {
+  try {
+    const attemptTime = new Date().toISOString();
+    const ipAddress = req.ip || req.socket?.remoteAddress || 'unknown';
+    await sendInvalidCredentialsEmail(email, attemptTime, ipAddress);
+  } catch (error) {
+    console.error('Failed to send invalid credentials email:', error);
+  }
+};
+
 // CORS configuration
 const allowedOrigins = [
   'http://localhost:5173',                  // Frontend development server
@@ -205,13 +216,7 @@ app.post('/api/login', async (req, res) => {
     // Handle invalid credentials with email alert
     if (!user) {
       // Send invalid credentials alert
-      try {
-        const attemptTime = new Date().toLocaleString();
-        const ipAddress = req.ip || req.connection.remoteAddress;
-        await sendInvalidCredentialsEmail(email, attemptTime, ipAddress);
-      } catch (emailError) {
-        console.error('Failed to send invalid credentials email:', emailError);
-      }
+      await sendInvalidLoginAlert(email, req);
       return res.status(400).json({ message: 'Invalid credentials' });
     }
     
@@ -225,13 +230,7 @@ app.post('/api/login', async (req, res) => {
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
       // Send invalid credentials alert for wrong password
-      try {
-        const attemptTime = new Date().toLocaleString();
-        const ipAddress = req.ip || req.connection.remoteAddress;
-        await sendInvalidCredentialsEmail(email, attemptTime, ipAddress);
-      } catch (emailError) {
-        console.error('Failed to send invalid credentials email:', emailError);
-      }
+      await sendInvalidLoginAlert(email, req);
       return res.status(400).json({ message: 'Invalid credentials' });
     }
     
