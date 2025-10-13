@@ -141,7 +141,7 @@ app.post('/api/register', validate({ body: userSchemas.register }), async (req, 
     // Check if user already exists
     const existingUser = await User.findOne({ email });
     if (existingUser) {
-      return res.status(400).json({ 
+      return res.status(409).json({ 
         success: false,
         message: 'Email already registered',
         timestamp: new Date().toISOString()
@@ -158,6 +158,16 @@ app.post('/api/register', validate({ body: userSchemas.register }), async (req, 
     });
   } catch (error) {
     console.error('Registration error:', error);
+    
+    // Handle MongoDB unique index violations (race condition duplicates)
+    if (error && error.code === 11000) {
+      return res.status(409).json({ 
+        success: false,
+        message: 'Email already registered',
+        timestamp: new Date().toISOString()
+      });
+    }
+    
     res.status(500).json({ 
       success: false,
       message: 'Internal server error during registration',
@@ -219,30 +229,25 @@ app.post('/api/login', validate({ body: userSchemas.login }), async (req, res) =
     const { email, password } = req.body;
     const user = await User.findOne({ email });
     
+    // Generic error response to prevent user enumeration
+    const genericErrorResponse = {
+      success: false,
+      message: 'Invalid credentials',
+      timestamp: new Date().toISOString()
+    };
+    
     if (!user) {
-      return res.status(400).json({ 
-        success: false,
-        message: 'Invalid credentials',
-        timestamp: new Date().toISOString()
-      });
+      return res.status(400).json(genericErrorResponse);
     }
     
     // Check if user has a password (OAuth users might not have passwords)
     if (!user.password) {
-      return res.status(400).json({ 
-        success: false,
-        message: 'This account uses OAuth login. Please use Google or Facebook to sign in.',
-        timestamp: new Date().toISOString()
-      });
+      return res.status(400).json(genericErrorResponse);
     }
     
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
-      return res.status(400).json({ 
-        success: false,
-        message: 'Invalid credentials',
-        timestamp: new Date().toISOString()
-      });
+      return res.status(400).json(genericErrorResponse);
     }
     
     // Modified token payload to match what your auth middleware expects

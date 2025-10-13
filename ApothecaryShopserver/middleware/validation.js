@@ -10,8 +10,10 @@ const redactSensitiveValue = (fieldPath, value) => {
   const sensitiveFieldPattern = /password|token|authorization|secret|key|pin|ssn|credit|card/i;
   
   if (sensitiveFieldPattern.test(fieldPath)) {
-    // Log the actual value server-side for debugging (consider using a proper logger)
-    console.error(`[VALIDATION_ERROR] Sensitive field '${fieldPath}' validation failed:`, value);
+    // Log only non-sensitive metadata for debugging
+    const valueType = typeof value;
+    const valueLength = value ? value.toString().length : 0;
+    console.error(`[VALIDATION_ERROR] Sensitive field '${fieldPath}' validation failed - type: ${valueType}, length: ${valueLength}`);
     return '[REDACTED]';
   }
   

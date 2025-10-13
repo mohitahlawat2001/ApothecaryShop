@@ -4,16 +4,7 @@ const Supplier = require('../models/supplier');
 const { adminOnly, staffAccess } = require('../middleware/roleCheck');
 const { validate } = require('../middleware/validation');
 const { supplierSchemas, paramSchemas } = require('../validation/schemas');
-
-/**
- * Escapes regex metacharacters to prevent ReDoS attacks
- * @param {string} str - The string to escape
- * @returns {string} - The escaped string safe for regex use
- */
-const escapeRegex = (str) => {
-  if (!str || typeof str !== 'string') return '';
-  return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-};
+const { escapeRegex } = require('../utils/regex');
 
 
 /**
