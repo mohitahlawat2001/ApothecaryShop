@@ -6,6 +6,17 @@ const { validate } = require('../middleware/validation');
 const { supplierSchemas, paramSchemas } = require('../validation/schemas');
 
 /**
+ * Escapes regex metacharacters to prevent ReDoS attacks
+ * @param {string} str - The string to escape
+ * @returns {string} - The escaped string safe for regex use
+ */
+const escapeRegex = (str) => {
+  if (!str || typeof str !== 'string') return '';
+  return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+};
+
+
+/**
  * @swagger
  * /api/suppliers:
  *   get:
@@ -43,30 +54,37 @@ const { supplierSchemas, paramSchemas } = require('../validation/schemas');
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-router.get('/', staffAccess, validate({ query: paramSchemas.list }), async (req, res) => {
+router.get('/', staffAccess, validate({ query: paramSchemas.supplierList }), async (req, res) => {
   try {
-    const { search, status, sort = 'name', page = 1, limit = 10 } = req.query;
+    // Use Joi-validated and sanitized query parameters
+    const { search, status, sort, page, limit } = req.query;
     
-    // Build query filter
+    // Build query filter with proper escaping
     let filter = {};
     if (search) {
+      const escapedSearch = escapeRegex(search);
       filter.$or = [
-        { name: { $regex: search, $options: 'i' } },
-        { contactPerson: { $regex: search, $options: 'i' } },
-        { email: { $regex: search, $options: 'i' } }
+        { name: { $regex: new RegExp(escapedSearch, 'i') } },
+        { contactPerson: { $regex: new RegExp(escapedSearch, 'i') } },
+        { email: { $regex: new RegExp(escapedSearch, 'i') } }
       ];
     }
+    
+    // Status is already validated by Joi schema
     if (status) {
       filter.status = status;
     }
 
-    // Calculate pagination
+    // Sort field is already validated by Joi schema, use default if not provided
+    const safeSort = sort || 'name';
+    
+    // Calculate pagination (values already validated and coerced by Joi)
     const skip = (page - 1) * limit;
     
     const suppliers = await Supplier.find(filter)
-      .sort(sort)
+      .sort(safeSort)
       .skip(skip)
-      .limit(parseInt(limit));
+      .limit(limit);
       
     const total = await Supplier.countDocuments(filter);
     
@@ -74,8 +92,8 @@ router.get('/', staffAccess, validate({ query: paramSchemas.list }), async (req,
       success: true,
       data: suppliers,
       pagination: {
-        page: parseInt(page),
-        limit: parseInt(limit),
+        page: page,
+        limit: limit,
         total,
         pages: Math.ceil(total / limit)
       },

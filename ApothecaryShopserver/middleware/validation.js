@@ -1,6 +1,25 @@
 const Joi = require('joi');
 
 /**
+ * Redacts sensitive values from validation error responses
+ * @param {string} fieldPath - The field path (e.g., 'password', 'user.token')
+ * @param {any} value - The original value
+ * @returns {string|undefined} Redacted value or undefined for non-sensitive fields
+ */
+const redactSensitiveValue = (fieldPath, value) => {
+  const sensitiveFieldPattern = /password|token|authorization|secret|key|pin|ssn|credit|card/i;
+  
+  if (sensitiveFieldPattern.test(fieldPath)) {
+    // Log the actual value server-side for debugging (consider using a proper logger)
+    console.error(`[VALIDATION_ERROR] Sensitive field '${fieldPath}' validation failed:`, value);
+    return '[REDACTED]';
+  }
+  
+  // For non-sensitive fields, omit the value entirely
+  return undefined;
+};
+
+/**
  * Validation middleware factory
  * @param {Object} schema - Object containing validation schemas
  * @param {Joi.Schema} schema.body - Schema for request body validation
@@ -14,54 +33,100 @@ const validate = (schema) => {
 
     // Validate request body
     if (schema.body && req.body) {
-      const { error } = schema.body.validate(req.body, { 
+      const { value, error } = schema.body.validate(req.body, { 
         abortEarly: false,
-        stripUnknown: true // Remove unknown properties
+        stripUnknown: true, // Remove unknown properties
+        convert: true // Enable type coercion
       });
       if (error) {
         errors.push({
           location: 'body',
-          details: error.details.map(detail => ({
-            field: detail.path.join('.'),
-            message: detail.message,
-            value: detail.context?.value
-          }))
+          details: error.details.map(detail => {
+            const fieldPath = detail.path.join('.');
+            const redactedValue = redactSensitiveValue(fieldPath, detail.context?.value);
+            
+            const errorDetail = {
+              field: fieldPath,
+              message: detail.message
+            };
+            
+            // Only include value if it's not undefined (i.e., redacted or omitted)
+            if (redactedValue !== undefined) {
+              errorDetail.value = redactedValue;
+            }
+            
+            return errorDetail;
+          })
         });
+      } else {
+        // Apply sanitized/coerced value back to request body
+        req.body = value;
       }
     }
 
     // Validate URL parameters
     if (schema.params && req.params) {
-      const { error } = schema.params.validate(req.params, { 
-        abortEarly: false 
+      const { value, error } = schema.params.validate(req.params, { 
+        abortEarly: false,
+        stripUnknown: true,
+        convert: true // Enable type coercion
       });
       if (error) {
         errors.push({
           location: 'params',
-          details: error.details.map(detail => ({
-            field: detail.path.join('.'),
-            message: detail.message,
-            value: detail.context?.value
-          }))
+          details: error.details.map(detail => {
+            const fieldPath = detail.path.join('.');
+            const redactedValue = redactSensitiveValue(fieldPath, detail.context?.value);
+            
+            const errorDetail = {
+              field: fieldPath,
+              message: detail.message
+            };
+            
+            // Only include value if it's not undefined (i.e., redacted or omitted)
+            if (redactedValue !== undefined) {
+              errorDetail.value = redactedValue;
+            }
+            
+            return errorDetail;
+          })
         });
+      } else {
+        // Apply sanitized/coerced value back to request params
+        req.params = value;
       }
     }
 
     // Validate query parameters
     if (schema.query && req.query) {
-      const { error } = schema.query.validate(req.query, { 
+      const { value, error } = schema.query.validate(req.query, { 
         abortEarly: false,
-        stripUnknown: true
+        stripUnknown: true,
+        convert: true // Enable type coercion
       });
       if (error) {
         errors.push({
           location: 'query',
-          details: error.details.map(detail => ({
-            field: detail.path.join('.'),
-            message: detail.message,
-            value: detail.context?.value
-          }))
+          details: error.details.map(detail => {
+            const fieldPath = detail.path.join('.');
+            const redactedValue = redactSensitiveValue(fieldPath, detail.context?.value);
+            
+            const errorDetail = {
+              field: fieldPath,
+              message: detail.message
+            };
+            
+            // Only include value if it's not undefined (i.e., redacted or omitted)
+            if (redactedValue !== undefined) {
+              errorDetail.value = redactedValue;
+            }
+            
+            return errorDetail;
+          })
         });
+      } else {
+        // Apply sanitized/coerced value back to request query
+        req.query = value;
       }
     }
 
@@ -105,11 +170,11 @@ const commonSchemas = {
   email: Joi.string().email().lowercase().trim(),
 
   // Phone validation (international format)
-  phone: Joi.string().pattern(/^[\+]?[1-9][\d]{0,15}$/).message('Phone number must be in valid international format'),
+  phone: Joi.string().pattern(/^[\+]?[1-9][\d]{1,14}$/).message('Phone number must be in valid international format'),
 
   // Password validation
   password: Joi.string().min(8).max(128)
-    .pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/)
+    .pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]+$/)
     .message('Password must contain at least 8 characters with uppercase, lowercase, number and special character')
 };
 
@@ -123,11 +188,22 @@ const handleValidationError = (error, req, res, next) => {
       message: 'Validation failed',
       errors: [{
         location: 'unknown',
-        details: error.details.map(detail => ({
-          field: detail.path.join('.'),
-          message: detail.message,
-          value: detail.context?.value
-        }))
+        details: error.details.map(detail => {
+          const fieldPath = detail.path.join('.');
+          const redactedValue = redactSensitiveValue(fieldPath, detail.context?.value);
+          
+          const errorDetail = {
+            field: fieldPath,
+            message: detail.message
+          };
+          
+          // Only include value if it's not undefined (i.e., redacted or omitted)
+          if (redactedValue !== undefined) {
+            errorDetail.value = redactedValue;
+          }
+          
+          return errorDetail;
+        })
       }],
       timestamp: new Date().toISOString()
     });

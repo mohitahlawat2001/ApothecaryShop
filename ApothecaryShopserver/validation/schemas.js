@@ -236,14 +236,50 @@ const paramSchemas = {
     id: commonSchemas.mongoId
   }),
 
-  // Pagination and search query parameters
+  // Pagination and search query parameters (general list schema)
   list: Joi.object({
     page: Joi.number().integer().min(1).default(1),
     limit: Joi.number().integer().min(1).max(100).default(10),
-    sort: Joi.string().optional(),
+    sort: Joi.string().valid(
+      // Common product/item sorting fields
+      'name', 'createdAt', 'updatedAt', 'unitPrice', 'category', 'manufacturer',
+      'stockQuantity', 'reorderLevel', 'expiryDate',
+      // Descending variants
+      '-name', '-createdAt', '-updatedAt', '-unitPrice', '-category', '-manufacturer',
+      '-stockQuantity', '-reorderLevel', '-expiryDate'
+    ).default('createdAt').optional(),
     search: Joi.string().trim().min(1).max(100).optional(),
     category: Joi.string().trim().max(50).optional(),
     status: Joi.string().optional()
+  }),
+
+  // Product-specific query parameters with product-relevant sort fields
+  productList: Joi.object({
+    page: Joi.number().integer().min(1).default(1),
+    limit: Joi.number().integer().min(1).max(100).default(10),
+    sort: Joi.string().valid(
+      // Product-specific sort fields
+      'name', 'genericName', 'category', 'manufacturer', 'unitPrice', 'stockQuantity',
+      'reorderLevel', 'expiryDate', 'createdAt', 'updatedAt',
+      // Descending variants
+      '-name', '-genericName', '-category', '-manufacturer', '-unitPrice', '-stockQuantity',
+      '-reorderLevel', '-expiryDate', '-createdAt', '-updatedAt'
+    ).default('name').optional(),
+    search: Joi.string().trim().min(1).max(100).optional(),
+    category: Joi.string().trim().max(50).optional(),
+    status: Joi.string().optional()
+  }),
+
+  // Supplier-specific query parameters with restricted values
+  supplierList: Joi.object({
+    page: Joi.number().integer().min(1).default(1),
+    limit: Joi.number().integer().min(1).max(100).default(10),
+    sort: Joi.string().valid(
+      'name', 'contactPerson', 'email', 'status', 'createdAt', 'updatedAt',
+      '-name', '-contactPerson', '-email', '-status', '-createdAt', '-updatedAt'
+    ).default('name').optional(),
+    search: Joi.string().trim().min(1).max(100).optional(),
+    status: Joi.string().valid('active', 'inactive').optional()
   }),
 
   // Date range query parameters

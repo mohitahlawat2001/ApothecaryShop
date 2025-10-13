@@ -85,7 +85,7 @@ This API now includes **interactive Swagger UI documentation** that provides:
 
 ### Prerequisites
 
-- Node.js (v14 or higher)
+- Node.js (v20 or higher)
 - MongoDB instance (local or Atlas)
 
 ### Installation

@@ -5,6 +5,16 @@ const { validate } = require('../middleware/validation');
 const { productSchemas, paramSchemas } = require('../validation/schemas');
 
 /**
+ * Escapes regex metacharacters to prevent ReDoS attacks
+ * @param {string} str - The string to escape
+ * @returns {string} - The escaped string safe for regex use
+ */
+const escapeRegex = (str) => {
+  if (!str || typeof str !== 'string') return '';
+  return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+};
+
+/**
  * @swagger
  * /api/products:
  *   get:
@@ -36,21 +46,24 @@ const { productSchemas, paramSchemas } = require('../validation/schemas');
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-router.get('/', validate({ query: paramSchemas.list }), async (req, res) => {
+router.get('/', validate({ query: paramSchemas.productList }), async (req, res) => {
   try {
-    const { search, category, sort = 'name', page = 1, limit = 10 } = req.query;
+    // Use Joi-validated and sanitized query parameters
+    const { search, category, sort, page, limit } = req.query;
     
     // Build query filter
     let filter = {};
     if (search) {
+      const escapedSearch = escapeRegex(search);
       filter.$or = [
-        { name: { $regex: search, $options: 'i' } },
-        { genericName: { $regex: search, $options: 'i' } },
-        { manufacturer: { $regex: search, $options: 'i' } }
+        { name: { $regex: new RegExp(escapedSearch, 'i') } },
+        { genericName: { $regex: new RegExp(escapedSearch, 'i') } },
+        { manufacturer: { $regex: new RegExp(escapedSearch, 'i') } }
       ];
     }
     if (category) {
-      filter.category = { $regex: category, $options: 'i' };
+      const escapedCategory = escapeRegex(category);
+      filter.category = { $regex: new RegExp(escapedCategory, 'i') };
     }
 
     // Calculate pagination
@@ -59,7 +72,7 @@ router.get('/', validate({ query: paramSchemas.list }), async (req, res) => {
     const products = await Product.find(filter)
       .sort(sort)
       .skip(skip)
-      .limit(parseInt(limit));
+      .limit(limit);
       
     const total = await Product.countDocuments(filter);
     
@@ -67,8 +80,8 @@ router.get('/', validate({ query: paramSchemas.list }), async (req, res) => {
       success: true,
       data: products,
       pagination: {
-        page: parseInt(page),
-        limit: parseInt(limit),
+        page: page,
+        limit: limit,
         total,
         pages: Math.ceil(total / limit)
       },
@@ -501,38 +514,56 @@ router.delete('/:id', validate({ params: paramSchemas.id }), async (req, res) =>
 router.patch('/:id/stock', validate({ params: paramSchemas.id, body: productSchemas.stockAdjustment }), async (req, res) => {
   try {
     const { adjustment, reason } = req.body;
-    const product = await Product.findById(req.params.id);
+    const adjustmentNum = Number(adjustment);
     
-    if (!product) {
-      return res.status(404).json({ 
-        success: false,
-        message: 'Product not found',
-        timestamp: new Date().toISOString()
-      });
+    // Use atomic update with conditional check to prevent race conditions
+    // This ensures the operation is atomic and prevents negative stock
+    const result = await Product.findOneAndUpdate(
+      { 
+        _id: req.params.id,
+        // Use $expr to ensure the resulting stock quantity is not negative
+        $expr: { $gte: [{ $add: ['$stockQuantity', adjustmentNum] }, 0] }
+      },
+      { 
+        $inc: { stockQuantity: adjustmentNum } 
+      },
+      { 
+        new: true, // Return the updated document
+        runValidators: true // Run model validators
+      }
+    );
+    
+    // Check if update failed
+    if (!result) {
+      // First check if product exists at all
+      const productExists = await Product.findById(req.params.id);
+      if (!productExists) {
+        return res.status(404).json({ 
+          success: false,
+          message: 'Product not found',
+          timestamp: new Date().toISOString()
+        });
+      } else {
+        // Product exists but update failed due to insufficient stock
+        return res.status(400).json({
+          success: false,
+          message: `Insufficient stock. Current stock: ${productExists.stockQuantity}, requested adjustment: ${adjustmentNum}`,
+          timestamp: new Date().toISOString()
+        });
+      }
     }
     
-    // Check if the adjustment would result in negative stock
-    const newQuantity = product.stockQuantity + Number(adjustment);
-    if (newQuantity < 0) {
-      return res.status(400).json({
-        success: false,
-        message: `Insufficient stock. Current stock: ${product.stockQuantity}, requested adjustment: ${adjustment}`,
-        timestamp: new Date().toISOString()
-      });
-    }
-    
-    const previousQuantity = product.stockQuantity;
-    product.stockQuantity = newQuantity;
-    await product.save();
+    // Calculate previous quantity for response
+    const previousQuantity = result.stockQuantity - adjustmentNum;
     
     res.json({
       success: true,
-      data: product,
+      data: result,
       message: 'Stock quantity updated successfully',
       adjustment: {
         previous: previousQuantity,
-        adjustment: Number(adjustment),
-        new: newQuantity,
+        adjustment: adjustmentNum,
+        new: result.stockQuantity,
         reason
       },
       timestamp: new Date().toISOString()
