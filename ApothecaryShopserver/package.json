@@ -21,7 +21,9 @@
     "multer": "^1.4.5-lts.2",
     "passport": "^0.7.0",
     "passport-facebook": "^3.0.0",
-    "passport-google-oauth20": "^2.0.0"
+    "passport-google-oauth20": "^2.0.0",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.1"
   },
   "devDependencies": {
     "jest": "^29.5.0",

@@ -11,8 +11,18 @@ require('./config/passport.config');
 // Middleware imports
 const cookieParser = require('cookie-parser');
 const authMiddleware = require('./middleware/auth');
-// Email service import
-const { sendSignupEmail } = require('./services/emailService');
+// Swagger imports
+const { specs, swaggerUi, swaggerOptions } = require('./config/swagger');
+// Routes imports
+const supplierRoutes = require('./routes/suppliers');
+const purchaseOrderRoutes = require('./routes/purchaseOrders');
+const purchaseReceiptRoutes = require('./routes/purchaseReceipts');
+const externalProductRoutes = require('./routes/externalProducts');
+const distributionRoutes = require('./routes/distribution');
+const maomaoAiRoutes = require('./routes/maomaoAi'); // Import MaoMao AI routes
+const visionRoutes = require('./routes/visionRoutes'); // Import Vision routes
+const googleRoutes = require('./routes/google'); // Import Google OAuth routes
+const facebookRoutes = require('./routes/facebook'); // Import Facebook OAuth routes
 
 dotenv.config();
 const app = express();
@@ -51,6 +61,9 @@ mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log('MongoDB connected'))
   .catch(err => console.error('MongoDB connection error:', err));
 
+// Swagger UI route
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs, swaggerOptions));
+
 // Root route (Optional: for testing auth links)
 // app.get('/', (req, res) => {
 //   res.send(`
@@ -80,8 +93,43 @@ app.use('/api/vision', authMiddleware, visionRoutes); // Add vision routes
 app.use('/api/auth/google', googleRoutes);
 app.use('/api/auth/facebook', facebookRoutes); // Add Facebook OAuth routes
 
-// POST http://localhost:5000/api/register
-// Body: { "name": "Test User", "email": "test@example.com", "password": "password123", "role": "staff" }
+/**
+ * @swagger
+ * /api/register:
+ *   post:
+ *     tags:
+ *       - Authentication
+ *     summary: Register a new user
+ *     description: Create a new user account with email and password
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/UserRegistration'
+ *           example:
+ *             name: "John Smith"
+ *             email: "john@example.com"
+ *             password: "securepassword123"
+ *             role: "staff"
+ *     responses:
+ *       201:
+ *         description: User registered successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Success'
+ *             example:
+ *               message: "User registered successfully"
+ *       500:
+ *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *             example:
+ *               error: "Email already exists"
+ */
 app.post('/api/register', async (req, res) => {
   try {
     const { name, email, password, role } = req.body;
@@ -102,8 +150,53 @@ app.post('/api/register', async (req, res) => {
   }
 });
 
-// POST http://localhost:5000/api/login
-// Body: { "email": "test@example.com", "password": "password123" }
+/**
+ * @swagger
+ * /api/login:
+ *   post:
+ *     tags:
+ *       - Authentication
+ *     summary: User login
+ *     description: Authenticate user with email and password, returns JWT token
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/UserLogin'
+ *           example:
+ *             email: "john@example.com"
+ *             password: "securepassword123"
+ *     responses:
+ *       200:
+ *         description: Login successful
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/AuthResponse'
+ *             example:
+ *               token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+ *               user:
+ *                 id: "60d21b4667d0d8992e610c87"
+ *                 name: "John Smith"
+ *                 email: "john@example.com"
+ *                 role: "staff"
+ *                 provider: "local"
+ *       400:
+ *         description: Invalid credentials or OAuth account
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *             example:
+ *               message: "Invalid credentials"
+ *       500:
+ *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
 app.post('/api/login', async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -151,7 +244,50 @@ app.post('/api/login', async (req, res) => {
   }
 });
 
-// Optional: Get current user profile
+/**
+ * @swagger
+ * /api/profile:
+ *   get:
+ *     tags:
+ *       - Authentication
+ *     summary: Get current user profile
+ *     description: Retrieve the profile information of the currently authenticated user
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: User profile retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 user:
+ *                   $ref: '#/components/schemas/User'
+ *             example:
+ *               user:
+ *                 _id: "60d21b4667d0d8992e610c87"
+ *                 name: "John Smith"
+ *                 email: "john@example.com"
+ *                 role: "staff"
+ *                 provider: "local"
+ *                 createdAt: "2023-06-15T10:30:00.000Z"
+ *                 updatedAt: "2023-06-15T10:30:00.000Z"
+ *       401:
+ *         description: Unauthorized - Invalid or missing token
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *             example:
+ *               message: "Access denied. No token provided."
+ *       500:
+ *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
 app.get('/api/profile', authMiddleware, async (req, res) => {
   try {
     const user = await User.findById(req.user.id).select('-password');
@@ -159,6 +295,95 @@ app.get('/api/profile', authMiddleware, async (req, res) => {
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
+});
+
+// 404 Handler - Catch all undefined routes
+app.use((req, res, next) => {
+  res.status(404).json({
+    success: false,
+    message: 'Route not found',
+    path: req.originalUrl,
+    method: req.method,
+    timestamp: new Date().toISOString()
+  });
+});
+
+// Global Error Handler - Catch all errors
+app.use((err, req, res, next) => {
+  // Log error for debugging
+  console.error('Error occurred:', {
+    message: err.message,
+    stack: process.env.NODE_ENV === 'development' ? err.stack : undefined,
+    path: req.originalUrl,
+    method: req.method,
+    timestamp: new Date().toISOString()
+  });
+
+  // Handle specific error types
+  if (err.name === 'ValidationError') {
+    const errorMessages = err.errors
+      ? Object.values(err.errors).map(e => e.message)
+      : [err.message];
+    return res.status(400).json({
+      success: false,
+      message: 'Validation Error',
+      errors: errorMessages
+    });
+  }
+
+  if (err.name === 'CastError') {
+    return res.status(400).json({
+      success: false,
+      message: 'Invalid ID format',
+      field: err.path
+    });
+  }
+
+  if (err.code === 11000) {
+    // Safely extract the duplicate field name
+    let duplicateField = null;
+    if (err.keyPattern) {
+      duplicateField = Object.keys(err.keyPattern)[0];
+    } else if (err.keyValue) {
+      duplicateField = Object.keys(err.keyValue)[0];
+    }
+    
+    return res.status(409).json({
+      success: false,
+      message: 'Duplicate entry',
+      ...(duplicateField && { field: duplicateField })
+    });
+  }
+
+  if (err.name === 'JsonWebTokenError') {
+    return res.status(401).json({
+      success: false,
+      message: 'Invalid token'
+    });
+  }
+
+  if (err.name === 'TokenExpiredError') {
+    return res.status(401).json({
+      success: false,
+      message: 'Token expired'
+    });
+  }
+
+  // CORS errors
+  if (err.message === 'Not allowed by CORS') {
+    return res.status(403).json({
+      success: false,
+      message: 'CORS policy violation'
+    });
+  }
+
+  // Default error response
+  const statusCode = err.statusCode || err.status || 500;
+  res.status(statusCode).json({
+    success: false,
+    message: err.message || 'Internal Server Error',
+    ...(process.env.NODE_ENV === 'development' && { stack: err.stack })
+  });
 });
 
 const PORT = process.env.PORT || 5000;
