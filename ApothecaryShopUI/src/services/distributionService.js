@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { getAuthConfig } from './authService';
 
-const API_URL = import.meta.env.VITE_API_BASE_URL+'/distributions';
+const API_URL = (import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL) + '/distributions';
 
 // Create new distribution
 export const createDistribution = async (distributionData) => {

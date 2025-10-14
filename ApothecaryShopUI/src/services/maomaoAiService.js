@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { getAuthConfig } from './authService';
 
-const API_URL = import.meta.env.VITE_API_BASE_URL + '/maomao-ai';
+const API_URL = (import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL) + '/maomao-ai';
 
 /**
  * Generate a response from the MaoMao AI
