@@ -1,7 +1,6 @@
 import axios from 'axios';
 import { getAuthConfig } from './authService';
-
-const API_URL = (import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL) + '/maomao-ai';
+import { getApiUrl } from '../utils/api';
 
 /**
  * Generate a response from the MaoMao AI
@@ -16,7 +15,7 @@ const API_URL = (import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_U
  */
 export const generateAiResponse = async (requestData) => {
   try {
-    const response = await axios.post(`${API_URL}/generate`, requestData, getAuthConfig());
+    const response = await axios.post(getApiUrl('/maomao-ai/generate'), requestData, getAuthConfig());
     return response.data;
   } catch (error) {
     console.error('Error generating AI response:', error);
