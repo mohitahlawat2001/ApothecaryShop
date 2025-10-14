@@ -8,96 +8,53 @@ import { facebookAuthService } from '../services/facebookAuthService';
 import { motion } from 'framer-motion';
 
 const Login = () => {
+  // Validate environment configuration
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+  if (!API_BASE_URL) {
+    console.error('VITE_API_BASE_URL is not configured');
+    // Could also redirect to an error page or show a user-friendly message
+  }
+
   const [formData, setFormData] = useState({
     email: '',
     password: ''
   });
-  const [error, setError] = useState('');
+  
   const [showPassword, setShowPassword] = useState(false);
-  const { setAuth } = useContext(AuthContext);
+  const [error, setError] = useState('');
   const navigate = useNavigate();
-  
-  const { email, password } = formData;
-  
-  // Framer Motion variants
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: { opacity: 1, transition: { staggerChildren: 0.08 } }
-  };
-  const panelLeftVariants = {
-    hidden: { opacity: 0, x: -24 },
-    visible: { opacity: 1, x: 0, transition: { type: 'spring', stiffness: 140, damping: 18 } }
-  };
-  const cardVariants = {
-    hidden: { opacity: 0, x: 24 },
-    visible: { opacity: 1, x: 0, transition: { type: 'spring', stiffness: 140, damping: 18 } }
-  };
-  const itemVariants = {
-    hidden: { opacity: 0, y: 8 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.22 } }
-  };
-  
-  // Handle Google OAuth callback
+  const { setAuth } = useContext(AuthContext);
+
   useEffect(() => {
-    const handleGoogleCallback = async () => {
-      const googleCallback = googleAuthService.checkGoogleCallback();
-      if (googleCallback) {
-        try {
-          const result = await googleAuthService.handleGoogleCallback(googleCallback.token, googleCallback.user);
-          if (result.success) {
-            // Update auth context
-            setAuth({
-              token: result.token,
-              isAuthenticated: true,
-              user: result.user
-            });
-            
-            // Clear URL parameters
-            googleAuthService.clearCallbackParams();
-            
-            // Redirect to dashboard
-            navigate('/dashboard');
-          } else {
-            setError('Google authentication failed');
-          }
-        } catch (error) {
-          console.error('Google auth callback error:', error);
-          setError('Google authentication failed');
-        }
+    // Check for OAuth callback parameters
+    const urlParams = new URLSearchParams(window.location.search);
+    const token = urlParams.get('token');
+    const user = urlParams.get('user');
+    
+    if (token && user) {
+      try {
+        const userData = JSON.parse(decodeURIComponent(user));
+        
+        // Store token and user data
+        localStorage.setItem('token', `Bearer ${token}`);
+        localStorage.setItem('user', JSON.stringify(userData));
+        
+        // Set default Authorization header for all future axios requests
+        axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+        
+        setAuth({
+          token: token,
+          isAuthenticated: true,
+          user: userData
+        });
+        
+        // Clear URL parameters
+        navigate('/dashboard', { replace: true });
+      } catch (error) {
+        console.error('Error parsing OAuth callback data:', error);
+        setError('Authentication failed. Please try again.');
       }
-    };
-
-    // Handle Facebook OAuth callback
-    const handleFacebookCallback = async () => {
-      const facebookCallback = facebookAuthService.checkFacebookCallback();
-      if (facebookCallback) {
-        try {
-          const result = await facebookAuthService.handleFacebookCallback(facebookCallback.token, facebookCallback.user);
-          if (result.success) {
-            // Update auth context
-            setAuth({
-              token: result.token,
-              isAuthenticated: true,
-              user: result.user
-            });
-            
-            // Clear URL parameters
-            facebookAuthService.clearCallbackParams();
-            
-            // Redirect to dashboard
-            navigate('/dashboard');
-          } else {
-            setError('Facebook authentication failed');
-          }
-        } catch (error) {
-          console.error('Facebook auth callback error:', error);
-          setError('Facebook authentication failed');
-        }
-      }
-    };
-
-    handleGoogleCallback();
-    handleFacebookCallback();
+    }
   }, [navigate, setAuth]);
   
   const onChange = e => setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -105,7 +62,7 @@ const Login = () => {
   const onSubmit = async e => {
     e.preventDefault();
     try {
-      const res = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/login`, formData);
+      const res = await axios.post(`${API_BASE_URL}/login`, formData);
       
       const token = res.data.token;
       // Set Bearer token in localStorage with proper format
@@ -129,12 +86,12 @@ const Login = () => {
 
   const handleGoogleSignIn = () => {
     // Redirect to the backend Google OAuth endpoint
-    window.location.href = `${import.meta.env.VITE_API_BASE_URL}/auth/google`;
+    window.location.href = `${API_BASE_URL}/auth/google`;
   };
 
   const handleFacebookSignIn = () => {
     // Redirect to the backend Facebook OAuth endpoint
-    window.location.href = `${import.meta.env.VITE_API_BASE_URL}/auth/facebook`;
+    window.location.href = `${API_BASE_URL}/auth/facebook`;
   };
   
   return (

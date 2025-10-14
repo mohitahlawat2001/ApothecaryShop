@@ -15,7 +15,13 @@ const EditProduct = () => {
     const fetchProduct = async () => {
       try {
         const token = localStorage.getItem("token");
-        const apiUrl = import.meta.env.VITE_API_BASE_URL;
+        const apiUrl =
+          import.meta.env.VITE_API_BASE_URL ?? import.meta.env.VITE_API_URL;
+        if (!apiUrl) {
+          throw new Error(
+            "Missing API base URL. Please set VITE_API_BASE_URL in your environment."
+          );
+        }
 
         const response = await axios.get(`${apiUrl}/products/${id}`, {
           headers: {
@@ -38,7 +44,13 @@ const EditProduct = () => {
   const handleSaveProduct = async (updatedProduct) => {
     try {
       const token = localStorage.getItem("token");
-      const apiUrl = import.meta.env.VITE_API_BASE_URL;
+      const apiUrl =
+        import.meta.env.VITE_API_BASE_URL ?? import.meta.env.VITE_API_URL;
+      if (!apiUrl) {
+        throw new Error(
+          "Missing API base URL. Please set VITE_API_BASE_URL in your environment."
+        );
+      }
 
       await axios.put(`${apiUrl}/products/${id}`, updatedProduct, {
         headers: {
