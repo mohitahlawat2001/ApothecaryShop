@@ -105,7 +105,7 @@ const Login = () => {
   const onSubmit = async e => {
     e.preventDefault();
     try {
-      const res = await axios.post(`${import.meta.env.VITE_API_URL}/login`, formData);
+      const res = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/login`, formData);
       
       const token = res.data.token;
       // Set Bearer token in localStorage with proper format
@@ -129,12 +129,12 @@ const Login = () => {
 
   const handleGoogleSignIn = () => {
     // Redirect to the backend Google OAuth endpoint
-    window.location.href = `${import.meta.env.VITE_API_URL}/auth/google`;
+    window.location.href = `${import.meta.env.VITE_API_BASE_URL}/auth/google`;
   };
 
   const handleFacebookSignIn = () => {
     // Redirect to the backend Facebook OAuth endpoint
-    window.location.href = `${import.meta.env.VITE_API_URL}/auth/facebook`;
+    window.location.href = `${import.meta.env.VITE_API_BASE_URL}/auth/facebook`;
   };
   
   return (

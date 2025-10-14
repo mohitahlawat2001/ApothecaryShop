@@ -19,7 +19,7 @@ const ProductFormPage = () => {
       const fetchProduct = async () => {
         try {
           const token = localStorage.getItem("token");
-          const apiUrl = import.meta.env.VITE_API_URL;
+          const apiUrl = import.meta.env.VITE_API_BASE_URL;
 
           console.log(`Fetching product with ID: ${id}`);
           const response = await axios.get(`${apiUrl}/api/products/${id}`, {
@@ -45,7 +45,7 @@ const ProductFormPage = () => {
   const saveProduct = async (formData) => {
     try {
       const token = localStorage.getItem("token");
-      const apiUrl = import.meta.env.VITE_API_URL;
+      const apiUrl = import.meta.env.VITE_API_BASE_URL;
 
       // Debug logs
       console.log("API URL:", apiUrl);

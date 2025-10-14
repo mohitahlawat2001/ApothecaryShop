@@ -16,7 +16,7 @@ const StockMovements = () => {
     const fetchData = async () => {
       try {
         const token = localStorage.getItem('token');
-        const apiUrl = import.meta.env.VITE_API_URL;
+        const apiUrl = import.meta.env.VITE_API_BASE_URL;
         
         // Fetch products for dropdown
         const productsRes = await axios.get(`${apiUrl}/products`, {
@@ -59,7 +59,7 @@ const StockMovements = () => {
   const handleAddStockMovement = async (newMovement) => {
     try {
       const token = localStorage.getItem('token');
-      const apiUrl = import.meta.env.VITE_API_URL;
+      const apiUrl = import.meta.env.VITE_API_BASE_URL;
       
       await axios.post(`${apiUrl}/stockMovements`, newMovement, {
         headers: {

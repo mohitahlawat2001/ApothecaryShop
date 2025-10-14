@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { getAuthConfig } from './authService';
 
-const API_URL = import.meta.env.VITE_API_URL + '/suppliers';
+const API_URL = import.meta.env.VITE_API_BASE_URL + '/suppliers';
 
 export const getSuppliers = async () => {
   const response = await axios.get(API_URL, getAuthConfig());

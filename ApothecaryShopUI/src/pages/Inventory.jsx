@@ -15,12 +15,11 @@ const Inventory = () => {
     severity: "info",
   });
 
-  // ... (useEffect, filteredProducts, handleProductFound logic remains exactly the same)
   useEffect(() => {
     const fetchProducts = async () => {
       try {
         const token = localStorage.getItem("token");
-        const apiUrl = import.meta.env.VITE_API_URL;
+        const apiUrl = import.meta.env.VITE_API_BASE_URL;
 
         const response = await axios.get(`${apiUrl}/products`, {
           headers: {
@@ -86,7 +85,6 @@ const Inventory = () => {
 
   return (
     <div className="w-full px-4 sm:px-6 lg:px-8 py-8">
-      {/* ... (Header and controls section is unchanged) */}
         <h1 className="text-2xl md:text-3xl font-bold text-gray-800 mb-6">
             Inventory Management
         </h1>
@@ -160,20 +158,16 @@ const Inventory = () => {
                 </div>
             </div>
         </div>
-      {/* ... (Snackbar is unchanged) */}
 
       {filteredProducts.length === 0 ? (
         <div className="bg-white rounded-lg shadow-md p-6 text-center w-full">
           <p className="text-gray-500">No products found</p>
         </div>
       ) : (
-        /* The scrolling container remains the same */
         <div className="overflow-x-auto bg-white shadow-md rounded-lg w-full">
-          {/* CHANGE: Added a min-width to force horizontal scrolling */}
           <table className="min-w-[900px] w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
-                {/* CHANGE: All hiding classes removed from headers */}
                 <th
                   scope="col"
                   className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
@@ -226,7 +220,6 @@ const Inventory = () => {
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {filteredProducts.map((product) => {
-                // ... (expiry logic is unchanged)
                 const today = new Date();
                 today.setHours(0, 0, 0, 0); // Normalize today to the start of the day
                 const expiryDate = product.expiryDate ? new Date(product.expiryDate) : null;
@@ -237,7 +230,6 @@ const Inventory = () => {
 
                 return (
                   <tr key={product._id} className="hover:bg-gray-50">
-                    {/* CHANGE: All hiding classes removed from cells */}
                     <td className="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                       {product.sku}
                     </td>

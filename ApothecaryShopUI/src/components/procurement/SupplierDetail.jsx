@@ -15,7 +15,7 @@ const SupplierDetail = () => {
     const fetchSupplier = async () => {
       try {
         const response = await fetch(
-          `${import.meta.env.VITE_API_URL}/suppliers/${id}`,
+          `${import.meta.env.VITE_API_BASE_URL}/suppliers/${id}`,
           {
             headers: {
               Authorization: token,
@@ -43,7 +43,7 @@ const SupplierDetail = () => {
     if (window.confirm("Are you sure you want to delete this supplier?")) {
       try {
         const response = await fetch(
-          `${import.meta.env.VITE_API_URL}/suppliers/${id}`,
+          `${import.meta.env.VITE_API_BASE_URL}/suppliers/${id}`,
           {
             method: "DELETE",
             headers: {

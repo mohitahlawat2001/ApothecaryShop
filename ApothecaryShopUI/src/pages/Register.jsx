@@ -129,7 +129,7 @@ const Register = () => {
         role: 'staff' // Default role
       };
 
-      await axios.post(`${import.meta.env.VITE_API_URL}/register`, registerData);
+      await axios.post(`${import.meta.env.VITE_API_BASE_URL}/register`, registerData);
 
       // Redirect to login page on successful registration
       navigate('/');
@@ -140,12 +140,12 @@ const Register = () => {
 
   const handleGoogleSignIn = () => {
     // Redirect to the backend Google OAuth endpoint
-    window.location.href = `${import.meta.env.VITE_API_URL}/auth/google`;
+    window.location.href = `${import.meta.env.VITE_API_BASE_URL}/auth/google`;
   };
 
   const handleFacebookSignIn = () => {
     // Redirect to the backend Facebook OAuth endpoint
-    window.location.href = `${import.meta.env.VITE_API_URL}/auth/facebook`;
+    window.location.href = `${import.meta.env.VITE_API_BASE_URL}/auth/facebook`;
   };
 
   return (
