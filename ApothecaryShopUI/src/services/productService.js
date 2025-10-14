@@ -1,7 +1,12 @@
 import axios from 'axios';
 
-// Get API base URL from environment variable
-const API_BASE_URL = import.meta.env.VITE_API_URL || '';
+// Get API base URL from environment variable with fallback
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL || '';
+
+// Validate that we have a base URL
+if (!API_BASE_URL) {
+  console.warn('Missing API base URL. Please set VITE_API_BASE_URL in your environment.');
+}
 
 /**
  * Get all products from the API

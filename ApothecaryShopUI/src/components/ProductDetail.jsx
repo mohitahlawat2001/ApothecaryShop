@@ -14,7 +14,13 @@ const ProductDetail = ({ product }) => {
       
       try {
         const token = localStorage.getItem('token');
-        const apiUrl = import.meta.env.VITE_API_URL;
+        const apiUrl =
+          import.meta.env.VITE_API_BASE_URL ?? import.meta.env.VITE_API_URL;
+        if (!apiUrl) {
+          throw new Error(
+            "Missing API base URL. Please set VITE_API_BASE_URL in your environment."
+          );
+        }
         
         const response = await axios.get(`${apiUrl}/stockMovements/product/${product._id}`, {
           headers: {
@@ -36,7 +42,13 @@ const ProductDetail = ({ product }) => {
   const handleAddStockMovement = async (newMovement) => {
     try {
       const token = localStorage.getItem('token');
-      const apiUrl = import.meta.env.VITE_API_URL;
+      const apiUrl =
+        import.meta.env.VITE_API_BASE_URL ?? import.meta.env.VITE_API_URL;
+      if (!apiUrl) {
+        throw new Error(
+          "Missing API base URL. Please set VITE_API_BASE_URL in your environment."
+        );
+      }
       
       const response = await axios.post(`${apiUrl}/stockMovements`, newMovement, {
         headers: {
