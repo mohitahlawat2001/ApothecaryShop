@@ -24,11 +24,19 @@ const options = {
         ## Authentication
         Most endpoints require authentication via Bearer token in the Authorization header.
         
+        ## Input Validation
+        All API endpoints implement comprehensive validation using Joi:
+        - Request Body Validation: POST/PUT/PATCH endpoints validate all input data
+        - URL Parameter Validation: MongoDB ObjectId validation for route parameters  
+        - Query Parameter Validation: Search, pagination, and filtering parameters
+        - Business Rule Enforcement: Unique constraints, date validation, stock levels
+        - Standardized Errors: Consistent error format with detailed field-level messages
+        
         ## Error Handling
         The API uses conventional HTTP response codes:
         - 200: Success
         - 201: Created successfully
-        - 400: Bad request (invalid data)
+        - 400: Bad request (validation failed or invalid data)
         - 401: Unauthorized (authentication required)
         - 403: Forbidden (insufficient permissions)
         - 404: Resource not found
@@ -363,26 +371,32 @@ const options = {
           properties: {
             name: {
               type: 'string',
-              description: 'User full name',
+              minLength: 2,
+              maxLength: 50,
+              description: 'User full name (2-50 characters, trimmed)',
               example: 'John Smith'
             },
             email: {
               type: 'string',
               format: 'email',
-              description: 'User email address',
+              description: 'Valid email address (lowercase, trimmed)',
               example: 'john@example.com'
             },
             password: {
               type: 'string',
               format: 'password',
-              description: 'User password',
-              example: 'securepassword123'
+              minLength: 8,
+              maxLength: 128,
+              pattern: '^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]',
+              description: 'Password (min 8 chars, must contain uppercase, lowercase, number, special char)',
+              example: 'SecurePass123!'
             },
             role: {
               type: 'string',
-              enum: ['admin', 'staff'],
-              description: 'User role',
-              example: 'staff'
+              enum: ['admin', 'staff', 'customer'],
+              description: 'User role (defaults to staff)',
+              example: 'staff',
+              default: 'staff'
             }
           }
         },
@@ -439,6 +453,57 @@ const options = {
               type: 'string',
               description: 'Success message',
               example: 'Operation completed successfully'
+            }
+          }
+        },
+        ValidationError: {
+          type: 'object',
+          properties: {
+            success: {
+              type: 'boolean',
+              example: false
+            },
+            message: {
+              type: 'string',
+              example: 'Validation failed'
+            },
+            errors: {
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  location: {
+                    type: 'string',
+                    enum: ['body', 'params', 'query'],
+                    example: 'body'
+                  },
+                  details: {
+                    type: 'array',
+                    items: {
+                      type: 'object',
+                      properties: {
+                        field: {
+                          type: 'string',
+                          example: 'email'
+                        },
+                        message: {
+                          type: 'string',
+                          example: 'Email must be a valid email address'
+                        },
+                        value: {
+                          type: 'string',
+                          example: 'invalid-email'
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            timestamp: {
+              type: 'string',
+              format: 'date-time',
+              example: '2024-01-15T10:30:00.000Z'
             }
           }
         }
