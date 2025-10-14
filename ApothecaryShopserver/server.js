@@ -23,6 +23,8 @@ const maomaoAiRoutes = require('./routes/maomaoAi'); // Import MaoMao AI routes
 const visionRoutes = require('./routes/visionRoutes'); // Import Vision routes
 const googleRoutes = require('./routes/google'); // Import Google OAuth routes
 const facebookRoutes = require('./routes/facebook'); // Import Facebook OAuth routes
+// Email service imports
+const { sendInvalidCredentialsEmail, sendSignupEmail, sendSigninEmail } = require('./services/emailService');
 
 dotenv.config();
 const app = express();
