@@ -1,7 +1,10 @@
 import axios from 'axios';
 import { getAuthConfig } from './authService';
 
-const API_URL = (import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL) +'/purchase-orders';
+ const API_URL = (import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL) + '/purchase-orders';
+ if (!API_URL || API_URL === '/purchase-orders') {
+   console.warn('Missing API base URL. Please set VITE_API_BASE_URL in your environment.');
+ }
 
 export const getPurchaseOrders = async () => {
   const response = await axios.get(API_URL, getAuthConfig());

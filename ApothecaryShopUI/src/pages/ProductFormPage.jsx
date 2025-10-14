@@ -28,7 +28,7 @@ const ProductFormPage = () => {
           }
 
           console.log(`Fetching product with ID: ${id}`);
-          const response = await axios.get(`${apiUrl}/api/products/${id}`, {
+          const response = await axios.get(`${apiUrl}/products/${id}`, {
             headers: {
               Authorization: `${token}`,
             },
@@ -68,7 +68,7 @@ const ProductFormPage = () => {
       if (!id || id === "new") {
         // Create new product
         console.log("Creating new product");
-        response = await axios.post(`${apiUrl}/products`, formData, {
+        response = await axios.post(`${apiUrl}/api/products`, formData, {
           headers: {
             Authorization: `${token}`,
             "Content-Type": "application/json",
@@ -78,7 +78,7 @@ const ProductFormPage = () => {
       } else {
         // Update existing product
         console.log(`Updating product with ID: ${id}`);
-        response = await axios.put(`${apiUrl}/api/products/${id}`, formData, {
+        response = await axios.put(`${apiUrl}/products/${id}`, formData, {
           headers: {
             Authorization: `${token}`,
             "Content-Type": "application/json",

@@ -14,7 +14,7 @@ const SupplierDetail = () => {
   useEffect(() => {
     const fetchSupplier = async () => {
       try {
-        const baseUrl = import.meta.env.VITE_API_BASE_URL;
+        const baseUrl = import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL;
         if (!baseUrl) {
           throw new Error('API base URL is not configured');
         }
@@ -47,7 +47,7 @@ const SupplierDetail = () => {
   const handleDelete = async () => {
     if (window.confirm("Are you sure you want to delete this supplier?")) {
       try {
-        const baseUrl = import.meta.env.VITE_API_BASE_URL;
+        const baseUrl = import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL;
         if (!baseUrl) {
           throw new Error('API base URL is not configured');
         }

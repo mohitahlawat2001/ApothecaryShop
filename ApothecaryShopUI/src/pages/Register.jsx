@@ -9,10 +9,10 @@ import { motion } from 'framer-motion';
 
 const Register = () => {
   // Validate environment configuration
-  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? import.meta.env.VITE_API_URL;
   if (!API_BASE_URL) {
-    console.error('VITE_API_BASE_URL is not configured');
-    // Could also redirect to an error page or show a user-friendly message
+    console.error('Missing API base URL. Please set VITE_API_BASE_URL.');
+    throw new Error('Missing API base URL');
   }
 
   const [formData, setFormData] = useState({
@@ -56,15 +56,21 @@ const Register = () => {
     }
   };
 
-  const handleGoogleSignIn = () => {
-    // Redirect to the backend Google OAuth endpoint
+ const handleGoogleSignIn = () => {
+    if (!API_BASE_URL) { 
+      setError('Configuration error: API base URL not set'); 
+      return; 
+    }
     window.location.href = `${API_BASE_URL}/auth/google`;
   };
-
   const handleFacebookSignIn = () => {
-    // Redirect to the backend Facebook OAuth endpoint
+    if (!API_BASE_URL) { 
+      setError('Configuration error: API base URL not set'); 
+      return; 
+    }
     window.location.href = `${API_BASE_URL}/auth/facebook`;
   };
+
 
   return (
     <motion.div
