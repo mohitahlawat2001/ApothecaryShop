@@ -269,7 +269,7 @@ app.post('/api/login', validate({ body: userSchemas.login }), async (req, res) =
     
     // Send signin alert
     try {
-      const loginTime = new Date().toLocaleString();
+      const loginTime = new Date().toISOString();
       await sendSigninEmail(user.name, user.email, loginTime);
     } catch (emailError) {
       console.error('Failed to send signin email:', emailError);
