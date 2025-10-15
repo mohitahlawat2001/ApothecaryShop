@@ -39,7 +39,7 @@ const loginLimiter = rateLimit({
   legacyHeaders: false,
   skipSuccessfulRequests: true,
   keyGenerator: (req) => {
-    const baseKey = normalizeIp(req);
+    const baseKey = normalizeIp(req.ip);
     if (req && req.body && typeof req.body.email === "string") {
       return `${baseKey}:${req.body.email.trim()}`;
     }
