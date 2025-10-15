@@ -246,10 +246,12 @@ app.post('/api/login', validate({ body: userSchemas.login }), async (req, res) =
     const { email, password } = req.body;
     const user = await User.findOne({ email });
     
-    // Handle invalid credentials with email alert
+     // Handle invalid credentials with email alert
     if (!user) {
-      // Send invalid credentials alert
-      await sendInvalidLoginAlert(email, req);
+      // Queue invalid credentials alert (non-blocking)
+      sendInvalidLoginAlert(email, req).catch(err =>
+        console.error('Failed to queue alert:', err)
+      );
       return res.status(400).json({ message: 'Invalid credentials' });
     }
     
