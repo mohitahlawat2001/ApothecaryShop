@@ -90,6 +90,10 @@ app.use('/api/distributions', authMiddleware, distributionRoutes);
 app.use('/api/maomao-ai', authMiddleware, maomaoAiRoutes);
 app.use('/api/vision', authMiddleware, visionRoutes); // Add vision routes
 
+// Validation imports
+const { validate, handleValidationError } = require('./middleware/validation');
+const { userSchemas } = require('./validation/schemas');
+
 // Auth routes
 app.use('/api/auth/google', googleRoutes);
 app.use('/api/auth/facebook', facebookRoutes); // Add Facebook OAuth routes
@@ -131,14 +135,46 @@ app.use('/api/auth/facebook', facebookRoutes); // Add Facebook OAuth routes
  *             example:
  *               error: "Email already exists"
  */
-app.post('/api/register', registerLimiter, async (req, res) => {
+app.post('/api/register', registerLimiter, validate({ body: userSchemas.register }), async (req, res) => {
   try {
     const { name, email, password, role } = req.body;
+    
+    // Check if user already exists
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.status(409).json({ 
+        success: false,
+        message: 'Email already registered',
+        timestamp: new Date().toISOString()
+      });
+    }
+
     const user = new User({ name, email, password, role });
     await user.save();
-    res.status(201).json({ message: 'User registered successfully' });
+    
+    res.status(201).json({ 
+      success: true,
+      message: 'User registered successfully',
+      timestamp: new Date().toISOString()
+    });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error('Registration error:', error);
+    
+    // Handle MongoDB unique index violations (race condition duplicates)
+    if (error && error.code === 11000) {
+      return res.status(409).json({ 
+        success: false,
+        message: 'Email already registered',
+        timestamp: new Date().toISOString()
+      });
+    }
+    
+    res.status(500).json({ 
+      success: false,
+      message: 'Internal server error during registration',
+      error: process.env.NODE_ENV === 'development' ? error.message : 'Registration failed',
+      timestamp: new Date().toISOString()
+    });
   }
 });
 
@@ -189,21 +225,31 @@ app.post('/api/register', registerLimiter, async (req, res) => {
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-app.post('/api/login', loginLimiter, async (req, res) => {
+app.post('/api/login', loginLimiter, validate({ body: userSchemas.login }), async (req, res) => {
   try {
     const { email, password } = req.body;
     const user = await User.findOne({ email });
-    if (!user) return res.status(400).json({ message: 'Invalid credentials' });
+    
+    // Generic error response to prevent user enumeration
+    const genericErrorResponse = {
+      success: false,
+      message: 'Invalid credentials',
+      timestamp: new Date().toISOString()
+    };
+    
+    if (!user) {
+      return res.status(400).json(genericErrorResponse);
+    }
     
     // Check if user has a password (OAuth users might not have passwords)
     if (!user.password) {
-      return res.status(400).json({ 
-        message: 'This account uses OAuth login. Please use Google or Facebook to sign in.' 
-      });
+      return res.status(400).json(genericErrorResponse);
     }
     
     const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) return res.status(400).json({ message: 'Invalid credentials' });
+    if (!isMatch) {
+      return res.status(400).json(genericErrorResponse);
+    }
     
     // Modified token payload to match what your auth middleware expects
     const token = jwt.sign(
@@ -221,6 +267,7 @@ app.post('/api/login', loginLimiter, async (req, res) => {
       process.env.JWT_SECRET?.substring(0, 4) || 'undefined');
     
     res.json({ 
+      success: true,
       token, 
       user: { 
         id: user._id, 
@@ -229,10 +276,17 @@ app.post('/api/login', loginLimiter, async (req, res) => {
         role: user.role,
         provider: user.provider,
         avatar: user.avatar 
-      } 
+      },
+      timestamp: new Date().toISOString()
     });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error('Login error:', error);
+    res.status(500).json({ 
+      success: false,
+      message: 'Internal server error during login',
+      error: process.env.NODE_ENV === 'development' ? error.message : 'Login failed',
+      timestamp: new Date().toISOString()
+    });
   }
 });
 
@@ -283,9 +337,19 @@ app.post('/api/login', loginLimiter, async (req, res) => {
 app.get('/api/profile', authMiddleware, async (req, res) => {
   try {
     const user = await User.findById(req.user.id).select('-password');
-    res.json({ user });
+    res.json({ 
+      success: true,
+      data: { user },
+      timestamp: new Date().toISOString()
+    });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error('Error fetching profile:', error);
+    res.status(500).json({ 
+      success: false,
+      message: 'Error fetching user profile',
+      error: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error',
+      timestamp: new Date().toISOString()
+    });
   }
 });
 

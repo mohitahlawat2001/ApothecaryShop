@@ -4,6 +4,16 @@ A comprehensive backend application for managing an apothecary/pharmacy shop inv
 
 ## Features
 
+- **Input Validation & Security**
+  - **Joi-based validation** for all API endpoints
+  - Request body validation with detailed error messages
+  - **Query parameter validation** for search and pagination
+  - **URL parameter validation** for MongoDB ObjectIds
+  - **Business rule enforcement** (unique constraints, date validation, etc.)
+  - **Standardized error responses** with consistent format
+  - **Input sanitization** to prevent injection attacks
+  - **Password complexity requirements** (8+ chars, uppercase, lowercase, numbers, special chars)
+
 - **User Authentication**
   - User registration with role-based access (admin/staff)
   - Secure login with JWT authentication
@@ -29,6 +39,10 @@ A comprehensive backend application for managing an apothecary/pharmacy shop inv
   - Associate movements with specific users for accountability
 
 - **Security**
+  - **Comprehensive input validation** using Joi validation library
+  - **Protection against injection attacks** through input sanitization
+  - **Data type validation** preventing malformed requests
+  - **Business rule validation** ensuring data integrity
   - JWT-based authentication with Bearer token support
   - Role-based access control
   - Secure API endpoints
@@ -37,6 +51,7 @@ A comprehensive backend application for managing an apothecary/pharmacy shop inv
 
 - **Node.js** - JavaScript runtime environment
 - **Express.js** - Web application framework
+- **Joi** - Powerful schema validation library
 - **MongoDB** - NoSQL database
 - **Mongoose** - MongoDB object modeling
 - **JWT** - JSON Web Token for authentication
@@ -70,7 +85,7 @@ This API now includes **interactive Swagger UI documentation** that provides:
 
 ### Prerequisites
 
-- Node.js (v14 or higher)
+- Node.js (v20 or higher)
 - MongoDB instance (local or Atlas)
 
 ### Installation
