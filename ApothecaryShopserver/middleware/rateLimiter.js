@@ -1,5 +1,18 @@
 const rateLimit = require("express-rate-limit");
+const net = require("net");
 
+function normalizeIp(ip) {
+  if (!ip) return "";
+  // Some proxies or frameworks might return an array
+  if (Array.isArray(ip)) ip = ip[0];
+  // Convert non-string (e.g., Buffer, object) to string
+  ip = String(ip);
+
+  // Strip IPv4-mapped IPv6 prefix like "::ffff:"
+  if (ip.startsWith("::ffff:")) return ip.slice(7);
+
+  return ip;
+}
 const registerLimiter = rateLimit({
   windowMs: 60 * 60 * 1000,
   max: 3,
@@ -26,10 +39,11 @@ const loginLimiter = rateLimit({
   legacyHeaders: false,
   skipSuccessfulRequests: true,
   keyGenerator: (req) => {
-    if (req && req.body && req.body.email === "string") {
-      return `${req.ip}:${req.body.email.trim()}`;
+    const baseKey = normalizeIp(req);
+    if (req && req.body && typeof req.body.email === "string") {
+      return `${baseKey}:${req.body.email.trim()}`;
     }
-    return req.ip;
+    return baseKey;
   },
   message: {
     success: false,
