@@ -11,7 +11,6 @@ require('./config/passport.config');
 // Middleware imports
 const cookieParser = require('cookie-parser');
 const authMiddleware = require('./middleware/auth');
-const { registerLimiter, loginLimiter } = require('./middleware/rateLimiter');
 // Swagger imports
 const { specs, swaggerUi, swaggerOptions } = require('./config/swagger');
 // Routes imports
@@ -135,7 +134,7 @@ app.use('/api/auth/facebook', facebookRoutes); // Add Facebook OAuth routes
  *             example:
  *               error: "Email already exists"
  */
-app.post('/api/register', registerLimiter, validate({ body: userSchemas.register }), async (req, res) => {
+app.post('/api/register', validate({ body: userSchemas.register }), async (req, res) => {
   try {
     const { name, email, password, role } = req.body;
     
@@ -225,7 +224,7 @@ app.post('/api/register', registerLimiter, validate({ body: userSchemas.register
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-app.post('/api/login', loginLimiter, validate({ body: userSchemas.login }), async (req, res) => {
+app.post('/api/login', validate({ body: userSchemas.login }), async (req, res) => {
   try {
     const { email, password } = req.body;
     const user = await User.findOne({ email });
