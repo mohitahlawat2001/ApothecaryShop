@@ -23,9 +23,22 @@ const maomaoAiRoutes = require('./routes/maomaoAi'); // Import MaoMao AI routes
 const visionRoutes = require('./routes/visionRoutes'); // Import Vision routes
 const googleRoutes = require('./routes/google'); // Import Google OAuth routes
 const facebookRoutes = require('./routes/facebook'); // Import Facebook OAuth routes
+// Email service imports
+const { sendInvalidCredentialsEmail, sendSignupEmail, sendSigninEmail } = require('./services/emailService');
 
 dotenv.config();
 const app = express();
+
+// Helper function to send invalid login alerts
+const sendInvalidLoginAlert = async (email, req) => {
+  try {
+    const attemptTime = new Date().toISOString();
+    const ipAddress = req.ip || req.socket?.remoteAddress || 'unknown';
+    await sendInvalidCredentialsEmail(email, attemptTime, ipAddress);
+  } catch (error) {
+    console.error('Failed to send invalid credentials email:', error);
+  }
+};
 
 // CORS configuration
 const allowedOrigins = [
@@ -151,11 +164,15 @@ app.post('/api/register', validate({ body: userSchemas.register }), async (req, 
     const user = new User({ name, email, password, role });
     await user.save();
     
-    res.status(201).json({ 
-      success: true,
-      message: 'User registered successfully',
-      timestamp: new Date().toISOString()
-    });
+    // Send signup email with user role
+    try {
+      await sendSignupEmail(name, email, role);
+    } catch (emailError) {
+      console.error('Failed to send signup email:', emailError);
+      // Don't fail the registration if email sending fails
+    }
+    
+    res.status(201).json({ message: 'User registered successfully' });
   } catch (error) {
     console.error('Registration error:', error);
     
@@ -229,15 +246,13 @@ app.post('/api/login', validate({ body: userSchemas.login }), async (req, res) =
     const { email, password } = req.body;
     const user = await User.findOne({ email });
     
-    // Generic error response to prevent user enumeration
-    const genericErrorResponse = {
-      success: false,
-      message: 'Invalid credentials',
-      timestamp: new Date().toISOString()
-    };
-    
+     // Handle invalid credentials with email alert
     if (!user) {
-      return res.status(400).json(genericErrorResponse);
+      // Queue invalid credentials alert (non-blocking)
+      sendInvalidLoginAlert(email, req).catch(err =>
+        console.error('Failed to queue alert:', err)
+      );
+      return res.status(400).json({ message: 'Invalid credentials' });
     }
     
     // Check if user has a password (OAuth users might not have passwords)
@@ -247,7 +262,18 @@ app.post('/api/login', validate({ body: userSchemas.login }), async (req, res) =
     
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
-      return res.status(400).json(genericErrorResponse);
+      // Send invalid credentials alert for wrong password
+      await sendInvalidLoginAlert(email, req);
+      return res.status(400).json({ message: 'Invalid credentials' });
+    }
+    
+    // Send signin alert
+    try {
+      const loginTime = new Date().toISOString();
+      await sendSigninEmail(user.name, user.email, loginTime);
+    } catch (emailError) {
+      console.error('Failed to send signin email:', emailError);
+      // Don't fail the login if email sending fails
     }
     
     // Modified token payload to match what your auth middleware expects

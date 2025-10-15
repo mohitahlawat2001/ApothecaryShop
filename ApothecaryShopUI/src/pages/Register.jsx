@@ -8,120 +8,38 @@ import { facebookAuthService } from '../services/facebookAuthService';
 import { motion } from 'framer-motion';
 
 const Register = () => {
+  // Validate environment configuration
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? import.meta.env.VITE_API_URL;
+  if (!API_BASE_URL) {
+    console.error('Missing API base URL. Please set VITE_API_BASE_URL.');
+    throw new Error('Missing API base URL');
+  }
+
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     password: '',
     confirmPassword: ''
   });
-  const [error, setError] = useState('');
+  
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const { setAuth } = useContext(AuthContext);
+  const [error, setError] = useState('');
   const navigate = useNavigate();
 
   const { name, email, password, confirmPassword } = formData;
 
-  // Framer Motion variants
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: { opacity: 1, transition: { staggerChildren: 0.08 } }
-  };
-  const panelLeftVariants = {
-    hidden: { opacity: 0, x: -24 },
-    visible: { opacity: 1, x: 0, transition: { type: 'spring', stiffness: 140, damping: 18 } }
-  };
-  const cardVariants = {
-    hidden: { opacity: 0, x: 24 },
-    visible: { opacity: 1, x: 0, transition: { type: 'spring', stiffness: 140, damping: 18 } }
-  };
-  const itemVariants = {
-    hidden: { opacity: 0, y: 8 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.22 } }
-  };
-
-  // Handle Google OAuth callback
-  useEffect(() => {
-    const handleGoogleCallback = async () => {
-      const googleCallback = googleAuthService.checkGoogleCallback();
-      if (googleCallback) {
-        try {
-          const result = await googleAuthService.handleGoogleCallback(googleCallback.token, googleCallback.user);
-          if (result.success) {
-            // Update auth context
-            setAuth({
-              token: result.token,
-              isAuthenticated: true,
-              user: result.user
-            });
-            
-            // Clear URL parameters
-            googleAuthService.clearCallbackParams();
-            
-            // Redirect to dashboard
-            navigate('/dashboard');
-          } else {
-            setError('Google authentication failed');
-          }
-        } catch (error) {
-          console.error('Google auth callback error:', error);
-          setError('Google authentication failed');
-        }
-      }
-    };
-
-    // Handle Facebook OAuth callback
-    const handleFacebookCallback = async () => {
-      const facebookCallback = facebookAuthService.checkFacebookCallback();
-      if (facebookCallback) {
-        try {
-          const result = await facebookAuthService.handleFacebookCallback(facebookCallback.token, facebookCallback.user);
-          if (result.success) {
-            // Update auth context
-            setAuth({
-              token: result.token,
-              isAuthenticated: true,
-              user: result.user
-            });
-            
-            // Clear URL parameters
-            facebookAuthService.clearCallbackParams();
-            
-            // Redirect to dashboard
-            navigate('/dashboard');
-          } else {
-            setError('Facebook authentication failed');
-          }
-        } catch (error) {
-          console.error('Facebook auth callback error:', error);
-          setError('Facebook authentication failed');
-        }
-      }
-    };
-
-    handleGoogleCallback();
-    handleFacebookCallback();
-  }, [navigate, setAuth]);
-
   const onChange = e => setFormData({ ...formData, [e.target.name]: e.target.value });
-
+  
   const onSubmit = async e => {
     e.preventDefault();
-
-    // Validate passwords match
+    
     if (password !== confirmPassword) {
       setError('Passwords do not match');
       return;
     }
-
-    // Validate password length
-    if (password.length < 6) {
-      setError('Password must be at least 6 characters');
-      return;
-    }
-
+    
     try {
-      // Remove confirmPassword from data sent to API
       const registerData = {
         name,
         email,
@@ -129,7 +47,7 @@ const Register = () => {
         role: 'staff' // Default role
       };
 
-      await axios.post(`${import.meta.env.VITE_API_URL}/register`, registerData);
+      await axios.post(`${API_BASE_URL}/register`, registerData);
 
       // Redirect to login page on successful registration
       navigate('/');
@@ -138,15 +56,21 @@ const Register = () => {
     }
   };
 
-  const handleGoogleSignIn = () => {
-    // Redirect to the backend Google OAuth endpoint
-    window.location.href = `${import.meta.env.VITE_API_URL}/auth/google`;
+ const handleGoogleSignIn = () => {
+    if (!API_BASE_URL) { 
+      setError('Configuration error: API base URL not set'); 
+      return; 
+    }
+    window.location.href = `${API_BASE_URL}/auth/google`;
+  };
+  const handleFacebookSignIn = () => {
+    if (!API_BASE_URL) { 
+      setError('Configuration error: API base URL not set'); 
+      return; 
+    }
+    window.location.href = `${API_BASE_URL}/auth/facebook`;
   };
 
-  const handleFacebookSignIn = () => {
-    // Redirect to the backend Facebook OAuth endpoint
-    window.location.href = `${import.meta.env.VITE_API_URL}/auth/facebook`;
-  };
 
   return (
     <motion.div

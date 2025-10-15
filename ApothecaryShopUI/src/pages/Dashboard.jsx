@@ -28,7 +28,13 @@ const Dashboard = () => {
     const fetchData = async () => {
       try {
         const token = localStorage.getItem("token");
-        const apiUrl = import.meta.env.VITE_API_URL;
+        const apiUrl =
+          import.meta.env.VITE_API_BASE_URL ?? import.meta.env.VITE_API_URL;
+        if (!apiUrl) {
+          throw new Error(
+            "Missing API base URL. Please set VITE_API_BASE_URL in your environment."
+          );
+        }
 
         const productsRes = await axios.get(`${apiUrl}/products`, {
           headers: { Authorization: `${token}` },

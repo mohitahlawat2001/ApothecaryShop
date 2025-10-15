@@ -1,5 +1,6 @@
 const passport = require('passport');
 const jwt = require('jsonwebtoken');
+const { sendOAuthSigninEmail } = require('../services/emailService');
 require('dotenv').config();
 
 function googleOauthController(){
@@ -27,6 +28,15 @@ async function googleCallBackController(req,res){
         process.env.JWT_SECRET,
         { expiresIn: '1d' }
     );
+   
+    // Send OAuth signin alert
+    try {
+      const loginTime = new Date().toLocaleString();
+      await sendOAuthSigninEmail(user.name, user.email, 'Google', loginTime);
+    } catch (emailError) {
+      console.error('Failed to send OAuth signin email:', emailError);
+      // Don't fail the login if email sending fails
+    }
    
     // Prepare user data for frontend
     const userData = { id: user._id, name: user.name, email: user.email, role: user.role };

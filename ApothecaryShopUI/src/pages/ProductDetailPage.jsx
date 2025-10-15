@@ -17,7 +17,13 @@ const ProductDetailPage = () => {
     const fetchData = async () => {
       try {
         const token = localStorage.getItem("token");
-        const apiUrl = import.meta.env.VITE_API_URL;
+        const apiUrl =
+          import.meta.env.VITE_API_BASE_URL ?? import.meta.env.VITE_API_URL;
+        if (!apiUrl) {
+          throw new Error(
+            "Missing API base URL. Please set VITE_API_BASE_URL in your environment."
+          );
+        }
 
         // Fetch product details
         const productResponse = await axios.get(`${apiUrl}/products/${id}`, {

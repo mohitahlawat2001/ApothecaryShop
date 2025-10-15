@@ -1,17 +1,16 @@
 import axios from 'axios';
 import { getAuthConfig } from './authService';
-
-const API_URL = import.meta.env.VITE_API_URL+'/distributions';
+import { getApiUrl } from '../utils/api';
 
 // Create new distribution
 export const createDistribution = async (distributionData) => {
-  const response = await axios.post(API_URL, distributionData, getAuthConfig());
+  const response = await axios.post(getApiUrl('/distributions'), distributionData, getAuthConfig());
   return response.data;
 };
 
 // Get all distributions
 export const getDistributions = async (filters = {}) => {
-  const response = await axios.get(API_URL, { 
+  const response = await axios.get(getApiUrl('/distributions'), { 
     ...getAuthConfig(),
     params: filters 
   });
@@ -20,25 +19,25 @@ export const getDistributions = async (filters = {}) => {
 
 // Get distribution by ID
 export const getDistributionById = async (id) => {
-  const response = await axios.get(`${API_URL}/${id}`, getAuthConfig());
+  const response = await axios.get(getApiUrl(`/distributions/${id}`), getAuthConfig());
   return response.data;
 };
 
 // Update distribution status
 export const updateDistributionStatus = async (id, status) => {
-  const response = await axios.patch(`${API_URL}/${id}/status`, { status }, getAuthConfig());
+  const response = await axios.patch(getApiUrl(`/distributions/${id}/status`), { status }, getAuthConfig());
   return response.data;
 };
 
 // Delete distribution
 export const deleteDistribution = async (id) => {
-  const response = await axios.delete(`${API_URL}/${id}`, getAuthConfig());
+  const response = await axios.delete(getApiUrl(`/distributions/${id}`), getAuthConfig());
   return response.data;
 };
 
 // Get distribution reports
 export const getDistributionReports = async (filters = {}) => {
-  const response = await axios.get(`${API_URL}/reports/summary`, {
+  const response = await axios.get(getApiUrl('/distributions/reports/summary'), {
     ...getAuthConfig(),
     params: filters 
   });
@@ -47,7 +46,7 @@ export const getDistributionReports = async (filters = {}) => {
 
 // Export distributions to CSV
 export const exportDistributionsCSV = async (filters = {}) => {
-  const response = await axios.get(`${API_URL}/export/csv`, {
+  const response = await axios.get(getApiUrl('/distributions/export/csv'), {
     ...getAuthConfig(),
     params: filters,
     responseType: 'blob'
@@ -66,7 +65,7 @@ export const exportDistributionsCSV = async (filters = {}) => {
 
 // Export distributions to PDF
 export const exportDistributionsPDF = async (filters = {}) => {
-  const response = await axios.get(`${API_URL}/export/pdf`, {
+  const response = await axios.get(getApiUrl('/distributions/export/pdf'), {
     ...getAuthConfig(),
     params: filters,
     responseType: 'blob'
