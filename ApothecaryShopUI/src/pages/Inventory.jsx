@@ -27,7 +27,7 @@ const Inventory = () => {
           },
         });
 
-        setProducts(response.data);
+        setProducts(response.data.data);
         setLoading(false);
       } catch (error) {
         console.error("Error fetching products:", error);
