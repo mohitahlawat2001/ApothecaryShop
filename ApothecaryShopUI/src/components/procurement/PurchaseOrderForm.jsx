@@ -60,7 +60,7 @@ function PurchaseOrderForm() {
   const fetchSuppliers = async () => {
     try {
       const data = await getSuppliers();
-      setSuppliers(data);
+      setSuppliers(data.data);
     } catch (err) {
       setError('Failed to load suppliers');
       console.error(err);
@@ -71,7 +71,7 @@ function PurchaseOrderForm() {
   const fetchProducts = async () => {
     try {
       const data = await getProducts();
-      setProducts(data);
+      setProducts(data.data);
     } catch (err) {
       setError('Failed to load products');
       console.error(err);
