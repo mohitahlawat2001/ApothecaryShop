@@ -1,16 +1,15 @@
 import axios from 'axios';
 import { getAuthConfig } from './authService';
-
-const API_URL = import.meta.env.VITE_API_URL + '/purchase-receipts';
+import { getApiUrl } from '../utils/api';
 
 export const getPurchaseReceipts = async () => {
-  const response = await axios.get(API_URL, getAuthConfig());
+  const response = await axios.get(getApiUrl('/purchase-receipts'), getAuthConfig());
   return response.data;
 };
 
 export const getPurchaseReceipt = async (id) => {
   try {
-    const response = await axios.get(`${API_URL}/${id}`, getAuthConfig());
+    const response = await axios.get(getApiUrl(`/purchase-receipts/${id}`), getAuthConfig());
     
     // Check if response data is an array (which appears to be happening in your case)
     // and return the first item if so
@@ -27,7 +26,7 @@ export const getPurchaseReceipt = async (id) => {
 
 export const createPurchaseReceipt = async (receiptData) => {
   try {
-    const response = await axios.post(API_URL, receiptData, getAuthConfig());
+    const response = await axios.post(getApiUrl('/purchase-receipts'), receiptData, getAuthConfig());
     return response.data;
   } catch (error) {
     console.error('Error creating purchase receipt:', error);

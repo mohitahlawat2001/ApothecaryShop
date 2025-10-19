@@ -55,7 +55,7 @@ export const AuthProvider = ({ children }) => {
           axios.defaults.headers.common['Authorization'] = token;
           
           // Verify token with backend (optional, implement endpoint)
-          // const res = await axios.get(`${import.meta.env.VITE_API_URL}/auth/verify`);
+          // const res = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/auth/verify`);
           
           setAuth({
             token,

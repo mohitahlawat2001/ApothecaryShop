@@ -1,7 +1,13 @@
 import axios from 'axios';
 import { getAuthConfig } from './authService';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+// Get API base URL from environment variable with fallback
+const API_URL = import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+
+// Validate that we have a base URL
+if (!API_URL || API_URL === 'http://localhost:5000/api') {
+  console.warn('Using default API URL. Please set VITE_API_BASE_URL in your environment for production.');
+}
 
 /**
  * Analyzes a product image and returns the AI analysis
@@ -9,7 +15,7 @@ const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
  * @param {string} prompt - Optional custom prompt for the AI
  * @returns {Promise<Object>} The analysis response
  */
-export const analyzeProductImage = async (imageFile, prompt = '') => {
+export async function analyzeProductImage(imageFile, prompt = '') {
   try {
     // Create FormData object to send the file
     const formData = new FormData();
@@ -35,14 +41,14 @@ export const analyzeProductImage = async (imageFile, prompt = '') => {
     console.error('Error analyzing image:', error);
     throw error;
   }
-};
+}
 
 /**
  * Extracts text from a product image
  * @param {File} imageFile - The image file to analyze
  * @returns {Promise<Object>} The extracted text response
  */
-export const extractTextFromImage = async (imageFile) => {
+export async function extractTextFromImage(imageFile) {
   try {
     // Create FormData object to send the file
     const formData = new FormData();
@@ -65,4 +71,4 @@ export const extractTextFromImage = async (imageFile) => {
     console.error('Error extracting text from image:', error);
     throw error;
   }
-};
+}
