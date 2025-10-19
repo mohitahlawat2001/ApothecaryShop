@@ -467,23 +467,33 @@ router.get("/export/csv", auth, async (req, res) => {
 
     // --- OWASP CSV sanitization helper ---
     const sanitize = (value) => {
-      const str = String(value ?? "");
-      return /^[=+\-@]/.test(str) ? `'${str}` : str;
+      const s = String(value ?? "");
+      const t = s.trimStart();
+      return /^[=+\-@]/.test(t) || t.startsWith("\t") ? `'${s}` : s;
     };
 
+    // Define CSV fields
+    const fields = [
+      "OrderNumber",
+      "Recipient",
+      "RecipientType",
+      "Status",
+      "Date",
+      "Items",
+    ];
+
     if (!distributions.length) {
-      // Option A (safer): Return empty CSV with headers
-      const parser = new Parser();
+      // Return header-only CSV
+      const parser = new Parser({ fields });
       const csv = parser.parse([]);
-      res.header("Content-Type", "text/csv");
+      res.header("Content-Type", "text/csv; charset=utf-8");
       res.attachment(
         `distributions_${new Date().toISOString().split("T")[0]}.csv`
       );
       return res.send(csv);
-      // Option B: Keep 404 (if your frontend expects it)
-      // return res.status(404).json({ message: "No distributions found" });
     }
 
+    // Map and sanitize data
     const data = distributions.map((dist) => ({
       OrderNumber: sanitize(dist.orderNumber),
       Recipient: sanitize(dist.recipient),
@@ -497,10 +507,10 @@ router.get("/export/csv", auth, async (req, res) => {
       ),
     }));
 
-    const parser = new Parser();
+    const parser = new Parser({ fields });
     const csv = parser.parse(data);
 
-    res.header("Content-Type", "text/csv");
+    res.header("Content-Type", "text/csv; charset=utf-8");
     res.attachment(
       `distributions_${new Date().toISOString().split("T")[0]}.csv`
     );
@@ -530,11 +540,21 @@ router.get("/export/pdf", auth, async (req, res) => {
       .populate("items.product", "name code")
       .sort({ createdAt: -1 });
 
-    if (!distributions.length) {
-      return res.status(404).json({ message: "No distributions found" });
-    }
-
     const doc = new PDFDocument({ margin: 40, size: "A4" });
+
+    if (!distributions.length) {
+      // Empty PDF with headers, consistent with CSV approach
+      doc.fontSize(18).text("Distributions Report", { align: "center" });
+      doc.moveDown(1);
+      res.setHeader(
+        "Content-Disposition",
+        'attachment; filename="distributions.pdf"'
+      );
+      res.setHeader("Content-Type", "application/pdf");
+      doc.pipe(res);
+      doc.end();
+      return;
+    }
 
     doc.fontSize(18).text("Distributions Report", { align: "center" });
     doc.moveDown(1);
@@ -558,7 +578,6 @@ router.get("/export/pdf", auth, async (req, res) => {
       doc.moveDown(0.5);
     });
 
-    // Only pipe after all content is generated
     res.setHeader(
       "Content-Disposition",
       'attachment; filename="distributions.pdf"'
@@ -568,7 +587,6 @@ router.get("/export/pdf", auth, async (req, res) => {
     doc.end();
   } catch (error) {
     console.error("Error exporting PDF:", error);
-    // Only send JSON error if headers are not sent yet
     if (!res.headersSent) {
       res.status(500).json({ message: "Error exporting PDF" });
     }
