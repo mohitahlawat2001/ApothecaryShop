@@ -1,7 +1,7 @@
-import axios from 'axios';
-import { getAuthConfig } from './authService';
+import axios from "axios";
+import { getAuthConfig } from "./authService";
 
-const API_URL = import.meta.env.VITE_API_URL+'/distributions';
+const API_URL = import.meta.env.VITE_API_URL + "/distributions";
 
 // Create new distribution
 export const createDistribution = async (distributionData) => {
@@ -11,9 +11,9 @@ export const createDistribution = async (distributionData) => {
 
 // Get all distributions
 export const getDistributions = async (filters = {}) => {
-  const response = await axios.get(API_URL, { 
+  const response = await axios.get(API_URL, {
     ...getAuthConfig(),
-    params: filters 
+    params: filters,
   });
   return response.data;
 };
@@ -26,7 +26,11 @@ export const getDistributionById = async (id) => {
 
 // Update distribution status
 export const updateDistributionStatus = async (id, status) => {
-  const response = await axios.patch(`${API_URL}/${id}/status`, { status }, getAuthConfig());
+  const response = await axios.patch(
+    `${API_URL}/${id}/status`,
+    { status },
+    getAuthConfig()
+  );
   return response.data;
 };
 
@@ -40,7 +44,7 @@ export const deleteDistribution = async (id) => {
 export const getDistributionReports = async (filters = {}) => {
   const response = await axios.get(`${API_URL}/reports/summary`, {
     ...getAuthConfig(),
-    params: filters 
+    params: filters,
   });
   return response.data;
 };
@@ -50,14 +54,17 @@ export const exportDistributionsCSV = async (filters = {}) => {
   const response = await axios.get(`${API_URL}/export/csv`, {
     ...getAuthConfig(),
     params: filters,
-    responseType: 'blob'
+    responseType: "blob",
   });
-  
+
   // Create download link
   const url = window.URL.createObjectURL(new Blob([response.data]));
-  const link = document.createElement('a');
+  const link = document.createElement("a");
   link.href = url;
-  link.setAttribute('download', `distributions_${new Date().toISOString().split('T')[0]}.csv`);
+  link.setAttribute(
+    "download",
+    `distributions_${new Date().toISOString().split("T")[0]}.csv`
+  );
   document.body.appendChild(link);
   link.click();
   link.remove();
@@ -69,14 +76,17 @@ export const exportDistributionsPDF = async (filters = {}) => {
   const response = await axios.get(`${API_URL}/export/pdf`, {
     ...getAuthConfig(),
     params: filters,
-    responseType: 'blob'
+    responseType: "blob",
   });
-  
+
   // Create download link
   const url = window.URL.createObjectURL(new Blob([response.data]));
-  const link = document.createElement('a');
+  const link = document.createElement("a");
   link.href = url;
-  link.setAttribute('download', `distributions_${new Date().toISOString().split('T')[0]}.pdf`);
+  link.setAttribute(
+    "download",
+    `distributions_${new Date().toISOString().split("T")[0]}.pdf`
+  );
   document.body.appendChild(link);
   link.click();
   link.remove();
