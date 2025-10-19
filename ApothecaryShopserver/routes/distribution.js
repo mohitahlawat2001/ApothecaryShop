@@ -4,7 +4,7 @@ const Distribution = require("../models/distribution");
 const Product = require("../models/Product");
 const StockMovement = require("../models/StockMovement"); // Add this import
 const auth = require("../middleware/auth");
-const { Parser } = require("json2csv");
+const { Parser } = require("@json2csv/plainjs");
 const PDFDocument = require("pdfkit");
 /**
  * @swagger
@@ -465,19 +465,36 @@ router.get("/export/csv", auth, async (req, res) => {
       .populate("items.product", "name code")
       .sort({ createdAt: -1 });
 
+    // --- OWASP CSV sanitization helper ---
+    const sanitize = (value) => {
+      const str = String(value ?? "");
+      return /^[=+\-@]/.test(str) ? `'${str}` : str;
+    };
+
     if (!distributions.length) {
-      return res.status(404).json({ message: "No distributions found" });
+      // Option A (safer): Return empty CSV with headers
+      const parser = new Parser();
+      const csv = parser.parse([]);
+      res.header("Content-Type", "text/csv");
+      res.attachment(
+        `distributions_${new Date().toISOString().split("T")[0]}.csv`
+      );
+      return res.send(csv);
+      // Option B: Keep 404 (if your frontend expects it)
+      // return res.status(404).json({ message: "No distributions found" });
     }
 
     const data = distributions.map((dist) => ({
-      OrderNumber: dist.orderNumber,
-      Recipient: dist.recipient,
-      RecipientType: dist.recipientType,
-      Status: dist.status,
-      Date: dist.createdAt.toISOString().split("T")[0],
-      Items: dist.items
-        .map((item) => `${item.product?.name || "N/A"} (${item.quantity})`)
-        .join("; "),
+      OrderNumber: sanitize(dist.orderNumber),
+      Recipient: sanitize(dist.recipient),
+      RecipientType: sanitize(dist.recipientType),
+      Status: sanitize(dist.status),
+      Date: sanitize(dist.createdAt.toISOString().split("T")[0]),
+      Items: sanitize(
+        dist.items
+          .map((item) => `${item.product?.name || "N/A"} (${item.quantity})`)
+          .join("; ")
+      ),
     }));
 
     const parser = new Parser();
@@ -490,9 +507,12 @@ router.get("/export/csv", auth, async (req, res) => {
     return res.send(csv);
   } catch (error) {
     console.error("Error exporting CSV:", error);
-    res.status(500).json({ message: "Error exporting CSV" });
+    res
+      .status(500)
+      .json({ message: "Error exporting CSV", error: error.message });
   }
 });
+
 //Added router for PDF Export - @Duzzann
 router.get("/export/pdf", auth, async (req, res) => {
   try {
