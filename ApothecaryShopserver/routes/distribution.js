@@ -447,41 +447,6 @@ router.get("/reports/summary", auth, async (req, res) => {
   }
 });
 
-// router pre csv export
-// router.get("/export/csv", auth, async (req, res) => {
-//   try {
-//     const distributions = await Distribution.find().populate("items.product");
-
-//     const header = ["OrderNumber", "Recipient", "Type", "Status", "Items"].join(
-//       ","
-//     );
-
-//     const rows = distributions.map((dist) => {
-//       const itemsStr = dist.items
-//         .map((item) => `${item.product.name}(${item.quantity})`)
-//         .join("; ");
-//       return [
-//         dist.orderNumber,
-//         dist.recipient,
-//         dist.recipientType,
-//         dist.status,
-//         `"${itemsStr}"`,
-//       ].join(",");
-//     });
-
-//     const csv = [header, ...rows].join("\n");
-
-//     res.header("Content-Type", "text/csv");
-//     res.attachment(
-//       `distributions_${new Date().toISOString().split("T")[0]}.csv`
-//     );
-//     return res.send(csv);
-//   } catch (error) {
-//     console.error("Error exporting CSV:", error);
-//     res.status(500).json({ message: "Server error" });
-//   }
-// });
-
 //Added router for CSV Export - @Duzzann
 router.get("/export/csv", auth, async (req, res) => {
   try {
@@ -533,7 +498,6 @@ router.get("/export/pdf", auth, async (req, res) => {
   try {
     const { status, recipient, startDate, endDate } = req.query;
     const query = {};
-
     if (status) query.status = status;
     if (recipient) query.recipient = { $regex: recipient, $options: "i" };
     if (startDate || endDate) {
@@ -551,12 +515,6 @@ router.get("/export/pdf", auth, async (req, res) => {
     }
 
     const doc = new PDFDocument({ margin: 40, size: "A4" });
-    res.setHeader(
-      "Content-Disposition",
-      'attachment; filename="distributions.pdf"'
-    );
-    res.setHeader("Content-Type", "application/pdf");
-    doc.pipe(res);
 
     doc.fontSize(18).text("Distributions Report", { align: "center" });
     doc.moveDown(1);
@@ -574,17 +532,26 @@ router.get("/export/pdf", auth, async (req, res) => {
             .join("; ")}`
         )
         .moveDown();
-
       if (index < distributions.length - 1) {
         doc.moveDown(0.5).text("───────────────────────────────");
       }
       doc.moveDown(0.5);
     });
 
+    // Only pipe after all content is generated
+    res.setHeader(
+      "Content-Disposition",
+      'attachment; filename="distributions.pdf"'
+    );
+    res.setHeader("Content-Type", "application/pdf");
+    doc.pipe(res);
     doc.end();
   } catch (error) {
     console.error("Error exporting PDF:", error);
-    res.status(500).json({ message: "Error exporting PDF" });
+    // Only send JSON error if headers are not sent yet
+    if (!res.headersSent) {
+      res.status(500).json({ message: "Error exporting PDF" });
+    }
   }
 });
 

@@ -22,9 +22,12 @@ const DistributionForm = () => {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
+        const productsArray = Array.isArray(response.data?.data)
+          ? response.data.data
+          : [];
         const response = await getProducts();
         //Conditional for Array, before it was causing white screen after pressing "New Distribution"- @Duzzann
-        setProducts(Array.isArray(response.data) ? response.data : []);
+        setProducts(productsArray);
       } catch (err) {
         console.error("Error fetching products:", err);
         setError("Failed to load products. Please try again.");
