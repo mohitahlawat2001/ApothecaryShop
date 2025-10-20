@@ -1,32 +1,36 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { createDistribution } from '../../services/distributionService';
-import { getProducts } from '../../services/productService'; // Assuming you have this service
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { createDistribution } from "../../services/distributionService";
+import { getProducts } from "../../services/productService"; // Assuming you have this service
 
 const DistributionForm = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [products, setProducts] = useState([]);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [formData, setFormData] = useState({
-    recipient: '',
-    recipientType: 'pharmacy',
-    items: [{ product: '', quantity: 1, batchNumber: '', expiryDate: '' }],
+    recipient: "",
+    recipientType: "pharmacy",
+    items: [{ product: "", quantity: 1, batchNumber: "", expiryDate: "" }],
     shippingInfo: {
-      address: '',
-      contactPerson: '',
-      contactNumber: ''
-    }
+      address: "",
+      contactPerson: "",
+      contactNumber: "",
+    },
   });
 
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const data = await getProducts({ inStock: true });
-        setProducts(data);
+        const response = await getProducts(); // declare & assign first
+        //Conditional for Array, before it was causing white screen after pressing "New Distribution"- @Duzzann
+        const productsArray = Array.isArray(response.data?.data)
+          ? response.data.data
+          : [];
+        setProducts(productsArray);
       } catch (err) {
-        console.error('Error fetching products:', err);
-        setError('Failed to load products. Please try again.');
+        console.error("Error fetching products:", err);
+        setError("Failed to load products. Please try again.");
       }
     };
 
@@ -35,44 +39,45 @@ const DistributionForm = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    
-    if (name.includes('shippingInfo.')) {
-      const field = name.split('.')[1];
-      setFormData(prev => ({
+
+    if (name.includes("shippingInfo.")) {
+      const field = name.split(".")[1];
+      setFormData((prev) => ({
         ...prev,
         shippingInfo: {
           ...prev.shippingInfo,
-          [field]: value
-        }
+          [field]: value,
+        },
       }));
     } else {
-      setFormData(prev => ({ ...prev, [name]: value }));
+      setFormData((prev) => ({ ...prev, [name]: value }));
     }
   };
 
   const handleItemChange = (index, field, value) => {
     const newItems = [...formData.items];
     newItems[index][field] = value;
-    
+
     // If product changes, auto-fill batch and expiry if available
-    if (field === 'product' && value) {
-      const selectedProduct = products.find(p => p._id === value);
+    if (field === "product" && value) {
+      const selectedProduct = products.find((p) => p._id === value);
       if (selectedProduct && selectedProduct.batch) {
         newItems[index].batchNumber = selectedProduct.batch;
-        newItems[index].expiryDate = selectedProduct.expiryDate?.split('T')[0] || '';
+        newItems[index].expiryDate =
+          selectedProduct.expiryDate?.split("T")[0] || "";
       }
     }
-    
-    setFormData(prev => ({ ...prev, items: newItems }));
+
+    setFormData((prev) => ({ ...prev, items: newItems }));
   };
 
   const addItem = () => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       items: [
-        ...prev.items, 
-        { product: '', quantity: 1, batchNumber: '', expiryDate: '' }
-      ]
+        ...prev.items,
+        { product: "", quantity: 1, batchNumber: "", expiryDate: "" },
+      ],
     }));
   };
 
@@ -80,35 +85,37 @@ const DistributionForm = () => {
     if (formData.items.length === 1) {
       return; // Keep at least one item
     }
-    
+
     const newItems = formData.items.filter((_, i) => i !== index);
-    setFormData(prev => ({ ...prev, items: newItems }));
+    setFormData((prev) => ({ ...prev, items: newItems }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
-    
+    setError("");
+
     // Validation
     if (!formData.recipient) {
-      setError('Recipient is required');
+      setError("Recipient is required");
       return;
     }
-    
-    if (formData.items.some(item => !item.product || item.quantity < 1)) {
-      setError('All items must have a product and quantity greater than 0');
+
+    if (formData.items.some((item) => !item.product || item.quantity < 1)) {
+      setError("All items must have a product and quantity greater than 0");
       return;
     }
-    
+
     setLoading(true);
-    
+
     try {
       await createDistribution(formData);
-      navigate('/distributions');
+      navigate("/distributions");
       // Add success notification
     } catch (err) {
-      console.error('Error creating distribution:', err);
-      setError(err.response?.data?.message || 'Failed to create distribution order');
+      console.error("Error creating distribution:", err);
+      setError(
+        err.response?.data?.message || "Failed to create distribution order"
+      );
     } finally {
       setLoading(false);
     }
@@ -117,7 +124,9 @@ const DistributionForm = () => {
   return (
     <div className="bg-white shadow-md rounded-lg overflow-hidden">
       <div className="px-6 py-4 border-b border-gray-200">
-        <h4 className="text-xl font-semibold text-gray-700">New Distribution Order</h4>
+        <h4 className="text-xl font-semibold text-gray-700">
+          New Distribution Order
+        </h4>
       </div>
       <div className="p-6">
         {error && (
@@ -125,7 +134,7 @@ const DistributionForm = () => {
             {error}
           </div>
         )}
-        
+
         <form onSubmit={handleSubmit}>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
             <div>
@@ -142,7 +151,7 @@ const DistributionForm = () => {
                 required
               />
             </div>
-            
+
             <div>
               <label className="block text-gray-700 text-sm font-bold mb-2">
                 Recipient Type*
@@ -161,9 +170,11 @@ const DistributionForm = () => {
               </select>
             </div>
           </div>
-          
+
           <div className="mb-6">
-            <h5 className="text-lg font-semibold text-gray-700 mb-3">Shipping Information</h5>
+            <h5 className="text-lg font-semibold text-gray-700 mb-3">
+              Shipping Information
+            </h5>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
                 <label className="block text-gray-700 text-sm font-bold mb-2">
@@ -206,7 +217,7 @@ const DistributionForm = () => {
               </div>
             </div>
           </div>
-          
+
           <div className="mb-6">
             <div className="flex justify-between items-center mb-3">
               <h5 className="text-lg font-semibold text-gray-700">Items*</h5>
@@ -218,16 +229,26 @@ const DistributionForm = () => {
                 Add Item
               </button>
             </div>
-            
+
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Product</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Quantity</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Batch</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Expiry</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Product
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Quantity
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Batch
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Expiry
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Action
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
@@ -236,12 +257,14 @@ const DistributionForm = () => {
                       <td className="px-6 py-4 whitespace-nowrap">
                         <select
                           value={item.product}
-                          onChange={(e) => handleItemChange(index, 'product', e.target.value)}
+                          onChange={(e) =>
+                            handleItemChange(index, "product", e.target.value)
+                          }
                           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                           required
                         >
                           <option value="">Select Product</option>
-                          {products.map(product => (
+                          {products.map((product) => (
                             <option key={product._id} value={product._id}>
                               {product.name} - Stock: {product.stockQuantity}
                             </option>
@@ -253,7 +276,13 @@ const DistributionForm = () => {
                           type="number"
                           min="1"
                           value={item.quantity}
-                          onChange={(e) => handleItemChange(index, 'quantity', parseInt(e.target.value) || '')}
+                          onChange={(e) =>
+                            handleItemChange(
+                              index,
+                              "quantity",
+                              parseInt(e.target.value) || ""
+                            )
+                          }
                           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                           required
                         />
@@ -262,7 +291,13 @@ const DistributionForm = () => {
                         <input
                           type="text"
                           value={item.batchNumber}
-                          onChange={(e) => handleItemChange(index, 'batchNumber', e.target.value)}
+                          onChange={(e) =>
+                            handleItemChange(
+                              index,
+                              "batchNumber",
+                              e.target.value
+                            )
+                          }
                           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                           placeholder="Batch #"
                         />
@@ -271,7 +306,13 @@ const DistributionForm = () => {
                         <input
                           type="date"
                           value={item.expiryDate}
-                          onChange={(e) => handleItemChange(index, 'expiryDate', e.target.value)}
+                          onChange={(e) =>
+                            handleItemChange(
+                              index,
+                              "expiryDate",
+                              e.target.value
+                            )
+                          }
                           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />
                       </td>
@@ -282,8 +323,8 @@ const DistributionForm = () => {
                           disabled={formData.items.length === 1}
                           className={`px-3 py-1 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 ${
                             formData.items.length === 1
-                              ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                              : 'bg-red-500 text-white hover:bg-red-600'
+                              ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                              : "bg-red-500 text-white hover:bg-red-600"
                           }`}
                         >
                           Remove
@@ -295,11 +336,11 @@ const DistributionForm = () => {
               </table>
             </div>
           </div>
-          
+
           <div className="flex justify-end gap-3">
             <button
               type="button"
-              onClick={() => navigate('/distributions')}
+              onClick={() => navigate("/distributions")}
               className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500"
             >
               Cancel
@@ -308,10 +349,10 @@ const DistributionForm = () => {
               type="submit"
               disabled={loading}
               className={`px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                loading ? 'opacity-70 cursor-not-allowed' : ''
+                loading ? "opacity-70 cursor-not-allowed" : ""
               }`}
             >
-              {loading ? 'Creating...' : 'Create Distribution'}
+              {loading ? "Creating..." : "Create Distribution"}
             </button>
           </div>
         </form>

@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.0",
+    "@json2csv/plainjs": "^7.0.6",
     "axios": "^1.8.3",
     "bcryptjs": "^2.4.3",
     "cookie-parser": "^1.4.7",
@@ -26,6 +27,7 @@
     "passport": "^0.7.0",
     "passport-facebook": "^3.0.0",
     "passport-google-oauth20": "^2.0.0",
+    "pdfkit": "^0.17.2",
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.1"
   },
