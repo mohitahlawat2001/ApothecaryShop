@@ -4,6 +4,7 @@ const cors = require('cors');
 const dotenv = require('dotenv');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const rateLimit = require('express-rate-limit');
 const passport = require('passport');
 const User = require('./models/user');
 // OAUTH imports
@@ -26,6 +27,47 @@ const facebookRoutes = require('./routes/facebook'); // Import Facebook OAuth ro
 
 dotenv.config();
 const app = express();
+
+// Trust proxy (needed when behind reverse proxies/load balancers)
+if (process.env.TRUST_PROXY === '1') {
+  app.set('trust proxy', 1);
+}
+
+// ----------------------------------------------------------------------------
+// Rate limiting (configurable via environment variables)
+// ----------------------------------------------------------------------------
+const RATE_LIMIT_WINDOW_MS = parseInt(process.env.RATE_LIMIT_WINDOW_MS || '900000', 10); // 15 minutes
+const RATE_LIMIT_MAX = parseInt(process.env.RATE_LIMIT_MAX || '100', 10); // 100 requests per window per IP
+
+const AUTH_RATE_LIMIT_WINDOW_MS = parseInt(process.env.AUTH_RATE_LIMIT_WINDOW_MS || '60000', 10); // 1 minute
+const AUTH_RATE_LIMIT_MAX = parseInt(process.env.AUTH_RATE_LIMIT_MAX || '5', 10); // 5 requests per window per IP
+
+const commonRateLimitOptions = {
+  standardHeaders: true,   // Return rate limit info in the `RateLimit-*` headers
+  legacyHeaders: false,    // Disable the `X-RateLimit-*` headers
+  handler: (req, res /*, next, options */) => {
+    return res.status(429).json({
+      success: false,
+      message: 'Too many requests, please try again later.',
+      timestamp: new Date().toISOString()
+    });
+  }
+};
+
+// Global limiter for all routes (skip Swagger docs to keep them accessible)
+const globalLimiter = rateLimit({
+  ...commonRateLimitOptions,
+  windowMs: RATE_LIMIT_WINDOW_MS,
+  max: RATE_LIMIT_MAX,
+  skip: (req) => req.path.startsWith('/api-docs')
+});
+
+// Stricter limiter for authentication-related endpoints
+const authLimiter = rateLimit({
+  ...commonRateLimitOptions,
+  windowMs: AUTH_RATE_LIMIT_WINDOW_MS,
+  max: AUTH_RATE_LIMIT_MAX
+});
 
 // CORS configuration
 const allowedOrigins = [
@@ -55,6 +97,7 @@ app.use(passport.initialize());
 app.use(cors(corsOptions));
 app.use(express.json());
 app.use(cookieParser());
+app.use(globalLimiter);
 
 // Database connection
 mongoose.connect(process.env.MONGO_URI)
@@ -94,8 +137,9 @@ const { validate, handleValidationError } = require('./middleware/validation');
 const { userSchemas } = require('./validation/schemas');
 
 // Auth routes
-app.use('/api/auth/google', googleRoutes);
-app.use('/api/auth/facebook', facebookRoutes); // Add Facebook OAuth routes
+// Apply stricter rate limits to OAuth route groups as well
+app.use('/api/auth/google', authLimiter, googleRoutes);
+app.use('/api/auth/facebook', authLimiter, facebookRoutes); // Add Facebook OAuth routes
 
 /**
  * @swagger
@@ -134,7 +178,7 @@ app.use('/api/auth/facebook', facebookRoutes); // Add Facebook OAuth routes
  *             example:
  *               error: "Email already exists"
  */
-app.post('/api/register', validate({ body: userSchemas.register }), async (req, res) => {
+app.post('/api/register', authLimiter, validate({ body: userSchemas.register }), async (req, res) => {
   try {
     const { name, email, password, role } = req.body;
     
@@ -224,7 +268,7 @@ app.post('/api/register', validate({ body: userSchemas.register }), async (req, 
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-app.post('/api/login', validate({ body: userSchemas.login }), async (req, res) => {
+app.post('/api/login', authLimiter, validate({ body: userSchemas.login }), async (req, res) => {
   try {
     const { email, password } = req.body;
     const user = await User.findOne({ email });
@@ -358,6 +402,13 @@ const PORT = process.env.PORT || 5000;
 let server;
 if (process.env.NODE_ENV !== 'test') {
   server = app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+}
+
+// Simple test-only route to validate global rate limiting without auth
+if (process.env.NODE_ENV === 'test') {
+  app.get('/__test__/ping', (req, res) => {
+    res.json({ ok: true, timestamp: new Date().toISOString() });
+  });
 }
 
 // Export for testing
