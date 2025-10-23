@@ -71,7 +71,12 @@ function PurchaseOrderForm() {
   const fetchProducts = async () => {
     try {
       const data = await getProducts();
-      setProducts(data.data);
+      // Added console line for debugging:
+      console.log("Raw product data from API:", data);
+
+
+      // Ensure products is always an array to prevent .map() errors
+      setProducts(Array.isArray(data.data) ? data.data : []);
     } catch (err) {
       setError('Failed to load products');
       console.error(err);

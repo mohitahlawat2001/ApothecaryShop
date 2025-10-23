@@ -90,7 +90,7 @@ function PurchaseReceiptDetail() {
     ];
     const tableRows = [];
 
-    receipt.items.forEach((item) => {
+    (receipt.items || []).forEach((item) => {
       // Fix unit price formatting - use 'Rs.' instead of the rupee symbol to avoid encoding issues
       let formattedPrice = "N/A";
       if (item.unitPrice !== null && item.unitPrice !== undefined) {
