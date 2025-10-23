@@ -34,7 +34,7 @@ function PurchaseReceiptForm() {
       setPurchaseOrder(data);
       
       // Initialize receipt items from PO items
-      const initialItems = data.items.map(item => ({
+      const initialItems = (data.items || []).map(item => ({
         product: item.product?._id || null,
         externalProductId: item.externalProductId || null,
         genericName: item.genericName,

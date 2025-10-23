@@ -90,7 +90,7 @@ function PurchaseReceiptDetail() {
     ];
     const tableRows = [];
 
-    receipt.items.forEach((item) => {
+    (receipt.items || []).forEach((item) => {
       // Fix unit price formatting - use 'Rs.' instead of the rupee symbol to avoid encoding issues
       let formattedPrice = "N/A";
       if (item.unitPrice !== null && item.unitPrice !== undefined) {
@@ -269,7 +269,7 @@ function PurchaseReceiptDetail() {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {receipt.items.map((item, index) => (
+              {(receipt.items || []).map((item, index) => (
                 <tr key={index}>
                   <td className="px-6 py-4 whitespace-nowrap">
                     {item.genericName}
