@@ -26,7 +26,8 @@ const Register = () => {
     uppercase: false,
     lowercase: false,
     number: false,
-    special: false
+    special: false,
+    allowedChars: false
   });
 
   // Framer Motion variants
@@ -422,6 +423,11 @@ const Register = () => {
                     <span aria-hidden="true" className={passwordChecks.special ? 'text-green-600' : 'text-gray-300'}>{passwordChecks.special ? '✔' : '•'}</span>
                     <span className="sr-only">{passwordChecks.special ? 'Met' : 'Not met'}: </span>
                     <span>One special character (@$!%*?&)</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span aria-hidden="true" className={passwordChecks.allowedChars ? 'text-green-600' : 'text-gray-300'}>{passwordChecks.allowedChars ? '✔' : '•'}</span>
+                    <span className="sr-only">{passwordChecks.allowedChars ? 'Met' : 'Not met'}: </span>
+                    <span>Only allowed characters (A-Z, a-z, 0-9, @$!%*?&)</span>
                   </li>
                 </ul>
               </div>
