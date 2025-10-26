@@ -119,8 +119,8 @@ const Register = () => {
       setPasswordChecks(checks);
     }
 
-    // Clear the 'Passwords do not match' error as soon as user edits either field
-    if ((fieldName === 'password' || fieldName === 'confirmPassword') && error === 'Passwords do not match') {
+    // Clear any error when user starts correcting password/confirmPassword
+    if ((fieldName === 'password' || fieldName === 'confirmPassword') && error) {
       setError('');
     }
 
@@ -135,7 +135,9 @@ const Register = () => {
       uppercase: /[A-Z]/.test(pwd),
       lowercase: /[a-z]/.test(pwd),
       number: /\d/.test(pwd),
-      special: /[@$!%*?&]/.test(pwd)
+      special: /[@$!%*?&]/.test(pwd),
+      // Ensure password contains only allowed characters (match backend charset)
+      allowedChars: /^[A-Za-z\d@$!%*?&]+$/.test(pwd)
     };
 
     const failed = [];
@@ -144,16 +146,22 @@ const Register = () => {
     if (!checks.lowercase) failed.push('Password must contain at least one lowercase letter (a-z).');
     if (!checks.number) failed.push('Password must contain at least one number (0-9).');
     if (!checks.special) failed.push('Password must contain at least one special character (@$!%*?&).');
+  if (!checks.allowedChars) failed.push('Password contains invalid characters; only A-Z, a-z, 0-9 and @$!%*?& are allowed.');
 
     return { checks, failed };
   };
 
   // If the browser auto-fills the password field (or there's an initial value),
   // run the password checks on mount so the UI reflects the real state.
+  // Run once on mount to handle browser autofill edge-cases. Live typing
+  // updates `passwordChecks` via onChange, so re-running on every password
+  // change would be redundant.
   useEffect(() => {
     const { checks } = validatePassword(password);
     setPasswordChecks(checks);
-  }, [password]);
+    // Intentionally run only on mount to catch autofill behavior
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const onSubmit = async e => {
     e.preventDefault();
