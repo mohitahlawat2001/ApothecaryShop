@@ -113,14 +113,19 @@ const Register = () => {
   const onChange = e => {
     const { name: fieldName, value } = e.target;
 
-    // If user edits password, run quick client-side checks and clear top error
+    // If user edits password, run quick client-side checks
     if (fieldName === 'password') {
       const { checks } = validatePassword(value);
       setPasswordChecks(checks);
+    }
+
+    // Clear the 'Passwords do not match' error as soon as user edits either field
+    if ((fieldName === 'password' || fieldName === 'confirmPassword') && error === 'Passwords do not match') {
       setError('');
     }
 
-    setFormData({ ...formData, [fieldName]: value });
+    // Use functional setState to avoid stale state
+    setFormData(prev => ({ ...prev, [fieldName]: value }));
   };
 
   // Validate password rules client-side and return failed rule messages
@@ -146,13 +151,9 @@ const Register = () => {
   // If the browser auto-fills the password field (or there's an initial value),
   // run the password checks on mount so the UI reflects the real state.
   useEffect(() => {
-    if (password) {
-      const { checks } = validatePassword(password);
-      setPasswordChecks(checks);
-    }
-    // Intentionally run only on mount to catch autofill behavior
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    const { checks } = validatePassword(password);
+    setPasswordChecks(checks);
+  }, [password]);
 
   const onSubmit = async e => {
     e.preventDefault();
@@ -185,6 +186,11 @@ const Register = () => {
       navigate('/');
     } catch (err) {
       // Prepare to show validation message(s) at the top alert
+      if (!err.response) {
+        setError('Network error. Please try again.');
+        return;
+      }
+
       const resp = err.response?.data;
       // If backend returned structured validation errors, map them to fieldErrors
       if (resp?.errors && Array.isArray(resp.errors)) {
@@ -367,6 +373,8 @@ const Register = () => {
                   value={password}
                   onChange={onChange}
                   required
+                  autoComplete="new-password"
+                  aria-describedby="password-rules"
                   className="w-full pl-12 pr-12 py-3 rounded-xl bg-gray-50/50 border border-gray-200 text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent hover:bg-gray-50 transition-all duration-200 shadow-sm"
                   placeholder="Create a strong password"
                 />
@@ -380,26 +388,31 @@ const Register = () => {
               </div>
 
               {/* Password rules shown below the input */}
-              <div className="mt-2 text-xs text-gray-500">
+              <div id="password-rules" className="mt-2 text-xs text-gray-500" role="status" aria-live="polite">
                 <ul className="list-inside space-y-2">
                   <li className="flex items-start gap-2">
-                    <span className={passwordChecks.minLength ? 'text-green-600' : 'text-gray-300'}>{passwordChecks.minLength ? '✔' : '•'}</span>
+                    <span aria-hidden="true" className={passwordChecks.minLength ? 'text-green-600' : 'text-gray-300'}>{passwordChecks.minLength ? '✔' : '•'}</span>
+                    <span className="sr-only">{passwordChecks.minLength ? 'Met' : 'Not met'}: </span>
                     <span>At least 8 characters</span>
                   </li>
                   <li className="flex items-start gap-2">
-                    <span className={passwordChecks.uppercase ? 'text-green-600' : 'text-gray-300'}>{passwordChecks.uppercase ? '✔' : '•'}</span>
+                    <span aria-hidden="true" className={passwordChecks.uppercase ? 'text-green-600' : 'text-gray-300'}>{passwordChecks.uppercase ? '✔' : '•'}</span>
+                    <span className="sr-only">{passwordChecks.uppercase ? 'Met' : 'Not met'}: </span>
                     <span>One uppercase letter (A-Z)</span>
                   </li>
                   <li className="flex items-start gap-2">
-                    <span className={passwordChecks.lowercase ? 'text-green-600' : 'text-gray-300'}>{passwordChecks.lowercase ? '✔' : '•'}</span>
+                    <span aria-hidden="true" className={passwordChecks.lowercase ? 'text-green-600' : 'text-gray-300'}>{passwordChecks.lowercase ? '✔' : '•'}</span>
+                    <span className="sr-only">{passwordChecks.lowercase ? 'Met' : 'Not met'}: </span>
                     <span>One lowercase letter (a-z)</span>
                   </li>
                   <li className="flex items-start gap-2">
-                    <span className={passwordChecks.number ? 'text-green-600' : 'text-gray-300'}>{passwordChecks.number ? '✔' : '•'}</span>
+                    <span aria-hidden="true" className={passwordChecks.number ? 'text-green-600' : 'text-gray-300'}>{passwordChecks.number ? '✔' : '•'}</span>
+                    <span className="sr-only">{passwordChecks.number ? 'Met' : 'Not met'}: </span>
                     <span>One number (0-9)</span>
                   </li>
                   <li className="flex items-start gap-2">
-                    <span className={passwordChecks.special ? 'text-green-600' : 'text-gray-300'}>{passwordChecks.special ? '✔' : '•'}</span>
+                    <span aria-hidden="true" className={passwordChecks.special ? 'text-green-600' : 'text-gray-300'}>{passwordChecks.special ? '✔' : '•'}</span>
+                    <span className="sr-only">{passwordChecks.special ? 'Met' : 'Not met'}: </span>
                     <span>One special character (@$!%*?&)</span>
                   </li>
                 </ul>
