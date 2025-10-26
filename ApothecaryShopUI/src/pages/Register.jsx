@@ -114,11 +114,11 @@ const Register = () => {
       return;
     }
 
-    // Validate password length
-    if (password.length < 6) {
-      setError('Password must be at least 6 characters');
-      return;
-    }
+      // Validate password length (client-side quick check to match backend rule)
+      if (password.length < 8) {
+        setError('Password must be at least 8 characters');
+        return;
+      }
 
     try {
       // Remove confirmPassword from data sent to API
@@ -134,7 +134,32 @@ const Register = () => {
       // Redirect to login page on successful registration
       navigate('/');
     } catch (err) {
-      setError(err.response?.data?.message || err.response?.data?.error || 'Registration failed');
+      // Prepare to show validation message(s) at the top alert
+      const resp = err.response?.data;
+      // If backend returned structured validation errors, map them to fieldErrors
+      if (resp?.errors && Array.isArray(resp.errors)) {
+        const newFieldErrors = {};
+        resp.errors.forEach(group => {
+          (group.details || []).forEach(detail => {
+            const f = detail.field || 'unknown';
+            // Accumulate messages per field
+            if (!newFieldErrors[f]) newFieldErrors[f] = [];
+            // strip quotes from Joi messages for cleaner UI
+            const msg = (detail.message || '').replace(/"/g, '');
+            newFieldErrors[f].push(msg);
+          });
+        });
+        // If there's a password-specific message, set it as the main top error.
+        if (newFieldErrors.password && newFieldErrors.password.length > 0) {
+          setError(newFieldErrors.password.join('; '));
+        } else if (resp.message) {
+          setError(resp.message);
+        } else {
+          setError('Registration failed');
+        }
+      } else {
+        setError(resp?.message || resp?.error || 'Registration failed');
+      }
     }
   };
 
@@ -303,7 +328,19 @@ const Register = () => {
                   {showPassword ? <FaEyeSlash className="h-5 w-5" /> : <FaEye className="h-5 w-5" />}
                 </button>
               </div>
-              <p className="text-xs text-gray-500">Must be at least 6 characters long</p>
+
+              {/* Password rules shown below the input */}
+              <div className="mt-2 text-xs text-gray-500">
+                <ul className="list-disc list-inside space-y-1">
+                  <li>At least 8 characters</li>
+                  <li>One uppercase letter (A-Z)</li>
+                  <li>One lowercase letter (a-z)</li>
+                  <li>One number (0-9)</li>
+                  <li>One special character (@$!%*?&)</li>
+                </ul>
+              </div>
+
+              {/* Validation warnings are shown in the top alert only */}
             </motion.div>
 
             <motion.div variants={itemVariants} className="space-y-1">
