@@ -21,6 +21,13 @@ const Register = () => {
   const navigate = useNavigate();
 
   const { name, email, password, confirmPassword } = formData;
+  const [passwordChecks, setPasswordChecks] = useState({
+    minLength: false,
+    uppercase: false,
+    lowercase: false,
+    number: false,
+    special: false
+  });
 
   // Framer Motion variants
   const containerVariants = {
@@ -103,7 +110,38 @@ const Register = () => {
     handleFacebookCallback();
   }, [navigate, setAuth]);
 
-  const onChange = e => setFormData({ ...formData, [e.target.name]: e.target.value });
+  const onChange = e => {
+    const { name: fieldName, value } = e.target;
+
+    // If user edits password, run quick client-side checks and clear top error
+    if (fieldName === 'password') {
+      const { checks } = validatePassword(value);
+      setPasswordChecks(checks);
+      setError('');
+    }
+
+    setFormData({ ...formData, [fieldName]: value });
+  };
+
+  // Validate password rules client-side and return failed rule messages
+  const validatePassword = (pwd) => {
+    const checks = {
+      minLength: pwd.length >= 8,
+      uppercase: /[A-Z]/.test(pwd),
+      lowercase: /[a-z]/.test(pwd),
+      number: /\d/.test(pwd),
+      special: /[@$!%*?&]/.test(pwd)
+    };
+
+    const failed = [];
+    if (!checks.minLength) failed.push('Password must be at least 8 characters long.');
+    if (!checks.uppercase) failed.push('Password must contain at least one uppercase letter (A-Z).');
+    if (!checks.lowercase) failed.push('Password must contain at least one lowercase letter (a-z).');
+    if (!checks.number) failed.push('Password must contain at least one number (0-9).');
+    if (!checks.special) failed.push('Password must contain at least one special character (@$!%*?&).');
+
+    return { checks, failed };
+  };
 
   const onSubmit = async e => {
     e.preventDefault();
@@ -114,9 +152,10 @@ const Register = () => {
       return;
     }
 
-      // Validate password length (client-side quick check to match backend rule)
-      if (password.length < 8) {
-        setError('Password must be at least 8 characters');
+      // Client-side validate password rules and show the first failed rule (specific)
+      const { failed } = validatePassword(password);
+      if (failed.length > 0) {
+        setError(failed[0]);
         return;
       }
 
@@ -149,8 +188,12 @@ const Register = () => {
             newFieldErrors[f].push(msg);
           });
         });
-        // If there's a password-specific message, set it as the main top error.
-        if (newFieldErrors.password && newFieldErrors.password.length > 0) {
+        // Prefer client-side mapping to specific rule if possible
+        const { failed } = validatePassword(password);
+        if (failed.length > 0) {
+          setError(failed[0]);
+        } else if (newFieldErrors.password && newFieldErrors.password.length > 0) {
+          // Fallback to backend-provided message(s)
           setError(newFieldErrors.password.join('; '));
         } else if (resp.message) {
           setError(resp.message);
@@ -331,12 +374,27 @@ const Register = () => {
 
               {/* Password rules shown below the input */}
               <div className="mt-2 text-xs text-gray-500">
-                <ul className="list-disc list-inside space-y-1">
-                  <li>At least 8 characters</li>
-                  <li>One uppercase letter (A-Z)</li>
-                  <li>One lowercase letter (a-z)</li>
-                  <li>One number (0-9)</li>
-                  <li>One special character (@$!%*?&)</li>
+                <ul className="list-inside space-y-2">
+                  <li className="flex items-start gap-2">
+                    <span className={passwordChecks.minLength ? 'text-green-600' : 'text-gray-300'}>{passwordChecks.minLength ? '✔' : '•'}</span>
+                    <span>At least 8 characters</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className={passwordChecks.uppercase ? 'text-green-600' : 'text-gray-300'}>{passwordChecks.uppercase ? '✔' : '•'}</span>
+                    <span>One uppercase letter (A-Z)</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className={passwordChecks.lowercase ? 'text-green-600' : 'text-gray-300'}>{passwordChecks.lowercase ? '✔' : '•'}</span>
+                    <span>One lowercase letter (a-z)</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className={passwordChecks.number ? 'text-green-600' : 'text-gray-300'}>{passwordChecks.number ? '✔' : '•'}</span>
+                    <span>One number (0-9)</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className={passwordChecks.special ? 'text-green-600' : 'text-gray-300'}>{passwordChecks.special ? '✔' : '•'}</span>
+                    <span>One special character (@$!%*?&)</span>
+                  </li>
                 </ul>
               </div>
 
