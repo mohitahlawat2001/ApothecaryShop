@@ -188,12 +188,8 @@ const Register = () => {
             newFieldErrors[f].push(msg);
           });
         });
-        // Prefer client-side mapping to specific rule if possible
-        const { failed } = validatePassword(password);
-        if (failed.length > 0) {
-          setError(failed[0]);
-        } else if (newFieldErrors.password && newFieldErrors.password.length > 0) {
-          // Fallback to backend-provided message(s)
+        if (newFieldErrors.password && newFieldErrors.password.length > 0) {
+          // Prefer backend-provided password message(s)
           setError(newFieldErrors.password.join('; '));
         } else if (resp.message) {
           setError(resp.message);
