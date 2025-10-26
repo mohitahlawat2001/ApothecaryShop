@@ -143,6 +143,17 @@ const Register = () => {
     return { checks, failed };
   };
 
+  // If the browser auto-fills the password field (or there's an initial value),
+  // run the password checks on mount so the UI reflects the real state.
+  useEffect(() => {
+    if (password) {
+      const { checks } = validatePassword(password);
+      setPasswordChecks(checks);
+    }
+    // Intentionally run only on mount to catch autofill behavior
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const onSubmit = async e => {
     e.preventDefault();
 
