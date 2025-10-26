@@ -1,11 +1,20 @@
-import React, { useState, useContext, useEffect } from 'react';
+import React, { useState, useContext, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
 import axios from 'axios';
 import { AuthContext } from '../context/AuthContext.jsx';
 import { googleAuthService } from '../services/googleAuthService';
 import { facebookAuthService } from '../services/facebookAuthService';
+/* eslint-disable-next-line no-unused-vars */
 import { motion } from 'framer-motion';
+
+// Regex constants hoisted to module scope for readability and to avoid
+// re-creating them on every keystroke.
+const RE_UPPER = /[A-Z]/;
+const RE_LOWER = /[a-z]/;
+const RE_DIGIT = /\d/;
+const RE_SPECIAL = /[@$!%*?&]/;
+const RE_ALLOWED = /^[A-Za-z\d@$!%*?&]+$/;
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -15,12 +24,14 @@ const Register = () => {
     confirmPassword: ''
   });
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const { setAuth } = useContext(AuthContext);
   const navigate = useNavigate();
 
   const { name, email, password, confirmPassword } = formData;
+  const passwordRef = useRef(null);
   const [passwordChecks, setPasswordChecks] = useState({
     minLength: false,
     uppercase: false,
@@ -133,12 +144,12 @@ const Register = () => {
   const validatePassword = (pwd) => {
     const checks = {
       minLength: pwd.length >= 8,
-      uppercase: /[A-Z]/.test(pwd),
-      lowercase: /[a-z]/.test(pwd),
-      number: /\d/.test(pwd),
-      special: /[@$!%*?&]/.test(pwd),
+      uppercase: RE_UPPER.test(pwd),
+      lowercase: RE_LOWER.test(pwd),
+      number: RE_DIGIT.test(pwd),
+      special: RE_SPECIAL.test(pwd),
       // Ensure password contains only allowed characters (match backend charset)
-      allowedChars: /^[A-Za-z\d@$!%*?&]+$/.test(pwd)
+      allowedChars: RE_ALLOWED.test(pwd)
     };
 
     const failed = [];
@@ -158,9 +169,14 @@ const Register = () => {
   // updates `passwordChecks` via onChange, so re-running on every password
   // change would be redundant.
   useEffect(() => {
-    const { checks } = validatePassword(password);
-    setPasswordChecks(checks);
-    // Intentionally run only on mount to catch autofill behavior
+    // 1) Validate current state
+    setPasswordChecks(validatePassword(password).checks);
+    // 2) If the DOM input was autofilled post-mount, sync it back
+    const domVal = passwordRef.current?.value ?? '';
+    if (domVal && domVal !== password) {
+      setFormData(prev => ({ ...prev, password: domVal }));
+      setPasswordChecks(validatePassword(domVal).checks);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -181,6 +197,7 @@ const Register = () => {
       }
 
     try {
+      setLoading(true);
       // Remove confirmPassword from data sent to API
       const registerData = {
         name,
@@ -225,6 +242,8 @@ const Register = () => {
       } else {
         setError(resp?.message || resp?.error || 'Registration failed');
       }
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -310,6 +329,7 @@ const Register = () => {
 
           {error && (
             <motion.div
+              id="form-error"
               initial={{ opacity: 0, y: -6 }}
               animate={{ opacity: 1, y: 0 }}
               className="bg-red-50/80 backdrop-blur-sm border border-red-200 text-red-700 px-4 py-3 rounded-xl shadow-sm"
@@ -379,11 +399,14 @@ const Register = () => {
                   id="password"
                   type={showPassword ? "text" : "password"}
                   name="password"
+                    ref={passwordRef}
                   value={password}
                   onChange={onChange}
                   required
                   autoComplete="new-password"
                   aria-describedby="password-rules"
+                  aria-invalid={Boolean(error)}
+                  aria-errormessage="form-error"
                   className="w-full pl-12 pr-12 py-3 rounded-xl bg-gray-50/50 border border-gray-200 text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent hover:bg-gray-50 transition-all duration-200 shadow-sm"
                   placeholder="Create a strong password"
                 />
@@ -397,7 +420,7 @@ const Register = () => {
               </div>
 
               {/* Password rules shown below the input */}
-              <div id="password-rules" className="mt-2 text-xs text-gray-500" role="status" aria-live="polite">
+              <div id="password-rules" className="mt-2 text-xs text-gray-500" aria-live="polite" aria-atomic="false">
                 <ul className="list-inside space-y-2">
                   <li className="flex items-start gap-2">
                     <span aria-hidden="true" className={passwordChecks.minLength ? 'text-green-600' : 'text-gray-300'}>{passwordChecks.minLength ? '✔' : '•'}</span>
@@ -468,9 +491,11 @@ const Register = () => {
                 whileHover={{ scale: 1.02, y: -2 }}
                 whileTap={{ scale: 0.98 }}
                 type="submit"
-                className="w-full py-3 rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-700 text-white font-semibold hover:from-emerald-700 hover:to-emerald-800 transition-all duration-200 shadow-lg hover:shadow-xl"
+                disabled={loading}
+                aria-busy={loading}
+                className="w-full py-3 rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-700 text-white font-semibold hover:from-emerald-700 hover:to-emerald-800 transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Create Account
+                {loading ? 'Creating…' : 'Create Account'}
               </motion.button>
             </motion.div>
           </motion.form>
