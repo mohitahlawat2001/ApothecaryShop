@@ -1,4 +1,4 @@
-import React, { useState, useContext, useEffect } from 'react';
+import React, { useState, useContext, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
 import axios from 'axios';
@@ -6,6 +6,14 @@ import { AuthContext } from '../context/AuthContext.jsx';
 import { googleAuthService } from '../services/googleAuthService';
 import { facebookAuthService } from '../services/facebookAuthService';
 import { motion } from 'framer-motion';
+
+// Regex constants hoisted to module scope for readability and to avoid
+// re-creating them on every keystroke.
+const RE_UPPER = /[A-Z]/;
+const RE_LOWER = /[a-z]/;
+const RE_DIGIT = /\d/;
+const RE_SPECIAL = /[@$!%*?&]/;
+const RE_ALLOWED = /^[A-Za-z\d@$!%*?&]+$/;
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -15,12 +23,23 @@ const Register = () => {
     confirmPassword: ''
   });
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const { setAuth } = useContext(AuthContext);
   const navigate = useNavigate();
 
   const { name, email, password, confirmPassword } = formData;
+  const passwordRef = useRef(null);
+  const confirmRef = useRef(null);
+  const [passwordChecks, setPasswordChecks] = useState({
+    minLength: false,
+    uppercase: false,
+    lowercase: false,
+    number: false,
+    special: false,
+    allowedChars: false
+  });
 
   // Framer Motion variants
   const containerVariants = {
@@ -103,29 +122,94 @@ const Register = () => {
     handleFacebookCallback();
   }, [navigate, setAuth]);
 
-  const onChange = e => setFormData({ ...formData, [e.target.name]: e.target.value });
+  const onChange = e => {
+    const { name: fieldName, value } = e.target;
+
+    // If user edits password, run quick client-side checks
+    if (fieldName === 'password') {
+      const { checks } = validatePassword(value);
+      setPasswordChecks(checks);
+    }
+
+    // Clear any error when user starts correcting password/confirmPassword
+    if ((fieldName === 'password' || fieldName === 'confirmPassword') && error) {
+      setError('');
+    }
+
+    // Use functional setState to avoid stale state
+    setFormData(prev => ({ ...prev, [fieldName]: value }));
+  };
+
+  // Validate password rules client-side and return failed rule messages
+  const validatePassword = (pwd) => {
+    const checks = {
+      minLength: pwd.length >= 8,
+      uppercase: RE_UPPER.test(pwd),
+      lowercase: RE_LOWER.test(pwd),
+      number: RE_DIGIT.test(pwd),
+      special: RE_SPECIAL.test(pwd),
+      // Ensure password contains only allowed characters (match backend charset)
+      allowedChars: RE_ALLOWED.test(pwd)
+    };
+
+    const failed = [];
+    if (!checks.minLength) failed.push('Password must be at least 8 characters long.');
+    if (!checks.uppercase) failed.push('Password must contain at least one uppercase letter (A-Z).');
+    if (!checks.lowercase) failed.push('Password must contain at least one lowercase letter (a-z).');
+    if (!checks.number) failed.push('Password must contain at least one number (0-9).');
+    if (!checks.special) failed.push('Password must contain at least one special character (@$!%*?&).');
+    if (!checks.allowedChars) failed.push('Password contains invalid characters; only A-Z, a-z, 0-9 and @$!%*?& are allowed.');
+
+    return { checks, failed };
+  };
+
+  // If the browser auto-fills the password field (or there's an initial value),
+  // run the password checks on mount so the UI reflects the real state.
+  // Run once on mount to handle browser autofill edge-cases. Live typing
+  // updates `passwordChecks` via onChange, so re-running on every password
+  // change would be redundant.
+  useEffect(() => {
+    // 1) Validate current state
+    setPasswordChecks(validatePassword(password).checks);
+    // 2) If the DOM input was autofilled post-mount, update checks only.
+    // Avoid writing autofilled passwords into React state to reduce the
+    // chance of accidental secret leakage being flagged by scanners.
+    const domVal = passwordRef.current?.value ?? '';
+    if (domVal && domVal !== password) {
+      setPasswordChecks(validatePassword(domVal).checks);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const onSubmit = async e => {
     e.preventDefault();
 
     // Validate passwords match
-    if (password !== confirmPassword) {
+    // If browser autofilled but React state didn't update, read values from DOM refs.
+    const effectivePassword = password || passwordRef.current?.value || '';
+    const effectiveConfirm = confirmPassword || confirmRef.current?.value || '';
+
+    if (effectivePassword !== effectiveConfirm) {
       setError('Passwords do not match');
       return;
     }
 
-    // Validate password length
-    if (password.length < 6) {
-      setError('Password must be at least 6 characters');
+    // Client-side validate password rules and show the first failed rule (specific)
+    const { failed } = validatePassword(effectivePassword);
+    if (failed.length > 0) {
+      setError(failed[0]);
       return;
     }
 
     try {
-      // Remove confirmPassword from data sent to API
+      setLoading(true);
+      // Remove confirmPassword from data sent to API. Use effectivePassword to
+      // read the DOM value if React state is stale (autofill case). We avoid
+      // writing the autofilled password into state to reduce secret exposure.
       const registerData = {
         name,
         email,
-        password,
+        password: effectivePassword,
         role: 'staff' // Default role
       };
 
@@ -134,7 +218,39 @@ const Register = () => {
       // Redirect to login page on successful registration
       navigate('/');
     } catch (err) {
-      setError(err.response?.data?.message || err.response?.data?.error || 'Registration failed');
+      // Prepare to show validation message(s) at the top alert
+      if (!err.response) {
+        setError('Network error. Please try again.');
+        return;
+      }
+
+      const resp = err.response?.data;
+      // If backend returned structured validation errors, map them to fieldErrors
+      if (resp?.errors && Array.isArray(resp.errors)) {
+        const newFieldErrors = {};
+        resp.errors.forEach(group => {
+          (group.details || []).forEach(detail => {
+            const f = detail.field || 'unknown';
+            // Accumulate messages per field
+            if (!newFieldErrors[f]) newFieldErrors[f] = [];
+            // strip quotes from Joi messages for cleaner UI
+            const msg = (detail.message || '').replace(/"/g, '');
+            newFieldErrors[f].push(msg);
+          });
+        });
+        if (newFieldErrors.password && newFieldErrors.password.length > 0) {
+          // Prefer backend-provided password message(s)
+          setError(newFieldErrors.password.join('; '));
+        } else if (resp.message) {
+          setError(resp.message);
+        } else {
+          setError('Registration failed');
+        }
+      } else {
+        setError(resp?.message || resp?.error || 'Registration failed');
+      }
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -220,6 +336,7 @@ const Register = () => {
 
           {error && (
             <motion.div
+              id="form-error"
               initial={{ opacity: 0, y: -6 }}
               animate={{ opacity: 1, y: 0 }}
               className="bg-red-50/80 backdrop-blur-sm border border-red-200 text-red-700 px-4 py-3 rounded-xl shadow-sm"
@@ -289,9 +406,14 @@ const Register = () => {
                   id="password"
                   type={showPassword ? "text" : "password"}
                   name="password"
+                    ref={passwordRef}
                   value={password}
                   onChange={onChange}
                   required
+                  autoComplete="new-password"
+                  aria-describedby="password-rules"
+                  aria-invalid={Boolean(error)}
+                  aria-errormessage="form-error"
                   className="w-full pl-12 pr-12 py-3 rounded-xl bg-gray-50/50 border border-gray-200 text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent hover:bg-gray-50 transition-all duration-200 shadow-sm"
                   placeholder="Create a strong password"
                 />
@@ -303,7 +425,44 @@ const Register = () => {
                   {showPassword ? <FaEyeSlash className="h-5 w-5" /> : <FaEye className="h-5 w-5" />}
                 </button>
               </div>
-              <p className="text-xs text-gray-500">Must be at least 6 characters long</p>
+
+              {/* Password rules shown below the input */}
+              <div id="password-rules" className="mt-2 text-xs text-gray-500" aria-live="polite" aria-atomic="false">
+                <ul className="list-inside space-y-2">
+                  <li className="flex items-start gap-2">
+                    <span aria-hidden="true" className={passwordChecks.minLength ? 'text-green-600' : 'text-gray-300'}>{passwordChecks.minLength ? '✔' : '•'}</span>
+                    <span className="sr-only">{passwordChecks.minLength ? 'Met' : 'Not met'}: </span>
+                    <span>At least 8 characters</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span aria-hidden="true" className={passwordChecks.uppercase ? 'text-green-600' : 'text-gray-300'}>{passwordChecks.uppercase ? '✔' : '•'}</span>
+                    <span className="sr-only">{passwordChecks.uppercase ? 'Met' : 'Not met'}: </span>
+                    <span>One uppercase letter (A-Z)</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span aria-hidden="true" className={passwordChecks.lowercase ? 'text-green-600' : 'text-gray-300'}>{passwordChecks.lowercase ? '✔' : '•'}</span>
+                    <span className="sr-only">{passwordChecks.lowercase ? 'Met' : 'Not met'}: </span>
+                    <span>One lowercase letter (a-z)</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span aria-hidden="true" className={passwordChecks.number ? 'text-green-600' : 'text-gray-300'}>{passwordChecks.number ? '✔' : '•'}</span>
+                    <span className="sr-only">{passwordChecks.number ? 'Met' : 'Not met'}: </span>
+                    <span>One number (0-9)</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span aria-hidden="true" className={passwordChecks.special ? 'text-green-600' : 'text-gray-300'}>{passwordChecks.special ? '✔' : '•'}</span>
+                    <span className="sr-only">{passwordChecks.special ? 'Met' : 'Not met'}: </span>
+                    <span>One special character (@$!%*?&)</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span aria-hidden="true" className={passwordChecks.allowedChars ? 'text-green-600' : 'text-gray-300'}>{passwordChecks.allowedChars ? '✔' : '•'}</span>
+                    <span className="sr-only">{passwordChecks.allowedChars ? 'Met' : 'Not met'}: </span>
+                    <span>Only allowed characters (A-Z, a-z, 0-9, @$!%*?&)</span>
+                  </li>
+                </ul>
+              </div>
+
+              {/* Validation warnings are shown in the top alert only */}
             </motion.div>
 
             <motion.div variants={itemVariants} className="space-y-1">
@@ -316,13 +475,14 @@ const Register = () => {
                 </div>
                 <input
                   id="confirmPassword"
-                  type={showConfirmPassword ? "text" : "password"}
-                  name="confirmPassword"
-                  value={confirmPassword}
-                  onChange={onChange}
-                  required
-                  className="w-full pl-12 pr-12 py-3 rounded-xl bg-gray-50/50 border border-gray-200 text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent hover:bg-gray-50 transition-all duration-200 shadow-sm"
-                  placeholder="Confirm your password"
+                    type={showConfirmPassword ? "text" : "password"}
+                    name="confirmPassword"
+                    ref={confirmRef}
+                    value={confirmPassword}
+                    onChange={onChange}
+                    required
+                    className="w-full pl-12 pr-12 py-3 rounded-xl bg-gray-50/50 border border-gray-200 text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent hover:bg-gray-50 transition-all duration-200 shadow-sm"
+                    placeholder="Confirm your password"
                 />
                 <button
                   type="button"
@@ -339,9 +499,11 @@ const Register = () => {
                 whileHover={{ scale: 1.02, y: -2 }}
                 whileTap={{ scale: 0.98 }}
                 type="submit"
-                className="w-full py-3 rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-700 text-white font-semibold hover:from-emerald-700 hover:to-emerald-800 transition-all duration-200 shadow-lg hover:shadow-xl"
+                disabled={loading}
+                aria-busy={loading}
+                className="w-full py-3 rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-700 text-white font-semibold hover:from-emerald-700 hover:to-emerald-800 transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Create Account
+                {loading ? 'Creating…' : 'Create Account'}
               </motion.button>
             </motion.div>
           </motion.form>

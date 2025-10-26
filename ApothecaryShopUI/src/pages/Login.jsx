@@ -5,6 +5,7 @@ import axios from 'axios';
 import { AuthContext } from '../context/AuthContext.jsx';
 import { googleAuthService } from '../services/googleAuthService';
 import { facebookAuthService } from '../services/facebookAuthService';
+/* eslint-disable-next-line no-unused-vars */
 import { motion } from 'framer-motion';
 
 const Login = () => {
