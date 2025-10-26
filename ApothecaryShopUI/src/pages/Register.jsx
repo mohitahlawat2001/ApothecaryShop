@@ -5,7 +5,6 @@ import axios from 'axios';
 import { AuthContext } from '../context/AuthContext.jsx';
 import { googleAuthService } from '../services/googleAuthService';
 import { facebookAuthService } from '../services/facebookAuthService';
-/* eslint-disable-next-line no-unused-vars */
 import { motion } from 'framer-motion';
 
 // Regex constants hoisted to module scope for readability and to avoid
@@ -159,7 +158,7 @@ const Register = () => {
     if (!checks.lowercase) failed.push('Password must contain at least one lowercase letter (a-z).');
     if (!checks.number) failed.push('Password must contain at least one number (0-9).');
     if (!checks.special) failed.push('Password must contain at least one special character (@$!%*?&).');
-  if (!checks.allowedChars) failed.push('Password contains invalid characters; only A-Z, a-z, 0-9 and @$!%*?& are allowed.');
+    if (!checks.allowedChars) failed.push('Password contains invalid characters; only A-Z, a-z, 0-9 and @$!%*?& are allowed.');
 
     return { checks, failed };
   };
