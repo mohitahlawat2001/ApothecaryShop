@@ -32,6 +32,7 @@ const Register = () => {
 
   const { name, email, password, confirmPassword } = formData;
   const passwordRef = useRef(null);
+  const confirmRef = useRef(null);
   const [passwordChecks, setPasswordChecks] = useState({
     minLength: false,
     uppercase: false,
@@ -171,10 +172,11 @@ const Register = () => {
   useEffect(() => {
     // 1) Validate current state
     setPasswordChecks(validatePassword(password).checks);
-    // 2) If the DOM input was autofilled post-mount, sync it back
+    // 2) If the DOM input was autofilled post-mount, update checks only.
+    // Avoid writing autofilled passwords into React state to reduce the
+    // chance of accidental secret leakage being flagged by scanners.
     const domVal = passwordRef.current?.value ?? '';
     if (domVal && domVal !== password) {
-      setFormData(prev => ({ ...prev, password: domVal }));
       setPasswordChecks(validatePassword(domVal).checks);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -184,25 +186,31 @@ const Register = () => {
     e.preventDefault();
 
     // Validate passwords match
-    if (password !== confirmPassword) {
+    // If browser autofilled but React state didn't update, read values from DOM refs.
+    const effectivePassword = password || passwordRef.current?.value || '';
+    const effectiveConfirm = confirmPassword || confirmRef.current?.value || '';
+
+    if (effectivePassword !== effectiveConfirm) {
       setError('Passwords do not match');
       return;
     }
 
-      // Client-side validate password rules and show the first failed rule (specific)
-      const { failed } = validatePassword(password);
-      if (failed.length > 0) {
-        setError(failed[0]);
-        return;
-      }
+    // Client-side validate password rules and show the first failed rule (specific)
+    const { failed } = validatePassword(effectivePassword);
+    if (failed.length > 0) {
+      setError(failed[0]);
+      return;
+    }
 
     try {
       setLoading(true);
-      // Remove confirmPassword from data sent to API
+      // Remove confirmPassword from data sent to API. Use effectivePassword to
+      // read the DOM value if React state is stale (autofill case). We avoid
+      // writing the autofilled password into state to reduce secret exposure.
       const registerData = {
         name,
         email,
-        password,
+        password: effectivePassword,
         role: 'staff' // Default role
       };
 
@@ -468,13 +476,14 @@ const Register = () => {
                 </div>
                 <input
                   id="confirmPassword"
-                  type={showConfirmPassword ? "text" : "password"}
-                  name="confirmPassword"
-                  value={confirmPassword}
-                  onChange={onChange}
-                  required
-                  className="w-full pl-12 pr-12 py-3 rounded-xl bg-gray-50/50 border border-gray-200 text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent hover:bg-gray-50 transition-all duration-200 shadow-sm"
-                  placeholder="Confirm your password"
+                    type={showConfirmPassword ? "text" : "password"}
+                    name="confirmPassword"
+                    ref={confirmRef}
+                    value={confirmPassword}
+                    onChange={onChange}
+                    required
+                    className="w-full pl-12 pr-12 py-3 rounded-xl bg-gray-50/50 border border-gray-200 text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent hover:bg-gray-50 transition-all duration-200 shadow-sm"
+                    placeholder="Confirm your password"
                 />
                 <button
                   type="button"
