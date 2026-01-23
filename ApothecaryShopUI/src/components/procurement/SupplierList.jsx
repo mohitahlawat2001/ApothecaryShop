@@ -16,7 +16,8 @@ function SupplierList() {
     try {
       setLoading(true);
       const data = await getSuppliers();
-      setSuppliers(data);
+      // Handle response structure { success: true, data: [...] } or direct array
+      setSuppliers(Array.isArray(data) ? data : (data.data || []));
       setError(null);
     } catch (err) {
       setError("Failed to load suppliers");

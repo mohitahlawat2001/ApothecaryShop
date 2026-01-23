@@ -91,7 +91,7 @@ const ProductDetail = ({ product }) => {
           <div className="bg-gray-50 p-4 rounded-md">
             <p><span className="font-medium">SKU:</span> {product.sku}</p>
             <p><span className="font-medium">Category:</span> {product.category}</p>
-            <p><span className="font-medium">Price:</span> ${product.unitPrice ? product.unitPrice.toFixed(2) : '0.00'}</p>
+            <p><span className="font-medium">Price:</span> ${Number(product.unitPrice || 0).toFixed(2)}</p>
             <p><span className="font-medium">Current Stock:</span> {product.stockQuantity}</p>
             <p><span className="font-medium">Reorder Level:</span> {product.reorderLevel}</p>
             <p>
