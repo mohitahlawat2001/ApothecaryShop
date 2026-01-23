@@ -57,7 +57,7 @@ const ProductList = ({ products, deleteProduct, editProduct, adjustStock }) => {
                     <button onClick={() => adjustStock(product._id, -1)} className="bg-yellow-500 hover:bg-yellow-600 text-white text-xs px-2 py-1 rounded transition duration-200">-</button>
                   </div>
                 </td>
-                <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">${product.unitPrice.toFixed(2)}</td>
+                <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">${product.unitPrice ? product.unitPrice.toFixed(2) : '0.00'}</td>
                 <td className="px-4 py-3 whitespace-nowrap">
                   <span className={
                     isExpired(product) 

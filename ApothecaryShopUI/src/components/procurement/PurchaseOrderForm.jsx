@@ -499,7 +499,7 @@ function PurchaseOrderForm() {
                             />
                             <span className="text-sm">=</span>
                             <span className="text-sm font-medium">
-                              ₹{item.totalPrice.toFixed(2)}
+                              ₹{item.totalPrice ? item.totalPrice.toFixed(2) : '0.00'}
                             </span>
                           </div>
                         </div>

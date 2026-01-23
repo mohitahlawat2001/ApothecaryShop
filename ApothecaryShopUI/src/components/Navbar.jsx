@@ -30,8 +30,8 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="bg-gradient-to-r from-green-800 to-green-700 text-white p-4 shadow-lg">
-      <div className="container mx-auto flex justify-between items-center">
+    <nav className="bg-gradient-to-r from-green-800 to-green-700 text-white p-4 shadow-lg w-full relative z-50">
+      <div className="max-w-7xl mx-auto flex justify-between items-center">
         <div className="text-xl font-bold tracking-wide">
           <Link to="/" className="flex items-center space-x-2">
             <span className="text-green-200">🌿</span>

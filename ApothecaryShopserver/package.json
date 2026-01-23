@@ -12,19 +12,19 @@
     "test": "jest --detectOpenHandles"
   },
   "dependencies": {
-    "@google/generative-ai": "^0.24.0",
+    "@google/generative-ai": "^0.24.1",
     "@json2csv/plainjs": "^7.0.6",
-    "axios": "^1.8.3",
-    "bcryptjs": "^2.4.3",
+    "axios": "^1.13.2",
+    "bcryptjs": "^3.0.3",
     "cookie-parser": "^1.4.7",
-    "cors": "^2.8.5",
-    "dotenv": "^16.0.3",
-    "express": "^4.18.2",
-    "express-rate-limit": "^7.1.5",
-    "joi": "18.0.1",
-    "jsonwebtoken": "^9.0.0",
-    "mongoose": "^7.0.3",
-    "multer": "^1.4.5-lts.2",
+    "cors": "^2.8.6",
+    "dotenv": "^17.2.3",
+    "express": "^5.2.1",
+    "express-rate-limit": "^8.2.1",
+    "joi": "18.0.2",
+    "jsonwebtoken": "^9.0.3",
+    "mongoose": "^9.1.5",
+    "multer": "^2.0.2",
     "passport": "^0.7.0",
     "passport-facebook": "^3.0.0",
     "passport-google-oauth20": "^2.0.0",
@@ -33,10 +33,10 @@
     "swagger-ui-express": "^5.0.1"
   },
   "devDependencies": {
-    "jest": "^29.5.0",
-    "mongodb-memory-server": "^10.1.4",
-    "nodemon": "^3.1.10",
-    "supertest": "^6.3.3"
+    "jest": "^30.2.0",
+    "mongodb-memory-server": "^11.0.1",
+    "nodemon": "^3.1.11",
+    "supertest": "^7.2.2"
   },
   "jest": {
     "testEnvironment": "node",
