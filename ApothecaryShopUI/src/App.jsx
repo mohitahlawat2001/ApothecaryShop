@@ -8,6 +8,7 @@ import StockMovements from './pages/StockMovements';
 import ProductDetailPage from './pages/ProductDetailPage';
 import ProductFormPage from './pages/ProductFormPage';
 import EditProduct from './pages/EditProduct';
+import UserManagement from './pages/UserManagement';
 import Navbar from './components/Navbar';
 import { AuthProvider, AuthContext } from './context/AuthContext.jsx';
 import PrivateRoute from './components/routing/PrivateRoute';
@@ -60,17 +61,18 @@ function AppContent() {
           
           {/* Protected Routes */}
           <Route path="/" element={<PrivateRoute />}>
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/inventory" element={<Inventory />} />
-            <Route path="/stock-movements" element={<StockMovements />} />
+            <Route path="dashboard" element={<Dashboard />} />
+            <Route path="inventory" element={<Inventory />} />
+            <Route path="user-management" element={<UserManagement />} />
+            <Route path="stock-movements" element={<StockMovements />} />
             
             {/* Order matters for these routes - most specific first */}
-            <Route path="/products/new" element={<ProductFormPage />} />
-            <Route path="/products/edit/:id" element={<ProductFormPage />} />
-            <Route path="/products/:id" element={<ProductDetailPage />} />
-            <Route path="/products/:id/edit" element={<EditProduct />} />
+            <Route path="products/new" element={<ProductFormPage />} />
+            <Route path="products/edit/:id" element={<ProductFormPage />} />
+            <Route path="products/:id" element={<ProductDetailPage />} />
+            <Route path="products/:id/edit" element={<EditProduct />} />
 
-            <Route path="/procurement" element={<ProcurementLayout />}>
+            <Route path="procurement" element={<ProcurementLayout />}>
               <Route path="suppliers" element={<SupplierList />} />
               <Route path="suppliers/new" element={<SupplierForm />} />
               <Route path="suppliers/:id" element={<SupplierDetail />} />
@@ -85,10 +87,10 @@ function AppContent() {
               <Route path="receive/:id" element={<PurchaseReceiptForm />} />
               <Route path="purchase-receipts/:id" element={<PurchaseReceiptDetail />} />
             </Route>
-            <Route path="/distributions" element={<DistributionList />} />
-            <Route path="/distributions/new" element={<DistributionForm />} />
-            <Route path="/distributions/:id" element={<DistributionDetail />} />
-            <Route path="/distribution-dashboard" element={<DistributionDashboard />} />
+            <Route path="distributions" element={<DistributionList />} />
+            <Route path="distributions/new" element={<DistributionForm />} />
+            <Route path="distributions/:id" element={<DistributionDetail />} />
+            <Route path="distribution-dashboard" element={<DistributionDashboard />} />
           </Route>
         </Routes>
       </div>

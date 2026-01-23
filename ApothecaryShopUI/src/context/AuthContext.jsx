@@ -6,11 +6,26 @@ import { facebookAuthService } from '../services/facebookAuthService';
 export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-  const [auth, setAuth] = useState({
-    token: localStorage.getItem('token'),
-    isAuthenticated: false,
-    user: JSON.parse(localStorage.getItem('user')) || null,
-    loading: true
+  const [auth, setAuth] = useState(() => {
+    const storedToken = localStorage.getItem('token');
+    const storedUser = localStorage.getItem('user');
+    let parsedUser = null;
+    
+    try {
+      parsedUser = storedUser ? JSON.parse(storedUser) : null;
+    } catch (error) {
+      console.error('Error parsing user from localStorage:', error);
+      localStorage.removeItem('user');
+    }
+    
+    const initialState = {
+      token: storedToken,
+      isAuthenticated: !!(storedToken && parsedUser),
+      user: parsedUser,
+      loading: true
+    };
+    
+    return initialState;
   });
 
   useEffect(() => {
@@ -54,13 +69,12 @@ export const AuthProvider = ({ children }) => {
           const token = localStorage.getItem('token');
           axios.defaults.headers.common['Authorization'] = token;
           
-          // Verify token with backend (optional, implement endpoint)
-          // const res = await axios.get(`${import.meta.env.VITE_API_URL}/auth/verify`);
+          const storedUser = JSON.parse(localStorage.getItem('user'));
           
           setAuth({
             token,
             isAuthenticated: true,
-            user: JSON.parse(localStorage.getItem('user')),
+            user: storedUser,
             loading: false
           });
         } catch (error) {
@@ -79,7 +93,9 @@ export const AuthProvider = ({ children }) => {
         }
       } else {
         setAuth({
-          ...auth,
+          token: null,
+          isAuthenticated: false,
+          user: null,
           loading: false
         });
       }
@@ -102,17 +118,21 @@ export const AuthProvider = ({ children }) => {
     });
   };
 
+  const setAuthWrapper = (newAuth) => {
+    setAuth(newAuth);
+  };
+
+  const contextValue = {
+    token: auth.token,
+    isAuthenticated: auth.isAuthenticated,
+    user: auth.user,
+    loading: auth.loading,
+    setAuth: setAuthWrapper,
+    logout
+  };
+
   return (
-    <AuthContext.Provider
-      value={{
-        token: auth.token,
-        isAuthenticated: auth.isAuthenticated,
-        user: auth.user,
-        loading: auth.loading,
-        setAuth,
-        logout
-      }}
-    >
+    <AuthContext.Provider value={contextValue}>
       {children}
     </AuthContext.Provider>
   );

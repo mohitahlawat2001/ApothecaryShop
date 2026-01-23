@@ -28,8 +28,9 @@ const facebookRoutes = require('./routes/facebook'); // Import Facebook OAuth ro
 dotenv.config();
 const app = express();
 
-// Trust proxy (needed when behind reverse proxies/load balancers)
-if (process.env.TRUST_PROXY === '1') {
+// Trust proxy (needed when behind reverse proxies/load balancers like in dev containers)
+// Enable by default in development or when TRUST_PROXY is set
+if (process.env.TRUST_PROXY === '1' || process.env.NODE_ENV !== 'production') {
   app.set('trust proxy', 1);
 }
 
@@ -119,6 +120,8 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs, swaggerOptions));
 // Import routes
 const productsRouter = require('./routes/products');
 const stockMovementRouter = require('./routes/stockMovement');
+const usersRouter = require('./routes/users');
+
 app.use('/api/suppliers', authMiddleware, supplierRoutes);
 app.use('/api/purchase-orders', authMiddleware, purchaseOrderRoutes);
 app.use('/api/purchase-receipts', authMiddleware, purchaseReceiptRoutes);
@@ -128,6 +131,7 @@ app.use('/api/external-products', authMiddleware, externalProductRoutes);
 app.use('/api/products', authMiddleware, productsRouter);
 app.use('/api/stockMovements', authMiddleware, stockMovementRouter);
 app.use('/api/distributions', authMiddleware, distributionRoutes);
+app.use('/api/users', authMiddleware, usersRouter); // User management routes (Admin only)
 
 app.use('/api/maomao-ai', authMiddleware, maomaoAiRoutes);
 app.use('/api/vision', authMiddleware, visionRoutes); // Add vision routes

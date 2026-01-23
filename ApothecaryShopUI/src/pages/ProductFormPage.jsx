@@ -29,7 +29,7 @@ const ProductFormPage = () => {
           });
 
           console.log("Product fetched successfully:", response.data);
-          setProduct(response.data);
+          setProduct(response.data.data);
           setLoading(false);
         } catch (err) {
           console.error("Error fetching product:", err);

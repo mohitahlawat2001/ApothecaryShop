@@ -113,13 +113,16 @@ const Login = () => {
       localStorage.setItem('token', `Bearer ${token}`);
       localStorage.setItem('user', JSON.stringify(res.data.user));
       
+      console.log('Login successful, stored user:', res.data.user);
+      
       // Set default Authorization header for all future axios requests
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
       
       setAuth({
-        token: token,
+        token: `Bearer ${token}`,
         isAuthenticated: true,
-        user: res.data.user
+        user: res.data.user,
+        loading: false
       });
       
       navigate('/dashboard');

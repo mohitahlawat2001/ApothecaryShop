@@ -31,6 +31,51 @@ const userSchemas = {
 };
 
 /**
+ * User Management validation schemas (Admin only operations)
+ */
+const userManagementSchemas = {
+  // Create user schema (Admin creates user)
+  create: Joi.object({
+    name: Joi.string().trim().min(2).max(50).required()
+      .messages({
+        'string.min': 'Name must be at least 2 characters long',
+        'string.max': 'Name cannot exceed 50 characters'
+      }),
+    email: commonSchemas.email.required(),
+    password: commonSchemas.password.required(),
+    role: Joi.string().valid('admin', 'staff').required()
+      .messages({
+        'any.only': 'Role must be one of: admin, staff'
+      }),
+    provider: Joi.string().valid('local', 'google', 'facebook').default('local')
+  }),
+
+  // Update user schema (Admin updates user)
+  update: Joi.object({
+    name: Joi.string().trim().min(2).max(50).optional()
+      .messages({
+        'string.min': 'Name must be at least 2 characters long',
+        'string.max': 'Name cannot exceed 50 characters'
+      }),
+    email: commonSchemas.email.optional(),
+    password: commonSchemas.password.optional(),
+    role: Joi.string().valid('admin', 'staff').optional()
+      .messages({
+        'any.only': 'Role must be one of: admin, staff'
+      })
+  }).min(1), // At least one field must be provided
+
+  // Toggle user status schema
+  toggleStatus: Joi.object({
+    isActive: Joi.boolean().required()
+      .messages({
+        'boolean.base': 'isActive must be a boolean value',
+        'any.required': 'isActive is required'
+      })
+  })
+};
+
+/**
  * Product validation schemas
  */
 const productSchemas = {
@@ -293,6 +338,7 @@ const paramSchemas = {
 
 module.exports = {
   userSchemas,
+  userManagementSchemas,
   productSchemas,
   supplierSchemas,
   purchaseOrderSchemas,

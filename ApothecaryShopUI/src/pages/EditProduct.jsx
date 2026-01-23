@@ -23,7 +23,7 @@ const EditProduct = () => {
           },
         });
 
-        setProduct(response.data);
+        setProduct(response.data.data);
         setLoading(false);
       } catch (error) {
         console.error("Error fetching product:", error);

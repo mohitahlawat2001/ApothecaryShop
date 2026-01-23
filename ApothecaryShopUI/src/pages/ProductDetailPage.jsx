@@ -26,7 +26,7 @@ const ProductDetailPage = () => {
           },
         });
 
-        setProduct(productResponse.data);
+        setProduct(productResponse.data.data);
 
         // Also fetch stock movement history for this product
         const movementsResponse = await axios.get(

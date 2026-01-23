@@ -25,7 +25,7 @@ const StockMovements = () => {
           }
         });
         
-        setProducts(productsRes.data);
+        setProducts(productsRes.data.data);
         
         // If there's a selected product, fetch its stock movements
         if (selectedProduct) {
@@ -37,7 +37,7 @@ const StockMovements = () => {
           setStockMovements(movementsRes.data);
           
           // Find the product name for the selected product
-          const selectedProd = productsRes.data.find(prod => prod._id === selectedProduct);
+          const selectedProd = productsRes.data.data.find(prod => prod._id === selectedProduct);
           if (selectedProd) {
             setSelectedProductName(selectedProd.name);
           }
@@ -84,7 +84,7 @@ const StockMovements = () => {
         }
       });
       
-      setProducts(productsRes.data);
+      setProducts(productsRes.data.data);
       setIsModalOpen(false);
     } catch (err) {
       console.error('Error adding stock movement:', err);

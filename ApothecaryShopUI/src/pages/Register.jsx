@@ -71,7 +71,8 @@ const Register = () => {
             setAuth({
               token: result.token,
               isAuthenticated: true,
-              user: result.user
+              user: result.user,
+              loading: false
             });
             
             // Clear URL parameters
@@ -100,7 +101,8 @@ const Register = () => {
             setAuth({
               token: result.token,
               isAuthenticated: true,
-              user: result.user
+              user: result.user,
+              loading: false
             });
             
             // Clear URL parameters

@@ -35,9 +35,9 @@ const Dashboard = () => {
         });
 
         // Ensure products is always an array
-        const products = Array.isArray(productsRes.data)
-          ? productsRes.data
-          : productsRes.data.products || [];
+        const products = Array.isArray(productsRes.data.data)
+          ? productsRes.data.data
+          : [];
 
         // Stats
         const lowStockCount = products.filter(
