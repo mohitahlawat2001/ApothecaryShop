@@ -2,6 +2,7 @@ import React, { useState, useEffect, useContext } from 'react';
 import { AuthContext } from '../context/AuthContext';
 import { getAllUsers, createUser, updateUser, deleteUser, getUserStats } from '../services/userService';
 import { useNavigate } from 'react-router-dom';
+import { ROLES, ROLE_LABELS, getRoleOptions } from '../utils/roles';
 
 const UserManagement = () => {
   const { user: contextUser, loading: authLoading } = useContext(AuthContext);
@@ -38,7 +39,7 @@ const UserManagement = () => {
     name: '',
     email: '',
     password: '',
-    role: 'staff'
+    role: ROLES.DISTRIBUTION_STAFF
   });
 
   // Redirect non-admin users
@@ -100,7 +101,7 @@ const UserManagement = () => {
       name: '',
       email: '',
       password: '',
-      role: 'staff'
+      role: ROLES.DISTRIBUTION_STAFF
     });
     setShowModal(true);
   };
@@ -194,22 +195,30 @@ const UserManagement = () => {
 
         {/* Statistics */}
         {stats && (
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-            <div className="bg-white rounded-lg shadow p-6">
-              <h3 className="text-gray-500 text-sm font-semibold mb-2">Total Users</h3>
-              <p className="text-3xl font-bold text-blue-600">{stats.total}</p>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-6">
+            <div className="bg-white rounded-lg shadow p-4">
+              <h3 className="text-gray-500 text-xs font-semibold mb-1">Total Users</h3>
+              <p className="text-2xl font-bold text-blue-600">{stats.total}</p>
             </div>
-            <div className="bg-white rounded-lg shadow p-6">
-              <h3 className="text-gray-500 text-sm font-semibold mb-2">Admins</h3>
-              <p className="text-3xl font-bold text-purple-600">{stats.byRole.admin}</p>
+            <div className="bg-white rounded-lg shadow p-4">
+              <h3 className="text-gray-500 text-xs font-semibold mb-1">Admins</h3>
+              <p className="text-2xl font-bold text-purple-600">{stats.byRole?.admin || 0}</p>
             </div>
-            <div className="bg-white rounded-lg shadow p-6">
-              <h3 className="text-gray-500 text-sm font-semibold mb-2">Staff</h3>
-              <p className="text-3xl font-bold text-green-600">{stats.byRole.staff}</p>
+            <div className="bg-white rounded-lg shadow p-4">
+              <h3 className="text-gray-500 text-xs font-semibold mb-1">Inventory Mgr</h3>
+              <p className="text-2xl font-bold text-blue-600">{stats.byRole?.inventory_manager || 0}</p>
             </div>
-            <div className="bg-white rounded-lg shadow p-6">
-              <h3 className="text-gray-500 text-sm font-semibold mb-2">Recent (7 days)</h3>
-              <p className="text-3xl font-bold text-orange-600">{stats.recentUsers}</p>
+            <div className="bg-white rounded-lg shadow p-4">
+              <h3 className="text-gray-500 text-xs font-semibold mb-1">Procurement</h3>
+              <p className="text-2xl font-bold text-yellow-600">{stats.byRole?.procurement_staff || 0}</p>
+            </div>
+            <div className="bg-white rounded-lg shadow p-4">
+              <h3 className="text-gray-500 text-xs font-semibold mb-1">Distribution</h3>
+              <p className="text-2xl font-bold text-green-600">{stats.byRole?.distribution_staff || 0}</p>
+            </div>
+            <div className="bg-white rounded-lg shadow p-4">
+              <h3 className="text-gray-500 text-xs font-semibold mb-1">Recent (7d)</h3>
+              <p className="text-2xl font-bold text-orange-600">{stats.recentUsers}</p>
             </div>
           </div>
         )}
@@ -233,8 +242,9 @@ const UserManagement = () => {
               className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
             >
               <option value="">All Roles</option>
-              <option value="admin">Admin</option>
-              <option value="staff">Staff</option>
+              {getRoleOptions().map(role => (
+                <option key={role.value} value={role.value}>{role.label}</option>
+              ))}
             </select>
             <button
               type="submit"
@@ -308,9 +318,13 @@ const UserManagement = () => {
                           <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
                             u.role === 'admin' 
                               ? 'bg-purple-100 text-purple-800' 
+                              : u.role === 'inventory_manager'
+                              ? 'bg-blue-100 text-blue-800'
+                              : u.role === 'procurement_staff'
+                              ? 'bg-yellow-100 text-yellow-800'
                               : 'bg-green-100 text-green-800'
                           }`}>
-                            {u.role}
+                            {ROLE_LABELS[u.role] || u.role}
                           </span>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
@@ -445,9 +459,13 @@ const UserManagement = () => {
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
                   required
                 >
-                  <option value="staff">Staff</option>
-                  <option value="admin">Admin</option>
+                  {getRoleOptions().map(role => (
+                    <option key={role.value} value={role.value}>{role.label}</option>
+                  ))}
                 </select>
+                <p className="mt-1 text-xs text-gray-500">
+                  {getRoleOptions().find(r => r.value === formData.role)?.description}
+                </p>
               </div>
               <div className="flex justify-end space-x-3">
                 <button

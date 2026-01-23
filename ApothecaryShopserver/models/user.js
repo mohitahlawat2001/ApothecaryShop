@@ -5,7 +5,11 @@ const UserSchema = new mongoose.Schema({
   name: { type: String, required: true },
   email: { type: String, required: true, unique: true },
   password: { type: String },
-  role: { type: String, default: 'staff', enum: ['admin', 'staff'] },
+  role: { 
+    type: String, 
+    default: 'distribution_staff', 
+    enum: ['admin', 'inventory_manager', 'procurement_staff', 'distribution_staff', 'staff'] // 'staff' kept for backward compatibility
+  },
   googleId: { type: String }, // Those logging in via Google OAuth will not need password
   facebookId: { type: String }, // Those logging in via Facebook OAuth will not need password
   avatar: { type: String }, // Profile picture from OAuth providers

@@ -320,7 +320,11 @@ exports.getUserStats = async (req, res) => {
   try {
     const totalUsers = await User.countDocuments();
     const adminCount = await User.countDocuments({ role: 'admin' });
-    const staffCount = await User.countDocuments({ role: 'staff' });
+    const inventoryManagerCount = await User.countDocuments({ role: 'inventory_manager' });
+    const procurementStaffCount = await User.countDocuments({ role: 'procurement_staff' });
+    const distributionStaffCount = await User.countDocuments({ role: 'distribution_staff' });
+    // Legacy staff count for backwards compatibility
+    const legacyStaffCount = await User.countDocuments({ role: 'staff' });
     
     // Get recent users (last 7 days)
     const sevenDaysAgo = new Date();
@@ -340,7 +344,10 @@ exports.getUserStats = async (req, res) => {
         total: totalUsers,
         byRole: {
           admin: adminCount,
-          staff: staffCount
+          inventory_manager: inventoryManagerCount,
+          procurement_staff: procurementStaffCount,
+          distribution_staff: distributionStaffCount,
+          staff: legacyStaffCount // Keep for backwards compatibility
         },
         byProvider: {
           local: localUsers,

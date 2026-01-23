@@ -14,9 +14,9 @@ const userSchemas = {
       }),
     email: commonSchemas.email.required(),
     password: commonSchemas.password.required(),
-    role: Joi.string().valid('admin', 'staff', 'customer').default('staff')
+    role: Joi.string().valid('admin', 'inventory_manager', 'procurement_staff', 'distribution_staff', 'staff').default('distribution_staff')
       .messages({
-        'any.only': 'Role must be one of: admin, staff, customer'
+        'any.only': 'Role must be one of: admin, inventory_manager, procurement_staff, distribution_staff, staff'
       })
   }),
 
@@ -43,9 +43,9 @@ const userManagementSchemas = {
       }),
     email: commonSchemas.email.required(),
     password: commonSchemas.password.required(),
-    role: Joi.string().valid('admin', 'staff').required()
+    role: Joi.string().valid('admin', 'inventory_manager', 'procurement_staff', 'distribution_staff', 'staff').required()
       .messages({
-        'any.only': 'Role must be one of: admin, staff'
+        'any.only': 'Role must be one of: admin, inventory_manager, procurement_staff, distribution_staff, staff'
       }),
     provider: Joi.string().valid('local', 'google', 'facebook').default('local')
   }),
@@ -59,9 +59,9 @@ const userManagementSchemas = {
       }),
     email: commonSchemas.email.optional(),
     password: commonSchemas.password.optional(),
-    role: Joi.string().valid('admin', 'staff').optional()
+    role: Joi.string().valid('admin', 'inventory_manager', 'procurement_staff', 'distribution_staff', 'staff').optional()
       .messages({
-        'any.only': 'Role must be one of: admin, staff'
+        'any.only': 'Role must be one of: admin, inventory_manager, procurement_staff, distribution_staff, staff'
       })
   }).min(1), // At least one field must be provided
 
