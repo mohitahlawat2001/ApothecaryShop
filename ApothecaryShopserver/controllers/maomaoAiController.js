@@ -23,6 +23,11 @@ const maomaoAiController = {
         return res.status(400).json({ error: "Prompt is required" });
       }
 
+      if (!process.env.AI_API_KEY) {
+        console.error("AI_API_KEY is missing in environment variables");
+        return res.status(500).json({ error: "AI service configuration error" });
+      }
+
       // Initialize the AI with the API key from environment variables
       const genAI = new GoogleGenerativeAI(process.env.AI_API_KEY);
       
@@ -171,8 +176,10 @@ const maomaoAiController = {
         }
         
         // Configure the model with the schema
+        // Use stable gemini-pro model
+        const modelName = "gemini-3-flash-preview"; 
         model = genAI.getGenerativeModel({
-          model: "gemini-2.0-flash",
+          model: modelName,
           generationConfig: {
             responseMimeType: "application/json",
             responseSchema: schema,
@@ -186,7 +193,8 @@ const maomaoAiController = {
         
       } else {
         // Regular text generation with formatting instructions
-        model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+        const modelName = "gemini-3-flash-preview";
+        model = genAI.getGenerativeModel({ model: modelName });
         
         // Add output format instructions
         let formattingPrompt = contextualPrompt;

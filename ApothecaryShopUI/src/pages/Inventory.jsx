@@ -316,10 +316,10 @@ const Inventory = () => {
                     <td
                       className="px-3 py-4 text-sm text-gray-500"
                       title={`Price: $${
-                        product.unitPrice?.toFixed(2) || "0.00"
+                        Number(product.unitPrice || 0).toFixed(2)
                       }`}
                     >
-                      ${product.unitPrice?.toFixed(2) || "0.00"}
+                      ${Number(product.unitPrice || 0).toFixed(2)}
                     </td>
                     <td
                       className="px-3 py-4"

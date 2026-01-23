@@ -17,7 +17,8 @@ function SupplierList() {
       setLoading(true);
       const data = await getSuppliers();
       // Handle response structure { success: true, data: [...] } or direct array
-      setSuppliers(Array.isArray(data) ? data : (data.data || []));
+      const suppliersList = Array.isArray(data) ? data : (data?.data || []);
+      setSuppliers(Array.isArray(suppliersList) ? suppliersList : []);
       setError(null);
     } catch (err) {
       setError("Failed to load suppliers");
@@ -82,7 +83,7 @@ function SupplierList() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
-              {suppliers.map((supplier) => (
+              {Array.isArray(suppliers) && suppliers.map((supplier) => (
                 <tr key={supplier._id}>
                   <td className="px-6 py-4 whitespace-nowrap">
                     {supplier.name}
