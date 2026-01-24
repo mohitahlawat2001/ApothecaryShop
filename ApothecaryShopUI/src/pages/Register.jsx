@@ -20,7 +20,8 @@ const Register = () => {
     name: '',
     email: '',
     password: '',
-    confirmPassword: ''
+    confirmPassword: '',
+    role: 'distribution_staff'
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -29,7 +30,7 @@ const Register = () => {
   const { setAuth } = useContext(AuthContext);
   const navigate = useNavigate();
 
-  const { name, email, password, confirmPassword } = formData;
+  const { name, email, password, confirmPassword, role } = formData;
   const passwordRef = useRef(null);
   const confirmRef = useRef(null);
   const [passwordChecks, setPasswordChecks] = useState({
@@ -212,7 +213,7 @@ const Register = () => {
         name,
         email,
         password: effectivePassword,
-        role: 'staff' // Default role
+        role // User-selected role
       };
 
       await axios.post(`${import.meta.env.VITE_API_URL}/register`, registerData);
@@ -394,6 +395,36 @@ const Register = () => {
                   placeholder="Enter your email"
                 />
               </div>
+            </motion.div>
+
+            <motion.div variants={itemVariants} className="space-y-1">
+              <label htmlFor="role" className="block text-sm font-medium text-gray-700">Role</label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                  <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                  </svg>
+                </div>
+                <select
+                  id="role"
+                  name="role"
+                  value={role}
+                  onChange={onChange}
+                  required
+                  className="w-full pl-12 pr-4 py-3 rounded-xl bg-gray-50/50 border border-gray-200 text-gray-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent hover:bg-gray-50 transition-all duration-200 shadow-sm appearance-none cursor-pointer"
+                >
+                  <option value="distribution_staff">Distribution Staff</option>
+                  <option value="inventory_manager">Inventory Manager</option>
+                  <option value="procurement_staff">Procurement Staff</option>
+                  <option value="staff">Staff</option>
+                </select>
+                <div className="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
+                  <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </div>
+              </div>
+              <p className="mt-1 text-xs text-gray-500">Select your role in the organization</p>
             </motion.div>
 
             <motion.div variants={itemVariants} className="space-y-1">

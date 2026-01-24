@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const PurchaseOrder = require('../models/purchaseOrder');
 //const Product = require('../models/product');
-const { adminOnly, staffAccess } = require('../middleware/roleCheck');
+const { adminOnly, staffAccess, procurementAccess } = require('../middleware/roleCheck');
 
 /**
  * @swagger
@@ -120,7 +120,7 @@ const { adminOnly, staffAccess } = require('../middleware/roleCheck');
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-router.get('/', staffAccess, async (req, res) => {
+router.get('/', procurementAccess, async (req, res) => {
   try {
     const purchaseOrders = await PurchaseOrder.find()
       .populate('supplier', 'name contactPerson')
@@ -282,7 +282,7 @@ router.get('/', staffAccess, async (req, res) => {
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-router.get('/:id', staffAccess, async (req, res) => {
+router.get('/:id', procurementAccess, async (req, res) => {
   try {
     const purchaseOrder = await PurchaseOrder.findById(req.params.id)
       .populate('supplier')
@@ -371,7 +371,7 @@ router.get('/:id', staffAccess, async (req, res) => {
  *       "createdAt": "2023-07-04T09:15:30.123Z"
  *     }
  */
-router.post('/', staffAccess, async (req, res) => {
+router.post('/', procurementAccess, async (req, res) => {
   try {
     // Calculate totals
     const items = req.body.items;
@@ -466,7 +466,7 @@ router.post('/', staffAccess, async (req, res) => {
  *       "updatedAt": "2023-07-04T10:30:45.789Z"
  *     }
  */
-router.put('/:id', staffAccess, async (req, res) => {
+router.put('/:id', procurementAccess, async (req, res) => {
   try {
     const purchaseOrder = await PurchaseOrder.findById(req.params.id);
     if (!purchaseOrder) {
@@ -540,7 +540,7 @@ router.put('/:id', staffAccess, async (req, res) => {
  *       "updatedAt": "2023-07-04T11:45:20.456Z"
  *     }
  */
-router.patch('/:id/status', staffAccess, async (req, res) => {
+router.patch('/:id/status', procurementAccess, async (req, res) => {
   try {
     const { status } = req.body;
     if (!status) {

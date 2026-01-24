@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const StockMovement = require('../models/StockMovement');
 const Product = require('../models/Product');
+const { inventoryAccess, staffAccess } = require('../middleware/roleCheck');
 
 /**
  * @swagger
@@ -83,7 +84,7 @@ const Product = require('../models/Product');
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-router.get('/product/:productId', async (req, res) => {
+router.get('/product/:productId', staffAccess, async (req, res) => {
   try {
     const movements = await StockMovement.find({ product: req.params.productId })
       .sort({ createdAt: -1 })
@@ -243,7 +244,7 @@ router.get('/product/:productId', async (req, res) => {
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-router.post('/', async (req, res) => {
+router.post('/', inventoryAccess, async (req, res) => {
   try {
     const { productId, type, quantity, reason, batchNumber, expiryDate } = req.body;
     

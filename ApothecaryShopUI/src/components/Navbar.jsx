@@ -1,6 +1,7 @@
 import React, { useContext, useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext.jsx';
+import { PERMISSIONS, canAccess } from '../utils/roles';
 
 const Navbar = () => {
   const { isAuthenticated, setAuth, user } = useContext(AuthContext);
@@ -78,15 +79,27 @@ const Navbar = () => {
               <Link to="/dashboard" className="px-3 py-1 hover:text-green-200 hover:underline transition-all duration-300">
                 Dashboard
               </Link>
-              <Link to="/inventory" className="px-3 py-1 hover:text-green-200 hover:underline transition-all duration-300">
-                Inventory
-              </Link>
-              <Link to="/procurement/purchase-orders" className="px-3 py-1 hover:text-green-200 hover:underline transition-all duration-300">
-                Procurement
-              </Link>
-              <Link to="/distributions" className="px-3 py-1 hover:text-green-200 hover:underline transition-all duration-300">
-                Distribution
-              </Link>
+              
+              {/* Inventory - Admin, Inventory Manager, Staff */}
+              {canAccess(user?.role, 'CAN_VIEW_INVENTORY') && (
+                <Link to="/inventory" className="px-3 py-1 hover:text-green-200 hover:underline transition-all duration-300">
+                  Inventory
+                </Link>
+              )}
+              
+              {/* Procurement - Admin, Inventory Manager, Procurement Staff, Staff */}
+              {canAccess(user?.role, 'CAN_VIEW_PROCUREMENT') && (
+                <Link to="/procurement/purchase-orders" className="px-3 py-1 hover:text-green-200 hover:underline transition-all duration-300">
+                  Procurement
+                </Link>
+              )}
+              
+              {/* Distribution - Admin, Inventory Manager, Distribution Staff, Staff */}
+              {canAccess(user?.role, 'CAN_VIEW_DISTRIBUTION') && (
+                <Link to="/distributions" className="px-3 py-1 hover:text-green-200 hover:underline transition-all duration-300">
+                  Distribution
+                </Link>
+              )}
               
               {/* Profile Dropdown */}
               <div className="relative" ref={profileRef}>
@@ -198,27 +211,39 @@ const Navbar = () => {
               >
                 Dashboard
               </Link>
-              <Link 
-                to="/inventory" 
-                className="block px-3 py-2 rounded hover:bg-green-700 hover:text-green-200"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Inventory
-              </Link>
-              <Link 
-                to="/procurement/purchase-orders" 
-                className="block px-3 py-2 rounded hover:bg-green-700 hover:text-green-200"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Procurement
-              </Link>
-              <Link 
-                to="/distributions" 
-                className="block px-3 py-2 rounded hover:bg-green-700 hover:text-green-200"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Distribution
-              </Link>
+              
+              {/* Inventory - Admin, Inventory Manager, Staff */}
+              {canAccess(user?.role, 'CAN_VIEW_INVENTORY') && (
+                <Link 
+                  to="/inventory" 
+                  className="block px-3 py-2 rounded hover:bg-green-700 hover:text-green-200"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  Inventory
+                </Link>
+              )}
+              
+              {/* Procurement - Admin, Inventory Manager, Procurement Staff, Staff */}
+              {canAccess(user?.role, 'CAN_VIEW_PROCUREMENT') && (
+                <Link 
+                  to="/procurement/purchase-orders" 
+                  className="block px-3 py-2 rounded hover:bg-green-700 hover:text-green-200"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  Procurement
+                </Link>
+              )}
+              
+              {/* Distribution - Admin, Inventory Manager, Distribution Staff, Staff */}
+              {canAccess(user?.role, 'CAN_VIEW_DISTRIBUTION') && (
+                <Link 
+                  to="/distributions" 
+                  className="block px-3 py-2 rounded hover:bg-green-700 hover:text-green-200"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  Distribution
+                </Link>
+              )}
               
               {user?.role === 'admin' && (
                 <Link 

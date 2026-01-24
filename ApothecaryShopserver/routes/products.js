@@ -4,6 +4,7 @@ const Product = require('../models/Product');
 const { validate } = require('../middleware/validation');
 const { productSchemas, paramSchemas } = require('../validation/schemas');
 const { escapeRegex } = require('../utils/regex');
+const { inventoryAccess, staffAccess } = require('../middleware/roleCheck');
 
 /**
  * @swagger
@@ -37,7 +38,7 @@ const { escapeRegex } = require('../utils/regex');
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-router.get('/', validate({ query: paramSchemas.productList }), async (req, res) => {
+router.get('/', staffAccess, validate({ query: paramSchemas.productList }), async (req, res) => {
   try {
     // Use Joi-validated and sanitized query parameters
     const { search, category, sort, page, limit } = req.query;
@@ -135,7 +136,7 @@ router.get('/', validate({ query: paramSchemas.productList }), async (req, res) 
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-router.get('/:id', validate({ params: paramSchemas.id }), async (req, res) => {
+router.get('/:id', staffAccess, validate({ params: paramSchemas.id }), async (req, res) => {
   try {
     const product = await Product.findById(req.params.id);
     if (!product) {
@@ -215,7 +216,7 @@ router.get('/:id', validate({ params: paramSchemas.id }), async (req, res) => {
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-router.post('/', validate({ body: productSchemas.create }), async (req, res) => {
+router.post('/', inventoryAccess, validate({ body: productSchemas.create }), async (req, res) => {
   try {
     // Check if a product with the same SKU already exists (if SKU is provided)
     if (req.body.sku) {
@@ -358,7 +359,7 @@ router.post('/', validate({ body: productSchemas.create }), async (req, res) => 
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-router.put('/:id', validate({ params: paramSchemas.id, body: productSchemas.update }), async (req, res) => {
+router.put('/:id', inventoryAccess, validate({ params: paramSchemas.id, body: productSchemas.update }), async (req, res) => {
   try {
     // Check if SKU is being updated and if it conflicts with existing products
     if (req.body.sku) {
@@ -413,7 +414,7 @@ router.put('/:id', validate({ params: paramSchemas.id, body: productSchemas.upda
   }
 });
 
-router.delete('/:id', validate({ params: paramSchemas.id }), async (req, res) => {
+router.delete('/:id', inventoryAccess, validate({ params: paramSchemas.id }), async (req, res) => {
   try {
     const product = await Product.findByIdAndDelete(req.params.id);
     if (!product) {
@@ -502,7 +503,7 @@ router.delete('/:id', validate({ params: paramSchemas.id }), async (req, res) =>
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-router.patch('/:id/stock', validate({ params: paramSchemas.id, body: productSchemas.stockAdjustment }), async (req, res) => {
+router.patch('/:id/stock', inventoryAccess, validate({ params: paramSchemas.id, body: productSchemas.stockAdjustment }), async (req, res) => {
   try {
     const { adjustment, reason } = req.body;
     const adjustmentNum = Number(adjustment);

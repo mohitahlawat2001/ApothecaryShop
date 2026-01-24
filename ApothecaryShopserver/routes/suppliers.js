@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const Supplier = require('../models/supplier');
-const { adminOnly, staffAccess } = require('../middleware/roleCheck');
+const { adminOnly, staffAccess, procurementAccess } = require('../middleware/roleCheck');
 const { validate } = require('../middleware/validation');
 const { supplierSchemas, paramSchemas } = require('../validation/schemas');
 const { escapeRegex } = require('../utils/regex');
@@ -244,7 +244,7 @@ router.get('/:id', staffAccess, validate({ params: paramSchemas.id }), async (re
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-router.post('/', adminOnly, validate({ body: supplierSchemas.create }), async (req, res) => {
+router.post('/', procurementAccess, validate({ body: supplierSchemas.create }), async (req, res) => {
   try {
     // Check if supplier with same email already exists
     if (req.body.email) {
@@ -365,7 +365,7 @@ router.post('/', adminOnly, validate({ body: supplierSchemas.create }), async (r
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-router.put('/:id', adminOnly, validate({ params: paramSchemas.id, body: supplierSchemas.update }), async (req, res) => {
+router.put('/:id', procurementAccess, validate({ params: paramSchemas.id, body: supplierSchemas.update }), async (req, res) => {
   try {
     // Check if email is being updated and if it conflicts with existing suppliers
     if (req.body.email) {

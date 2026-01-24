@@ -113,6 +113,37 @@ AI_API_KEY=your-google-gemini-ai-api-key-here
 
 For a comprehensive list of all features, please see [FEATURES.md](FEATURES.md).
 
+## Role-Based Access Control
+
+ApothecaryShop implements comprehensive role-based access control to ensure users only access features relevant to their responsibilities. During registration, users can select from the following roles:
+
+### Available Roles
+- **Admin**: Full system access including user management
+- **Inventory Manager**: Manage inventory, products, and stock movements
+- **Procurement Staff**: Manage suppliers, purchase orders, and receipts
+- **Distribution Staff**: Manage product distribution and sales
+- **Staff**: Legacy role with general access (backward compatibility)
+
+### Role Access Matrix
+
+| Feature | Admin | Inventory Manager | Procurement Staff | Distribution Staff | Staff (Legacy) |
+|---------|:-----:|:-----------------:|:-----------------:|:------------------:|:--------------:|
+| **Dashboard** | ✅ | ✅ | ✅ | ✅ | ✅ |
+| **View Inventory** | ✅ | ✅ | ✅ | ✅ | ✅ |
+| **Manage Inventory** | ✅ | ✅ | ❌ | ❌ | ✅ |
+| **Manage Stock Movements** | ✅ | ✅ | ❌ | ❌ | ✅ |
+| **View Procurement** | ✅ | ✅ | ✅ | ❌ | ✅ |
+| **Manage Procurement** | ✅ | ✅ | ✅ | ❌ | ✅ |
+| **Manage Suppliers** | ✅ | ✅ | ✅ | ❌ | ✅ |
+| **View Distribution** | ✅ | ✅ | ❌ | ✅ | ✅ |
+| **Manage Distribution** | ✅ | ✅ | ❌ | ✅ | ✅ |
+| **User Management** | ✅ | ❌ | ❌ | ❌ | ❌ |
+| **AI Analysis** | ✅ | ✅ | ❌ | ❌ | ❌ |
+
+**Legend**: ✅ = Full Access | ❌ = No Access
+
+> **Note**: The 'Staff' role is maintained for backward compatibility. Consider migrating legacy staff users to specific roles (Inventory Manager, Procurement Staff, or Distribution Staff) for better access control.
+
 ## Why Adopt ApothecaryShop?
 - **Efficiency**: Streamline inventory operations and reduce manual errors
 - **Accuracy**: Maintain precise stock records with automated alerts

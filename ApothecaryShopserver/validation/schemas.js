@@ -14,9 +14,9 @@ const userSchemas = {
       }),
     email: commonSchemas.email.required(),
     password: commonSchemas.password.required(),
-    role: Joi.string().valid('admin', 'inventory_manager', 'procurement_staff', 'distribution_staff', 'staff').default('distribution_staff')
+    role: Joi.string().valid('inventory_manager', 'procurement_staff', 'distribution_staff', 'staff').default('distribution_staff')
       .messages({
-        'any.only': 'Role must be one of: admin, inventory_manager, procurement_staff, distribution_staff, staff'
+        'any.only': 'Role must be one of: inventory_manager, procurement_staff, distribution_staff, staff'
       })
   }),
 

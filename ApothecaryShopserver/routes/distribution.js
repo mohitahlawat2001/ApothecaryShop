@@ -4,6 +4,7 @@ const Distribution = require("../models/distribution");
 const Product = require("../models/Product");
 const StockMovement = require("../models/StockMovement"); // Add this import
 const auth = require("../middleware/auth");
+const { distributionAccess } = require("../middleware/roleCheck");
 const { Parser } = require("@json2csv/plainjs");
 const PDFDocument = require("pdfkit");
 /**
@@ -96,7 +97,7 @@ const PDFDocument = require("pdfkit");
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-router.post("/", auth, async (req, res) => {
+router.post("/", distributionAccess, async (req, res) => {
   try {
     const { recipient, recipientType, items, shippingInfo } = req.body;
 
@@ -219,7 +220,7 @@ router.post("/", auth, async (req, res) => {
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-router.get("/", auth, async (req, res) => {
+router.get("/", distributionAccess, async (req, res) => {
   try {
     const { status, startDate, endDate, recipient } = req.query;
     const query = {};
@@ -246,7 +247,7 @@ router.get("/", auth, async (req, res) => {
 });
 
 // Get distribution by ID
-router.get("/:id", auth, async (req, res) => {
+router.get("/:id", distributionAccess, async (req, res) => {
   try {
     const distribution = await Distribution.findById(req.params.id)
       .populate("items.product")
@@ -264,7 +265,7 @@ router.get("/:id", auth, async (req, res) => {
 });
 
 // Update distribution status
-router.patch("/:id/status", auth, async (req, res) => {
+router.patch("/:id/status", distributionAccess, async (req, res) => {
   try {
     const { status } = req.body;
     const validStatuses = [
@@ -340,7 +341,7 @@ router.patch("/:id/status", auth, async (req, res) => {
 });
 
 // Delete distribution order (only if pending)
-router.delete("/:id", auth, async (req, res) => {
+router.delete("/:id", distributionAccess, async (req, res) => {
   try {
     const distribution = await Distribution.findById(req.params.id);
 
@@ -388,7 +389,7 @@ router.delete("/:id", auth, async (req, res) => {
 });
 
 // Generate distribution report
-router.get("/reports/summary", auth, async (req, res) => {
+router.get("/reports/summary", distributionAccess, async (req, res) => {
   try {
     const { startDate, endDate } = req.query;
     const query = {};
@@ -448,7 +449,7 @@ router.get("/reports/summary", auth, async (req, res) => {
 });
 
 //Added router for CSV Export - @Duzzann
-router.get("/export/csv", auth, async (req, res) => {
+router.get("/export/csv", distributionAccess, async (req, res) => {
   try {
     const { status, recipient, startDate, endDate } = req.query;
     const query = {};
@@ -524,7 +525,7 @@ router.get("/export/csv", auth, async (req, res) => {
 });
 
 //Added router for PDF Export - @Duzzann
-router.get("/export/pdf", auth, async (req, res) => {
+router.get("/export/pdf", distributionAccess, async (req, res) => {
   try {
     const { status, recipient, startDate, endDate } = req.query;
     const query = {};

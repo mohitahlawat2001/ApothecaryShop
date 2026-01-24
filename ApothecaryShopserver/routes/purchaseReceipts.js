@@ -5,7 +5,7 @@ const PurchaseReceipt = require('../models/purchaseReceipt');
 const PurchaseOrder = require('../models/purchaseOrder');
 const Product = require('../models/Product');
 const StockMovement = require('../models/StockMovement');
-const { adminOnly } = require('../middleware/roleCheck');
+const { adminOnly, procurementAccess } = require('../middleware/roleCheck');
 
 /**
  * @swagger
@@ -128,7 +128,7 @@ const { adminOnly } = require('../middleware/roleCheck');
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-router.get('/', async (req, res) => {
+router.get('/', procurementAccess, async (req, res) => {
   try {
     const receipts = await PurchaseReceipt.find()
       .populate('purchaseOrder', 'poNumber')
@@ -185,7 +185,7 @@ router.get('/', async (req, res) => {
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-router.get('/:id', async (req, res) => {
+router.get('/:id', procurementAccess, async (req, res) => {
   try {
     const receipt = await PurchaseReceipt.findById(req.params.id)
       .populate('purchaseOrder')
@@ -203,7 +203,7 @@ router.get('/:id', async (req, res) => {
 });
 
 // Create a new purchase receipt
-router.post('/', async (req, res) => {
+router.post('/', procurementAccess, async (req, res) => {
   const session = await mongoose.startSession();
   session.startTransaction();
   
