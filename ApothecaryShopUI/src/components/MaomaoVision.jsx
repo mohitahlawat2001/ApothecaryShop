@@ -23,210 +23,92 @@ const MaomaoVision = ({ onProductFound }) => {
   }, [analysisResult]);
 
   const parseAnalysisResult = (text) => {
-    // Format the text to handle markdown-style formatting
-    const formattedText = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-                             .replace(/\*(.*?)\*/g, '<em>$1</em>');
-                             
-    // Extract product name and other details using more robust parsing
-    const lines = text.split('\n').filter(line => line.trim());
-    const result = {
-      productName: '',
-      possibleNames: [],
-      formattedDetails: {
-        activeIngredient: '',
-        otherIngredients: [],
-        dosage: '',
-        warnings: [],
-        manufacturer: '',
-        category: '',
-      },
-      rawText: formattedText, // Store the HTML-formatted text
-      otherDetails: {}
-    };
+  if (!text || typeof text !== "string") return null;
 
-    // Common product detail label patterns
-    const productNamePatterns = [
-      /product\s*name\s*[:：]/i,
-      /name\s*[:：]/i,
-      /product\s*[:：]/i,
-      /identified\s*as\s*[:：]/i,
-      /^name\s*[:：]/i
-    ];
+  // Clean markdown and prepare HTML-formatted version
+  const formattedText = text
+    .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
+    .replace(/\*(.*?)\*/g, "<em>$1</em>");
 
-    // First, try to find product name from specific labeled lines
-    for (const line of lines) {
-      const cleanLine = line.replace(/^\*\*|\*\*/g, '').trim();
-      
-      // Check if line matches any product name pattern
-      for (const pattern of productNamePatterns) {
-        if (pattern.test(cleanLine)) {
-          // Extract only what appears after the colon
-          const colonIndex = cleanLine.indexOf(':');
-          if (colonIndex !== -1) {
-            const nameAfterColon = cleanLine.substring(colonIndex + 1).trim();
-            if (nameAfterColon) {
-              // Look for the main product name, typically the first word
-              const mainProductName = nameAfterColon.split(' ')[0].trim().replace(/[^a-zA-Z0-9]/g, '');
-              if (mainProductName && mainProductName.length > 2) {
-                result.productName = mainProductName;
-                result.possibleNames.push(mainProductName);
-                
-                // Also add the full name after the colon as a possible name
-                if (nameAfterColon !== mainProductName) {
-                  result.possibleNames.push(nameAfterColon);
-                }
-                break;
-              } else {
-                // If main product name is too short, use the full content after colon
-                result.productName = nameAfterColon;
-                result.possibleNames.push(nameAfterColon);
-              }
-            }
-          }
-        }
-      }
-      
-      // If we found a product name, break out of the loop
-      if (result.productName) break;
-    }
+  const lines = text.split("\n").map(l => l.trim()).filter(Boolean);
 
-    // First pass: Group content by section headers
-    let currentSection = '';
-    const sectionContent = {};
-    
-    for (let i = 0; i < lines.length; i++) {
-      const line = lines[i].trim();
-      const cleanLine = line.replace(/^\*\*\s*|\*\s*/g, '').trim(); // Clean line for processing
-      
-      // Check if this line is a section header (ends with colon)
-      if (line.endsWith(':')) {
-        currentSection = cleanLine.slice(0, -1).trim(); // Remove the colon
-        sectionContent[currentSection] = [];
-        continue;
-      }
-      
-      // Handle special case for section headers without a space after the colon
-      const colonIndex = cleanLine.indexOf(':');
-      if (colonIndex !== -1 && colonIndex < cleanLine.length - 1) {
-        const potentialHeader = cleanLine.substring(0, colonIndex).trim().toLowerCase();
-        const potentialContent = cleanLine.substring(colonIndex + 1).trim();
-        
-        if (potentialHeader === 'product name' || potentialHeader === 'name') {
-          // We've already handled this in the specific product name extraction above
-          if (!result.productName) {
-            result.productName = potentialContent;
-            result.possibleNames.push(potentialContent);
-          }
-          continue;
-        }
-      }
-      
-      // Add content to current section
-      if (currentSection && (line.startsWith('**') || line.startsWith('* '))) {
-        sectionContent[currentSection].push(cleanLine);
-      } 
-      else if (currentSection) {
-        sectionContent[currentSection].push(cleanLine);
-      }
-    }
-    
-    // Process the grouped content into our result structure
-    for (const [section, content] of Object.entries(sectionContent)) {
-      const lowerSection = section.toLowerCase();
-      
-      // Map common section headers to our structured data
-      if (lowerSection.includes('product name') || lowerSection.includes('name:')) {
-        result.productName = content.join(' ');
-        result.possibleNames.push(result.productName);
-      } 
-      else if (lowerSection.includes('active ingredient')) {
-        result.formattedDetails.activeIngredient = content.join(' ');
-      }
-      else if (lowerSection.includes('other ingredient') || lowerSection.includes('excipient')) {
-        result.formattedDetails.otherIngredients = content;
-      }
-      else if (lowerSection.includes('dosage') || lowerSection.includes('administration')) {
-        result.formattedDetails.dosage = content.join(' ');
-        
-        // Extract potential warnings from dosage text
-        if (content.some(line => 
-          line.toLowerCase().includes('warning') || 
-          line.toLowerCase().includes('caution') ||
-          line.toLowerCase().includes('not recommended') ||
-          line.toLowerCase().includes('pregnancy') ||
-          line.toLowerCase().includes('children')
-        )) {
-          const warningText = content.filter(line => 
-            line.toLowerCase().includes('warning') || 
-            line.toLowerCase().includes('caution') ||
-            line.toLowerCase().includes('not recommended') ||
-            line.toLowerCase().includes('pregnancy') ||
-            line.toLowerCase().includes('children')
-          );
-          
-          result.formattedDetails.warnings = [...result.formattedDetails.warnings, ...warningText];
-        }
-      }
-      else if (lowerSection.includes('warning') || lowerSection.includes('caution')) {
-        result.formattedDetails.warnings = [...result.formattedDetails.warnings, ...content];
-      }
-      else if (lowerSection.includes('manufacturer') || lowerSection.includes('made by')) {
-        result.formattedDetails.manufacturer = content.join(' ');
-      }
-      else if (lowerSection.includes('category') || lowerSection.includes('classification')) {
-        result.formattedDetails.category = content.join(' ');
-      }
-      // Store other sections in otherDetails
-      else {
-        if (!result.otherDetails[section]) {
-          result.otherDetails[section] = {};
-        }
-        if (!result.otherDetails[section].text) {
-          result.otherDetails[section].text = [];
-        }
-        result.otherDetails[section].text = content;
-      }
-    }
-
-    // Extract other possible product names
-    const nameKeywords = ['drug', 'medicine', 'tablet', 'capsule', 'syrup', 'called', 'brand'];
-    for (const line of lines) {
-      for (const keyword of nameKeywords) {
-        if (line.toLowerCase().includes(keyword) && !result.possibleNames.includes(line)) {
-          const parts = line.split(':');
-          const possibleName = parts.length > 1 ? parts[1].trim() : line.trim();
-          // Clean up the name if it starts with **
-          const cleanName = possibleName.replace(/^\*\*\s*|\*\s*/g, '').trim();
-          if (cleanName && cleanName.length > 2 && !result.possibleNames.includes(cleanName)) {
-            result.possibleNames.push(cleanName);
-          }
-        }
-      }
-    }
-
-    // Additional special case handling for ** content across multiple lines
-    if (!result.productName && lines.length > 0) {
-      for (const line of lines) {
-        if (line.startsWith('**')) {
-          result.productName = line.replace(/^\*\*\s*/, '').trim();
-          result.possibleNames.push(result.productName);
-          break;
-        }
-      }
-    }
-
-    // Filter duplicates and limit to 5 options
-    result.possibleNames = [...new Set(result.possibleNames)]
-      .filter(name => name && name.length > 0)
-      .slice(0, 5);
-      
-    // If we have content but no product name yet, use the first item in possible names
-    if (!result.productName && result.possibleNames.length > 0) {
-      result.productName = result.possibleNames[0];
-    }
-
-    setParsedResults(result);
+  const result = {
+    productName: "",
+    possibleNames: [],
+    formattedDetails: {
+      activeIngredient: "",
+      otherIngredients: [],
+      dosage: "",
+      warnings: [],
+      manufacturer: "",
+      category: "",
+    },
+    rawText: formattedText,
+    otherDetails: {},
   };
+
+  // --- FIXED: Handle "Product Name:" on one line and actual name on next line ---
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i].replace(/\*/g, "").trim();
+
+    if (/^product\s*name\s*:*/i.test(line)) {
+      const nextLine = lines[i + 1]?.replace(/\*/g, "").trim();
+      if (nextLine && !nextLine.match(/:$/)) {
+        result.productName = nextLine;
+        result.possibleNames.push(nextLine);
+        break;
+      }
+    }
+  }
+
+  // --- Section extraction ---
+  let currentSection = "";
+  const sectionContent = {};
+
+  for (const line of lines) {
+    const clean = line.replace(/\*/g, "").trim();
+
+    if (clean.endsWith(":")) {
+      currentSection = clean.slice(0, -1).trim();
+      sectionContent[currentSection] = [];
+    } else if (currentSection) {
+      sectionContent[currentSection].push(clean);
+    }
+  }
+
+  // --- Map sections ---
+  for (const [section, content] of Object.entries(sectionContent)) {
+    const lower = section.toLowerCase();
+
+    if (lower.includes("ingredient")) {
+      result.formattedDetails.activeIngredient = content.join(" ");
+    } else if (lower.includes("dosage")) {
+      result.formattedDetails.dosage = content.join(" ");
+    } else {
+      result.otherDetails[section] = { text: content };
+    }
+  }
+
+  // --- Fallback ---
+  if (!result.productName) {
+    const guess = lines.find(l =>
+      /(identified as|called|formula|medicine|syrup)/i.test(l)
+    );
+    if (guess) {
+      result.productName = guess.replace(/\*/g, "").trim();
+      result.possibleNames.push(result.productName);
+    }
+  }
+
+  result.possibleNames = [...new Set(result.possibleNames)].filter(Boolean);
+
+  if (!result.productName && result.possibleNames.length > 0) {
+    result.productName = result.possibleNames[0];
+  }
+
+  setParsedResults(result);
+};
+
 
   const handleOpenDialog = () => {
     setOpen(true);

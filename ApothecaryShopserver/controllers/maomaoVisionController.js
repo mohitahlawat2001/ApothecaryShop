@@ -2,7 +2,7 @@ const { GoogleGenerativeAI } = require("@google/generative-ai");
 
 // Initialize the Google Generative AI client with the correct env variable
 const genAI = new GoogleGenerativeAI(process.env.AI_API_KEY);
-const model = genAI.getGenerativeModel({ model: 'models/gemini-1.5-pro' });
+const model = genAI.getGenerativeModel({ model: 'models/gemini-2.5-pro' });
 
 /**
  * Analyzes an image of a medicinal product using Google's Gemini model
