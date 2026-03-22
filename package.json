@@ -7,7 +7,8 @@
     "server": "cd ApothecaryShopserver && npm run dev",
     "client": "cd ApothecaryShopUI && npm run dev",
     "dev": "concurrently \"npm run server\" \"npm run client\"",
-    "install-all": "npm install && cd ApothecaryShopserver && npm install && cd ../ApothecaryShopUI && npm install"
+    "install-all": "npm install && cd ApothecaryShopserver && npm install && cd ../ApothecaryShopUI && npm install",
+    "update-all": "cd ApothecaryShopserver && npx npm-check-updates -u && npm install && cd ../ApothecaryShopUI && npx npm-check-updates -u && npm install"
   },
   "dependencies": {
     "swagger-jsdoc": "^6.2.8",
