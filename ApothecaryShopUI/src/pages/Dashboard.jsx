@@ -144,12 +144,12 @@ const Dashboard = () => {
   if (loading) return <AppLoader message="Loading your dashboard" />;
 
   return (
-    <div className="min-h-screen w-full flex justify-center bg-gray-50 xl:ml-20">
-      <div className="w-full max-w-7xl mx-auto p-4 sm:p-6 lg:p-8 bg-white">
+    <div className="min-h-screen w-full bg-gray-50 overflow-x-hidden">
+      <div className="w-full p-4 sm:p-6 lg:p-8">
         <h1 className="text-3xl font-bold text-gray-800 mb-2">Dashboard</h1>
         <p className="text-gray-600 mb-6">Welcome, {user?.name || "User"}</p>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 sm:gap-6 mb-8 w-full">
           <div className="bg-white rounded-lg shadow-md p-6 border-t-4 border-blue-500">
             <h3 className="text-gray-500 text-sm font-semibold uppercase">
               Total Products
@@ -193,44 +193,44 @@ const Dashboard = () => {
         </div>
 
         {/* AI Analysis Component - Full Width */}
-        <div className="mb-6">
+        <div className="mb-6 w-full">
           <DashboardAiAnalysis stats={stats} />
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6 w-full">
           {/* Recent Products */}
-          <div className="md:col-span-2 bg-white rounded-lg shadow-md p-6">
+          <div className="lg:col-span-2 bg-white rounded-lg shadow-md p-4 sm:p-6 w-full overflow-hidden">
             <h3 className="text-xl font-semibold text-gray-800 mb-4">
               Recently Added Products
             </h3>
             {recentProducts.length === 0 ? (
               <p className="text-gray-500">No products found</p>
             ) : (
-              <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
+              <div className="overflow-hidden">
+                <table className="w-full table-fixed divide-y divide-gray-200">
                   <thead className="bg-gray-50">
                     <tr>
                       <th
                         scope="col"
-                        className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                        className="w-2/5 px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
                       >
                         Name
                       </th>
                       <th
                         scope="col"
-                        className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                        className="w-1/5 px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
                       >
                         Stock
                       </th>
                       <th
                         scope="col"
-                        className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                        className="w-1/5 px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
                       >
                         Price
                       </th>
                       <th
                         scope="col"
-                        className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                        className="w-1/5 px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
                       >
                         Added On
                       </th>
@@ -239,16 +239,16 @@ const Dashboard = () => {
                   <tbody className="bg-white divide-y divide-gray-200">
                     {recentProducts.map((product) => (
                       <tr key={product._id} className="hover:bg-gray-50">
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                        <td className="px-4 py-4 text-sm font-medium text-gray-900 truncate">
                           {product.name || "N/A"}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <td className="px-4 py-4 text-sm text-gray-500">
                           {product.stockQuantity}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <td className="px-4 py-4 text-sm text-gray-500">
                           ${product.unitPrice?.toFixed(2) || "0.00"}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <td className="px-4 py-4 text-sm text-gray-500">
                           {new Date(product.createdAt).toLocaleDateString()}
                         </td>
                       </tr>
