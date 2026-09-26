@@ -1,4 +1,5 @@
 const { GoogleGenerativeAI, SchemaType } = require("@google/generative-ai");
+const sanitizeHtml = require("sanitize-html");
 require('dotenv').config();
 
 // In-memory store for conversation history (in a production app, use a database)
@@ -216,6 +217,11 @@ const maomaoAiController = {
         // Generate content with updated personality and conversation context
         const result = await model.generateContent(formattingPrompt);
         response = result.response.text();
+
+        // Sanitize AI-generated HTML to prevent stored XSS before it reaches the client
+        if (outputFormat.toLowerCase() === "html") {
+          response = sanitizeHtml(response);
+        }
       }
 
       // Store the conversation exchange in history with timestamps
