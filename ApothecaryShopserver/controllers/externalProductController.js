@@ -43,7 +43,7 @@ exports.getExternalProducts = async (req, res) => {
     
     // Make request to external API
     const response = await axios.post(
-      'https://janaushadhi.gov.in:8443/api/v1/admin/product/getAllProduct',
+      'https://janaushadhi.gov.in:8443/api/v1/website/getAllProductForWeb',
       {
         pageIndex: parseInt(pageIndex),
         pageSize: parseInt(pageSize),

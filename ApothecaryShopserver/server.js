@@ -76,7 +76,9 @@ const allowedOrigins = [
   'http://localhost:5000',                  // Local development
   'https://your-deployed-frontend-url.com', // Replace with your actual deployed frontend URL
   process.env.FRONTEND_URL                  // Optional: configure via environment variable
-];
+]
+  .filter(Boolean)
+  .map((origin) => origin.replace(/\/+$/, ''));
 
 const corsOptions = {
   origin: function (origin, callback) {
