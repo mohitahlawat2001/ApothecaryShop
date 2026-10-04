@@ -375,14 +375,33 @@ router.post('/', procurementAccess, async (req, res) => {
   try {
     // Calculate totals
     const items = req.body.items;
+    if (!Array.isArray(items) || items.length === 0) {
+      return res.status(400).json({ message: 'At least one purchase order item is required' });
+    }
+
     let subtotal = 0;
     
     for (let item of items) {
-      item.totalPrice = item.quantity * item.unitPrice * (1 - item.discount / 100) * (1 + item.tax / 100);
+      const quantity = Number(item.quantity);
+      const unitPrice = Number(item.unitPrice);
+      const discount = Number(item.discount ?? 0);
+      const tax = Number(item.tax ?? 0);
+
+      if (![quantity, unitPrice, discount, tax].every(Number.isFinite)) {
+        return res.status(400).json({ message: 'Purchase order item contains invalid numeric values' });
+      }
+
+      item.totalPrice = quantity * unitPrice * (1 - discount / 100) * (1 + tax / 100);
       subtotal += item.totalPrice;
     }
     
-    const totalAmount = subtotal + req.body.shippingCost - req.body.discountAmount;
+    const shippingCost = Number(req.body.shippingCost ?? 0);
+    const discountAmount = Number(req.body.discountAmount ?? 0);
+    if (![shippingCost, discountAmount].every(Number.isFinite)) {
+      return res.status(400).json({ message: 'Shipping cost and discount amount must be valid numbers' });
+    }
+
+    const totalAmount = subtotal + shippingCost - discountAmount;
     
     // Generate PO Number with timestamp for uniqueness
     const currentDate = new Date();
@@ -483,13 +502,27 @@ router.put('/:id', procurementAccess, async (req, res) => {
     if (req.body.items) {
       let subtotal = 0;
       for (let item of req.body.items) {
-        item.totalPrice = item.quantity * item.unitPrice * (1 - item.discount / 100) * (1 + item.tax / 100);
+        const quantity = Number(item.quantity);
+        const unitPrice = Number(item.unitPrice);
+        const discount = Number(item.discount ?? 0);
+        const tax = Number(item.tax ?? 0);
+
+        if (![quantity, unitPrice, discount, tax].every(Number.isFinite)) {
+          return res.status(400).json({ message: 'Purchase order item contains invalid numeric values' });
+        }
+
+        item.totalPrice = quantity * unitPrice * (1 - discount / 100) * (1 + tax / 100);
         subtotal += item.totalPrice;
       }
       
+      const shippingCost = Number(req.body.shippingCost ?? purchaseOrder.shippingCost ?? 0);
+      const discountAmount = Number(req.body.discountAmount ?? purchaseOrder.discountAmount ?? 0);
+      if (![shippingCost, discountAmount].every(Number.isFinite)) {
+        return res.status(400).json({ message: 'Shipping cost and discount amount must be valid numbers' });
+      }
+
       updatedData.subtotal = subtotal;
-      updatedData.totalAmount = subtotal + (req.body.shippingCost || purchaseOrder.shippingCost) - 
-                               (req.body.discountAmount || purchaseOrder.discountAmount);
+      updatedData.totalAmount = subtotal + shippingCost - discountAmount;
     }
     
     const updatedPO = await PurchaseOrder.findByIdAndUpdate(
