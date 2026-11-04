@@ -23,6 +23,16 @@ Before you begin, ensure you have the following installed on your system:
 ## Getting Started: Local Development
 Follow these steps to set up and run the project locally for development.
 
+### Automated dependency updates
+
+GitHub Actions checks for dependency updates every day at 08:00 UTC. When updates
+are available, it opens or updates a pull request containing changes for the
+root, server, and UI packages. You can also run the same update locally:
+
+```bash
+npm run update-all
+```
+
 ### 1. Clone the Repository
 Clone the project repository to your local machine and navigate into the main directory.
 

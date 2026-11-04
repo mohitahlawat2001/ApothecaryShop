@@ -1,0 +1,41 @@
+name: Update dependencies
+
+on:
+  schedule:
+    # GitHub Actions schedules use UTC. This runs every day at 08:00 UTC.
+    - cron: "0 8 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Update all dependencies
+        run: npm run update-all
+
+      - name: Create dependency update pull request
+        uses: peter-evans/create-pull-request@v7
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "chore: update dependencies"
+          title: "chore: update dependencies"
+          body: |
+            Automated daily dependency updates for the root, server, and UI packages.
+
+            Please review the generated changes and CI results before merging.
+          branch: automated/dependency-updates
+          delete-branch: true
+          labels: dependencies
