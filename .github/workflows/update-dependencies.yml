@@ -27,6 +27,8 @@ jobs:
         run: npm run update-all
 
       - name: Create dependency update pull request
+        id: create_pr
+        continue-on-error: true
         uses: peter-evans/create-pull-request@v7
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -39,3 +41,7 @@ jobs:
           branch: automated/dependency-updates
           delete-branch: true
           labels: dependencies
+
+      - name: Warn when pull request creation is blocked
+        if: steps.create_pr.outcome == 'failure'
+        run: echo "::warning::Dependency updates were pushed but pull request creation was blocked. Enable 'Allow GitHub Actions to create and approve pull requests' in repository settings to open PRs automatically."
