@@ -13,13 +13,13 @@
     "generate:favicon:magick": "powershell -NoProfile -File ./scripts/generate-favicon.ps1"
   },
   "dependencies": {
-    "@tailwindcss/postcss": "^4.3.4",
+    "@tailwindcss/postcss": "^4.3.5",
     "axios": "^1.21.0",
     "chart.js": "^4.6.1",
     "date-fns": "^4.4.0",
     "jspdf": "^4.2.1",
     "jspdf-autotable": "^5.0.9",
-    "motion": "^14.9.1",
+    "motion": "^14.10.1",
     "react": "^19.3.1",
     "react-chartjs-2": "^5.3.1",
     "react-dom": "^19.3.1",
@@ -38,7 +38,7 @@
     "globals": "^17.14.0",
     "png-to-ico": "^3.0.2",
     "postcss": "^8.5.32",
-    "tailwindcss": "^4.3.4",
-    "vite": "^8.3.5"
+    "tailwindcss": "^4.3.5",
+    "vite": "^8.3.6"
   }
 }
