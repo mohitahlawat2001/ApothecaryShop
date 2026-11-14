@@ -13,13 +13,13 @@
     "generate:favicon:magick": "powershell -NoProfile -File ./scripts/generate-favicon.ps1"
   },
   "dependencies": {
-    "@tailwindcss/postcss": "^4.3.4",
-    "axios": "^1.21.0",
+    "@tailwindcss/postcss": "^4.3.5",
+    "axios": "^1.21.1",
     "chart.js": "^4.6.1",
     "date-fns": "^4.4.0",
     "jspdf": "^4.2.1",
     "jspdf-autotable": "^5.0.9",
-    "motion": "^14.9.1",
+    "motion": "^14.14.0",
     "react": "^19.3.1",
     "react-chartjs-2": "^5.3.1",
     "react-dom": "^19.3.1",
@@ -30,15 +30,15 @@
     "@eslint/js": "^10.0.1",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
-    "@vitejs/plugin-react": "^6.2.1",
+    "@vitejs/plugin-react": "^6.3.0",
     "autoprefixer": "^10.6.2",
-    "eslint": "^10.14.0",
+    "eslint": "^10.15.0",
     "eslint-plugin-react-hooks": "^7.1.1",
     "eslint-plugin-react-refresh": "^0.5.7",
     "globals": "^17.14.0",
     "png-to-ico": "^3.0.2",
-    "postcss": "^8.5.32",
-    "tailwindcss": "^4.3.4",
-    "vite": "^8.3.5"
+    "postcss": "^8.5.33",
+    "tailwindcss": "^4.3.5",
+    "vite": "^8.3.8"
   }
 }

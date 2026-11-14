@@ -14,16 +14,16 @@
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
     "@json2csv/plainjs": "^7.0.8",
-    "axios": "^1.21.0",
+    "axios": "^1.21.1",
     "bcryptjs": "^3.0.3",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.6",
-    "dotenv": "^18.0.9",
+    "dotenv": "^18.0.10",
     "express": "^5.3.0",
-    "express-rate-limit": "^8.7.3",
+    "express-rate-limit": "^8.7.4",
     "joi": "18.3.2",
     "jsonwebtoken": "^9.0.3",
-    "mongoose": "^9.11.4",
+    "mongoose": "^9.12.1",
     "multer": "^2.5.0",
     "passport": "^0.7.0",
     "passport-facebook": "^3.0.0",
@@ -36,7 +36,7 @@
     "jest": "^30.5.2",
     "mongodb-memory-server": "^11.3.0",
     "nodemon": "^3.1.14",
-    "supertest": "^7.3.1"
+    "supertest": "^7.3.2"
   },
   "jest": {
     "testEnvironment": "node",
